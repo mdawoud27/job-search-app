@@ -1,8 +1,12 @@
 import express from 'express';
 import * as dotenv from 'dotenv';
 dotenv.config();
+import connectToDB from './config/db.js';
 
 const app = express();
+
+// Connect to the database
+connectToDB();
 
 /* eslint no-undef: off */
 app.listen(process.env.PORT, () => {
