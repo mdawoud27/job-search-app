@@ -1,25 +1,6 @@
 import mongoose from 'mongoose';
-
-const imageSchema = new mongoose.Schema(
-  {
-    secure_url: { type: String, required: true },
-    public_id: { type: String, required: true },
-  },
-  { _id: false },
-);
-
-const attachmentSchema = new mongoose.Schema(
-  {
-    secure_url: { type: String, required: true },
-    public_id: { type: String, required: true },
-    fileType: {
-      type: String,
-      enum: ['pdf', 'image'],
-      required: true,
-    },
-  },
-  { _id: false },
-);
+import { ImageSchema } from './ImageSchema';
+import { AttachmentSchema } from './AttachmentSchema';
 
 const EMPLOYEE_RANGES = [
   '1-10',
@@ -71,12 +52,12 @@ const companySchema = new mongoose.Schema(
       ref: 'User',
       required: [true, 'Company creator is required'],
     },
-    logo: { type: imageSchema, default: null },
-    coverPic: { type: imageSchema, default: null },
+    logo: { type: ImageSchema, default: null },
+    coverPic: { type: ImageSchema, default: null },
     HRs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     bannedAt: { type: Date, default: null },
     deletedAt: { type: Date, default: null },
-    legalAttachment: { type: attachmentSchema, default: null },
+    legalAttachment: { type: AttachmentSchema, default: null },
     approvedByAdmin: { type: Boolean, default: false },
   },
   {

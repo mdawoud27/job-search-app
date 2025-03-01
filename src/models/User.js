@@ -1,38 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-
-const imageSchema = new mongoose.Schema(
-  {
-    secure_url: {
-      type: String,
-      required: true,
-    },
-    public_id: {
-      type: String,
-      required: true,
-    },
-  },
-  { _id: false },
-);
-
-const otpSchema = new mongoose.Schema(
-  {
-    code: {
-      type: String, // Hashed OTP code
-      required: true,
-    },
-    type: {
-      type: String,
-      enum: ['confirmEmail', 'forgetPassword'],
-      required: true,
-    },
-    expiresIn: {
-      type: Date,
-      required: true,
-    },
-  },
-  { _id: false },
-);
+import { ImageSchema } from './ImageSchema';
+import { OtpSchema } from './OtpSchema';
 
 const userSchema = new mongoose.Schema(
   {
@@ -58,11 +27,7 @@ const userSchema = new mongoose.Schema(
         return this.provider === 'system';
       },
     },
-    provider: {
-      type: String,
-      enum: ['google', 'system'],
-      default: 'system',
-    },
+    provider: { type: String, enum: ['google', 'system'], default: 'system' },
     gender: {
       type: String,
       enum: ['Male', 'Female'],
@@ -98,44 +63,16 @@ const userSchema = new mongoose.Schema(
           'User must be at least 18 years old and DOB must be in the past',
       },
     },
-    mobileNumber: {
-      type: String,
-      trim: true,
-    },
-    role: {
-      type: String,
-      enum: ['User', 'Admin'],
-      default: 'User',
-    },
-    isConfirmed: {
-      type: Boolean,
-      default: false,
-    },
-    deletedAt: {
-      type: Date,
-      default: null,
-    },
-    bannedAt: {
-      type: Date,
-      default: null,
-    },
-    updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    changeCredentialTime: {
-      type: Date,
-      default: Date.now,
-    },
-    profilePic: {
-      type: imageSchema,
-      default: null,
-    },
-    coverPic: {
-      type: imageSchema,
-      default: null,
-    },
-    OTP: [otpSchema],
+    mobileNumber: { type: String, trim: true },
+    role: { type: String, enum: ['User', 'Admin'], default: 'User' },
+    isConfirmed: { type: Boolean, default: false },
+    deletedAt: { type: Date, default: null },
+    bannedAt: { type: Date, default: null },
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    changeCredentialTime: { type: Date, default: Date.now },
+    profilePic: { type: ImageSchema, default: null },
+    coverPic: { type: ImageSchema, default: null },
+    OTP: [OtpSchema],
   },
   {
     timestamps: true,
