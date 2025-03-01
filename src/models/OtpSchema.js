@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const otpSchema = new mongoose.Schema(
+export const otpSchema = new mongoose.Schema(
   {
     code: { type: String, required: true },
     type: {
@@ -12,5 +12,3 @@ const otpSchema = new mongoose.Schema(
   },
   { _id: false },
 );
-
-export const OtpSchema = mongoose.model('OtpSchema', otpSchema);

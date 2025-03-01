@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { ImageSchema } from './ImageSchema';
-import { OtpSchema } from './OtpSchema';
+import { imageSchema } from './Attachments';
+import { otpSchema } from './OtpSchema';
 
 const userSchema = new mongoose.Schema(
   {
@@ -70,9 +70,9 @@ const userSchema = new mongoose.Schema(
     bannedAt: { type: Date, default: null },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     changeCredentialTime: { type: Date, default: Date.now },
-    profilePic: { type: ImageSchema, default: null },
-    coverPic: { type: ImageSchema, default: null },
-    OTP: [OtpSchema],
+    profilePic: { type: imageSchema, default: null },
+    coverPic: { type: imageSchema, default: null },
+    OTP: [otpSchema],
   },
   {
     timestamps: true,

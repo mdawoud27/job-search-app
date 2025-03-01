@@ -26,4 +26,12 @@ const cvAttachmentSchema = new mongoose.Schema(
   { _id: false },
 );
 
-export { attachmentSchema, cvAttachmentSchema };
+const imageSchema = new mongoose.Schema(
+  {
+    secure_url: { type: String, required: true },
+    public_id: { type: String, required: true },
+  },
+  { _id: false },
+);
+
+export { imageSchema, attachmentSchema, cvAttachmentSchema };

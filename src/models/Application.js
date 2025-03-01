@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { cvAttachmentSchema } from './AttachmentSchema';
+import { cvAttachmentSchema } from './Attachments';
 
 const applicationSchema = new mongoose.Schema(
   {
