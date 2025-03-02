@@ -3,12 +3,16 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import cors from 'cors';
 import helmet from 'helmet';
+import { apiLimiter } from './utils/apiLimiter.js';
 import connectToDB from './config/db.js';
 
 const app = express();
 
 // Connect to the database
 connectToDB();
+
+// Apply rate limiter to all requests
+app.use(apiLimiter);
 
 // Helmet
 app.use(helmet());
