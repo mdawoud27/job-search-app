@@ -1,10 +1,12 @@
 import express from 'express';
 import * as dotenv from 'dotenv';
 dotenv.config();
+import morgan from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
 import { apiLimiter } from './utils/apiLimiter.js';
 import connectToDB from './config/db.js';
+import { errorHandler, notFound } from './middlewares/errorHandler.js';
 
 const app = express();
 
@@ -19,6 +21,14 @@ app.use(helmet());
 
 // Cors Policy
 app.use(cors());
+
+app.use(morgan('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Global error handlers middlewares
+app.use(notFound);
+app.use(errorHandler);
 
 /* eslint no-undef: off */
 app.listen(process.env.PORT, () => {
