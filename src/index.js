@@ -5,6 +5,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { apiLimiter } from './utils/apiLimiter.js';
 import connectToDB from './config/db.js';
+import { errorHandler, notFound } from './middlewares/errorHandler.js';
 
 const app = express();
 
@@ -19,6 +20,10 @@ app.use(helmet());
 
 // Cors Policy
 app.use(cors());
+
+// Global error handlers middlewares
+app.use(notFound);
+app.use(errorHandler);
 
 /* eslint no-undef: off */
 app.listen(process.env.PORT, () => {
