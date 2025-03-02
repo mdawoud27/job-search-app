@@ -1,6 +1,7 @@
 import express from 'express';
 import * as dotenv from 'dotenv';
 dotenv.config();
+import morgan from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
 import { apiLimiter } from './utils/apiLimiter.js';
@@ -20,6 +21,10 @@ app.use(helmet());
 
 // Cors Policy
 app.use(cors());
+
+app.use(morgan('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Global error handlers middlewares
 app.use(notFound);
