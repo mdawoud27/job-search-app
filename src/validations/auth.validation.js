@@ -41,7 +41,7 @@ export const signupValidation = (obj) => {
         code: Joi.string().length(6).messages({
           'string.length': 'OTP must be exactly 6 digits',
         }),
-        expiresAt: Joi.date().messages({
+        expiresIn: Joi.date().messages({
           'date.base': 'Invalid date format for OTP expiration.',
         }),
       }),
