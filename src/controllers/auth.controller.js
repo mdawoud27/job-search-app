@@ -92,3 +92,51 @@ export const confirmOTP = async (req, res, next) => {
     next(error);
   }
 };
+
+export const signin = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email, provider: 'system' });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    if (!user.isConfirmed) {
+      return res
+        .status(403)
+        .json({ message: 'Please confirm your email first' });
+    }
+
+    if (!user.isActive()) {
+      return res.status(403).json({ message: 'Account is not active' });
+    }
+
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    const accessToken = user.accessToken();
+    const refreshToken = user.refreshToken();
+
+    res.status(200).json({
+      message: 'User logged successfully',
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      },
+      tokens: {
+        accesstoken: accessToken,
+        refreshtoken: refreshToken,
+      },
+    });
+
+    res.status(200).json({ message: 'user login successfully', user: user });
+  } catch (error) {
+    next(error);
+  }
+};

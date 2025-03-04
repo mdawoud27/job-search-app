@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { imageSchema } from './Attachments.js';
 import { otpSchema } from './OtpSchema.js';
 import { encrypt } from '../utils/crypto.js';
@@ -111,6 +112,23 @@ userSchema.pre('save', async function (next) {
 // Method to compare password
 userSchema.methods.comparePassword = async function (userPassword) {
   return await bcrypt.compare(userPassword, this.password);
+};
+
+// generate accessToken
+userSchema.methods.accessToken = function () {
+  return jwt.sign(
+    { id: this._id, role: this.role },
+    /* eslint no-undef: off */
+    process.env.JWT_ACCESS_KEY,
+    { expiresIn: '1h' },
+  );
+};
+
+// generate refreshToken
+userSchema.methods.refreshToken = function () {
+  return jwt.sign({ id: this._id }, process.env.JWT_REFRESH_KEY, {
+    expiresIn: '7d',
+  });
 };
 
 // Method to check if user is banned or deleted
