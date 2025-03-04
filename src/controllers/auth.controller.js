@@ -134,8 +134,6 @@ export const signin = async (req, res, next) => {
         refreshtoken: refreshToken,
       },
     });
-
-    res.status(200).json({ message: 'user login successfully', user: user });
   } catch (error) {
     next(error);
   }
