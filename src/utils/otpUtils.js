@@ -7,3 +7,7 @@ export const generateOTP = () => {
 export const hashOTP = async (otp) => {
   return await bcrypt.hash(otp, 10);
 };
+
+export const validateOTP = async (otp, hashedOtp) => {
+  return await bcrypt.compare(otp, hashedOtp);
+};
