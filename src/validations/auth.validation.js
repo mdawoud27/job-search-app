@@ -21,7 +21,7 @@ export const signupValidation = (obj) => {
       'string.min': 'Password must be at least 8 characters long.',
       'string.max': 'Password must be at most 32 characters long.',
     }),
-    gender: Joi.string().required().valid('male', 'female').messages({
+    gender: Joi.string().required().valid('Male', 'Female').messages({
       'string.empty': 'Gender is required.',
       'string.only': "Gender must be either 'male' or 'female'.",
     }),
@@ -36,16 +36,6 @@ export const signupValidation = (obj) => {
     mobileNumber: Joi.string().required().trim().messages({
       'string.empty': 'Mobile number is required',
     }),
-    OTP: Joi.array().items(
-      Joi.object({
-        code: Joi.string().length(6).messages({
-          'string.length': 'OTP must be exactly 6 digits',
-        }),
-        expiresIn: Joi.date().messages({
-          'date.base': 'Invalid date format for OTP expiration.',
-        }),
-      }),
-    ),
   });
 
   return schema.validate(obj);

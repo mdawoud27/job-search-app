@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { imageSchema } from './Attachments';
-import { otpSchema } from './OtpSchema';
-import { encrypt } from '../utils/encrypt';
+import { imageSchema } from './Attachments.js';
+import { otpSchema } from './OtpSchema.js';
+import { encrypt } from '../utils/crypto.js';
 
 const userSchema = new mongoose.Schema(
   {
@@ -97,6 +97,13 @@ userSchema.pre('save', async function (next) {
   // encrypt mobile number
   if (this.isModified('mobileNumber') && this.mobileNumber) {
     this.mobileNumber = encrypt(this.mobileNumber);
+  }
+
+  // Hash OTP codes before saving
+  if (this.isModified('OTP') && this.OTP.length > 0) {
+    for (const otp of this.OTP) {
+      otp.code = bcrypt.hash(otp.code, 10);
+    }
   }
   next();
 });

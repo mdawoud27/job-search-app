@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import { ImageSchema } from './ImageSchema';
-import { attachmentSchema } from './Attachments';
+import { ImageSchema } from './ImageSchema.js';
+import { attachmentSchema } from './Attachments.js';
 
 const EMPLOYEE_RANGES = [
   '1-10',

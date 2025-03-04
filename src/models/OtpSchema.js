@@ -5,8 +5,8 @@ export const otpSchema = new mongoose.Schema(
     code: { type: String, required: true },
     type: {
       type: String,
-      enum: ['confirmEmail', 'forgetPassword'],
       required: true,
+      enum: ['confirmEmail', 'forgetPassword'],
     },
     expiresIn: { type: Date, required: true },
   },

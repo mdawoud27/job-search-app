@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import { apiLimiter } from './utils/apiLimiter.js';
 import connectToDB from './config/db.js';
 import { errorHandler, notFound } from './middlewares/errorHandler.js';
+import router from './routes/auth.routes.js';
 
 const app = express();
 
@@ -25,6 +26,9 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use(router);
 
 // Global error handlers middlewares
 app.use(notFound);

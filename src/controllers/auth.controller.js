@@ -1,7 +1,7 @@
-import { User } from '../models/User';
-import { sendOTPEmail } from '../utils/emailService';
-import { generateOTP, hashOTP } from '../utils/otpUtils';
-import { signupValidation } from '../validations/auth.validation';
+import { User } from '../models/User.js';
+import { sendOTPEmail } from '../utils/emailService.js';
+import { generateOTP, hashOTP } from '../utils/otpUtils.js';
+import { signupValidation } from '../validations/auth.validation.js';
 
 export const signup = async (req, res) => {
   try {
@@ -20,7 +20,7 @@ export const signup = async (req, res) => {
     }
 
     const otpCode = generateOTP();
-    const hashedOtp = hashOTP(otpCode);
+    const hashedOtp = await hashOTP(otpCode);
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
     const newUser = new User({
@@ -31,18 +31,19 @@ export const signup = async (req, res) => {
       gender,
       DOB,
       mobileNumber,
-      OTP: [{ code: hashedOtp, expiresIn: otpExpiry }],
+      OTP: [{ code: hashedOtp, type: 'confirmEmail', expiresIn: otpExpiry }],
     });
 
-    await newUser.save();
+    const savedUser = await newUser.save();
 
     // Send OTP email
     await sendOTPEmail(email, otpCode);
 
     res.status(201).json({
+      newUser: savedUser,
       message: 'User registered. Please verify OTP within 10 minutes.',
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ hello: 'hello error', message: error.message });
   }
 };
