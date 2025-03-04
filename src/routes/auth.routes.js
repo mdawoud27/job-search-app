@@ -5,7 +5,6 @@ const router = Router();
 
 router.post('/api/auth/signup', signup);
 router.post('/api/auth/confirm-otp', confirmOTP);
-router.post('/api/auth//signin', signin);
-// router.post('/api/auth/refresh-token', refreshTokens);
+router.post('/api/auth/signin', signin);
 
 export default router;
