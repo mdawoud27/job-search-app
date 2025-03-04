@@ -1,6 +1,6 @@
 import { User } from '../models/User.js';
 import { sendOTPEmail } from '../utils/emailService.js';
-import { generateOTP, hashOTP } from '../utils/otpUtils.js';
+import { generateOTP, hashOTP, validateOTP } from '../utils/otpUtils.js';
 import { signupValidation } from '../validations/auth.validation.js';
 
 export const signup = async (req, res) => {
@@ -45,5 +45,50 @@ export const signup = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ hello: 'hello error', message: error.message });
+  }
+};
+
+export const confirmOTP = async (req, res, next) => {
+  try {
+    const { email, otpCode } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const otpEntry = user.OTP.find(
+      (otp) =>
+        otp.type === 'confirmEmail' && new Date(otp.expiresIn) > new Date(),
+    );
+    if (!otpEntry) {
+      return res
+        .status(400)
+        .json({ message: 'No valid OTP found or OTP has expired' });
+    }
+
+    // verify the entry otp
+    const isOTPValid = validateOTP(otpCode, otpEntry.code);
+    if (!isOTPValid) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    // mark user as confirmied
+    user.isConfirmed = true;
+
+    // remove the used otp
+    user.OTP = user.OTP.filter((otp) => otp.type !== 'confirmEmail');
+
+    await user.save();
+    res.status(200).json({
+      message: 'Email confirmed successfully',
+      user: {
+        id: user._id,
+        email: user.email,
+        isConfirmed: user.isConfirmed,
+      },
+    });
+  } catch (error) {
+    next(error);
   }
 };
