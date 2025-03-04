@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { imageSchema } from './Attachments';
-import { otpSchema } from './OtpSchema';
+import { imageSchema } from './Attachments.js';
+import { otpSchema } from './OtpSchema.js';
+import { encrypt } from '../utils/crypto.js';
 
 const userSchema = new mongoose.Schema(
   {
@@ -86,10 +87,23 @@ userSchema.virtual('username').get(function () {
   return `${this.firstName}${this.lastName}`;
 });
 
-// Pre-save middleware to hash password
+// Pre-save middleware
 userSchema.pre('save', async function (next) {
+  // hash password
   if (this.isModified('password') && this.password) {
     this.password = await bcrypt.hash(this.password, 10);
+  }
+
+  // encrypt mobile number
+  if (this.isModified('mobileNumber') && this.mobileNumber) {
+    this.mobileNumber = encrypt(this.mobileNumber);
+  }
+
+  // Hash OTP codes before saving
+  if (this.isModified('OTP') && this.OTP.length > 0) {
+    for (const otp of this.OTP) {
+      otp.code = bcrypt.hash(otp.code, 10);
+    }
   }
   next();
 });
