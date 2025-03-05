@@ -17,10 +17,6 @@ export const configureGoogleStrategy = () => {
       },
       async (req, accessToken, refreshToken, profile, done) => {
         try {
-          console.log('Google Profile:', JSON.stringify(profile, null, 2));
-          console.log('Access Token:', accessToken);
-          console.log('Refresh Token:', refreshToken);
-
           const email =
             profile.emails && profile.emails.length > 0
               ? profile.emails[0].value
@@ -37,8 +33,8 @@ export const configureGoogleStrategy = () => {
 
           if (!user) {
             user = new User({
-              firstName: profile.name.givenName || '',
-              lastName: profile.name.familyName || 'familyName',
+              firstName: profile.name.givenName || 'firstName',
+              lastName: profile.name.familyName || 'lastName',
               email: email,
               provider: 'google',
               isConfirmed: true,
@@ -64,7 +60,6 @@ export const configureGoogleStrategy = () => {
           user.refreshToken = () => refresh;
           return done(null, user);
         } catch (error) {
-          console.error('Google OAuth Error:', error);
           return done(error, false);
         }
       },
