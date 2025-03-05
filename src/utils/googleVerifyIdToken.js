@@ -12,7 +12,6 @@ export const googleVerifyIdToken = async (idToken) => {
 
     return ticket;
   } catch (error) {
-    console.error('Google Token Verification Error:', error);
-    throw new Error('Invalid Google ID Token');
+    throw new Error(`Invalid Google ID Token: ${error.message}`);
   }
 };
