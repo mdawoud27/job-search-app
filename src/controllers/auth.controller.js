@@ -1,5 +1,6 @@
-import { User } from '../models/User.js';
+import { generateTokens, User } from '../models/User.js';
 import { sendOTPEmail } from '../utils/emailService.js';
+import { googleVerifyIdToken } from '../utils/googleVerifyIdToken.js';
 import { generateOTP, hashOTP, validateOTP } from '../utils/otpUtils.js';
 import { signupValidation } from '../validations/auth.validation.js';
 
@@ -136,5 +137,75 @@ export const signin = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const googleOAuthCallback = (req, res) => {
+  // Generate tokens after successful authentication
+  const accessToken = req.user.accessToken();
+  const refreshToken = req.user.refreshToken();
+
+  // Redirect with tokens (or send as query parameters)
+  res.redirect(
+    `/dashboard?accessToken=${accessToken}&refreshToken=${refreshToken}`,
+  );
+};
+
+export const googleOAuthLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+
+    // Verify Google ID Token
+    const ticket = await googleVerifyIdToken(idToken);
+    const payload = ticket.getPayload();
+
+    // Find or create user
+    let user = await User.findOne({
+      email: payload.email,
+      provider: 'google',
+    });
+
+    if (!user) {
+      user = new User({
+        firstName: payload.given_name,
+        lastName: payload.family_name,
+        email: payload.email,
+        provider: 'google',
+        isConfirmed: true,
+        profilePic: {
+          url: payload.picture,
+          publicId: null,
+        },
+        gender: 'Male', // Default
+        DOB: new Date(Date.now() - 18 * 365 * 24 * 60 * 60 * 1000),
+        mobileNumber: null,
+      });
+
+      await user.save();
+    }
+
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens(user);
+
+    res.status(200).json({
+      message: 'Google authentication successful',
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+      tokens: {
+        accessToken,
+        refreshToken,
+      },
+    });
+  } catch (error) {
+    console.error('Google OAuth Login Error:', error);
+
+    res.status(400).json({
+      message: 'Google authentication failed',
+      error: error.message,
+    });
   }
 };
