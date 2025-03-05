@@ -234,3 +234,52 @@ export const sendForgetPasswordOTP = async (req, res, next) => {
     next(error);
   }
 };
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { email, otpCode, newPassword } = req.body;
+
+    const user = await User.findOne({ email, provider: 'system' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const otpEntry = user.OTP.find(
+      (otp) =>
+        otp.type === 'forgetPassword' && new Date(otp.expiresIn) > new Date(),
+    );
+
+    if (!otpEntry) {
+      return res
+        .status(400)
+        .json({ message: 'No valid OTP found or OTP has expired' });
+    }
+
+    const isOtpValid = validateOTP(otpCode, otpEntry.code);
+    if (!isOtpValid) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    // TODO: Add validation function to handle password here
+
+    if (newPassword.length < 8) {
+      return res
+        .status(400)
+        .json({ message: 'Password must be at least 8 characters long' });
+    }
+
+    user.password = newPassword;
+    user.changeCredentialTime = new Date();
+
+    // Remove the used OTP
+    user.OTP = user.OTP.filter((otp) => otp.type !== 'forgetPassword');
+
+    await user.save();
+
+    res.status(200).json({
+      message: 'Password reset successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
