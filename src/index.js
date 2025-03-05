@@ -4,6 +4,9 @@ dotenv.config();
 import morgan from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
+import passport from 'passport';
+import session from 'express-session';
+import { Strategy } from 'passport-google-oauth20';
 import { apiLimiter } from './utils/apiLimiter.js';
 import connectToDB from './config/db.js';
 import { errorHandler, notFound } from './middlewares/errorHandler.js';
@@ -13,6 +16,14 @@ const app = express();
 
 // Connect to the database
 connectToDB();
+
+app.use(
+  session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: true,
+  }),
+);
 
 // Apply rate limiter to all requests
 app.use(apiLimiter);
