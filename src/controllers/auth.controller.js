@@ -141,14 +141,12 @@ export const signin = async (req, res, next) => {
 };
 
 export const googleOAuthCallback = (req, res) => {
-  // Generate tokens after successful authentication
   const accessToken = req.user.accessToken();
   const refreshToken = req.user.refreshToken();
 
-  // Redirect with tokens (or send as query parameters)
-  res.redirect(
-    `/dashboard?accessToken=${accessToken}&refreshToken=${refreshToken}`,
-  );
+  res
+    .status(200)
+    .json({ message: 'user signup successfully', accessToken, refreshToken });
 };
 
 export const googleOAuthLogin = async (req, res) => {
@@ -201,8 +199,6 @@ export const googleOAuthLogin = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Google OAuth Login Error:', error);
-
     res.status(400).json({
       message: 'Google authentication failed',
       error: error.message,
