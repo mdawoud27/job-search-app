@@ -3,6 +3,9 @@ import {
   confirmOTP,
   googleOAuthCallback,
   googleOAuthLogin,
+  refreshAccessToken,
+  resetPassword,
+  sendForgetPasswordOTP,
   signin,
   signup,
 } from '../controllers/auth.controller.js';

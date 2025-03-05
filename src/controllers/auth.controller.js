@@ -1,3 +1,6 @@
+import jwt from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
+dotenv.config();
 import { generateTokens, User } from '../models/User.js';
 import { sendOTPEmail } from '../utils/emailService.js';
 import { googleVerifyIdToken } from '../utils/googleVerifyIdToken.js';
@@ -118,8 +121,7 @@ export const signin = async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    const accessToken = user.accessToken();
-    const refreshToken = user.refreshToken();
+    const { accessToken, refreshToken } = generateTokens(user);
 
     res.status(200).json({
       message: 'User logged successfully',
@@ -211,7 +213,7 @@ export const sendForgetPasswordOTP = async (req, res, next) => {
     }
 
     const otpCode = generateOTP();
-    const hashedOtp = hashOTP(otpCode);
+    const hashedOtp = await hashOTP(otpCode);
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
     user.OTP = user.OTP.filter((otp) => otp.type !== 'forgetPassword');
@@ -278,6 +280,61 @@ export const resetPassword = async (req, res, next) => {
 
     res.status(200).json({
       message: 'Password reset successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const refreshAccessToken = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: 'Refresh token required' });
+    }
+
+    // Verify refresh token
+    /* eslint no-undef: off */
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, 'thisisjwtrefreshsecretkey12345');
+    } catch (error) {
+      return res
+        .status(401)
+        .json({ message: 'Invalid refresh token', error: error.message });
+    }
+
+    // Find user
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(403).json({ message: 'User not found' });
+    }
+
+    // Check if tokens were issued before credential change
+    const lastCredentialChange = user.changeCredentialTime || new Date(0);
+
+    // Verify refresh token was issued after last credential change
+    if (decoded.issuedAt && new Date(decoded.issuedAt) < lastCredentialChange) {
+      return res
+        .status(401)
+        .json({ message: 'Token invalidated by credential change' });
+    }
+
+    // Generate new access token
+    const accessToken = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+      },
+      'thisisjwtaccesssecretkey12345',
+      { expiresIn: '1h' },
+    );
+
+    res.status(200).json({
+      accessToken,
+      message: 'Access token refreshed successfully',
     });
   } catch (error) {
     next(error);
