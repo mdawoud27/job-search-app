@@ -5,7 +5,10 @@ import { generateTokens, User } from '../models/User.js';
 import { sendOTPEmail } from '../utils/emailService.js';
 import { googleVerifyIdToken } from '../utils/googleVerifyIdToken.js';
 import { generateOTP, hashOTP, validateOTP } from '../utils/otpUtils.js';
-import { signupValidation } from '../validations/auth.validation.js';
+import {
+  resetPasswordValidation,
+  signupValidation,
+} from '../validations/auth.validation.js';
 
 /**
  * @desc   Register a new user
@@ -13,7 +16,7 @@ import { signupValidation } from '../validations/auth.validation.js';
  * @method POST
  * @access public
  */
-export const signup = async (req, res) => {
+export const signup = async (req, res, next) => {
   try {
     const { error } = signupValidation(req.body);
     if (error) {
@@ -54,7 +57,7 @@ export const signup = async (req, res) => {
       message: 'User registered. Please verify OTP within 10 minutes.',
     });
   } catch (error) {
-    res.status(500).json({ hello: 'hello error', message: error.message });
+    next(error);
   }
 };
 
@@ -304,12 +307,9 @@ export const resetPassword = async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid OTP' });
     }
 
-    // TODO: Add validation function to handle password here
-
-    if (newPassword.length < 8) {
-      return res
-        .status(400)
-        .json({ message: 'Password must be at least 8 characters long' });
+    const { error } = resetPasswordValidation(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
     }
 
     user.password = newPassword;
