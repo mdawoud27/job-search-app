@@ -5,9 +5,18 @@ import { generateTokens, User } from '../models/User.js';
 import { sendOTPEmail } from '../utils/emailService.js';
 import { googleVerifyIdToken } from '../utils/googleVerifyIdToken.js';
 import { generateOTP, hashOTP, validateOTP } from '../utils/otpUtils.js';
-import { signupValidation } from '../validations/auth.validation.js';
+import {
+  resetPasswordValidation,
+  signupValidation,
+} from '../validations/auth.validation.js';
 
-export const signup = async (req, res) => {
+/**
+ * @desc   Register a new user
+ * @route  /api/auth/signup
+ * @method POST
+ * @access public
+ */
+export const signup = async (req, res, next) => {
   try {
     const { error } = signupValidation(req.body);
     if (error) {
@@ -48,10 +57,16 @@ export const signup = async (req, res) => {
       message: 'User registered. Please verify OTP within 10 minutes.',
     });
   } catch (error) {
-    res.status(500).json({ hello: 'hello error', message: error.message });
+    next(error);
   }
 };
 
+/**
+ * @desc   Confirm OTP for user verification
+ * @route  /api/auth/confirm-otp
+ * @method POST
+ * @access public
+ */
 export const confirmOTP = async (req, res, next) => {
   try {
     const { email, otpCode } = req.body;
@@ -97,6 +112,12 @@ export const confirmOTP = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc   Sign in user with email and password
+ * @route  /api/auth/signin
+ * @method POST
+ * @access public
+ */
 export const signin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -142,10 +163,22 @@ export const signin = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc   Google OAuth callback handler
+ * @route  /api/auth/google/callback
+ * @method GET
+ * @access public
+ */
 export const googleOAuthCallback = (req, res) => {
   res.status(200).json({ message: 'user signup successfully' });
 };
 
+/**
+ * @desc   Authenticate user via Google OAuth
+ * @route  /api/auth/google
+ * @method GET
+ * @access public
+ */
 export const googleOAuthLogin = async (req, res) => {
   try {
     const { idToken } = req.body;
@@ -203,6 +236,12 @@ export const googleOAuthLogin = async (req, res) => {
   }
 };
 
+/**
+ * @desc   Send OTP for password reset
+ * @route  /api/auth/forgot-password
+ * @method POST
+ * @access public
+ */
 export const sendForgetPasswordOTP = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -237,6 +276,12 @@ export const sendForgetPasswordOTP = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc   Reset user password using OTP
+ * @route  /api/auth/reset-password
+ * @method POST
+ * @access public
+ */
 export const resetPassword = async (req, res, next) => {
   try {
     const { email, otpCode, newPassword } = req.body;
@@ -262,12 +307,9 @@ export const resetPassword = async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid OTP' });
     }
 
-    // TODO: Add validation function to handle password here
-
-    if (newPassword.length < 8) {
-      return res
-        .status(400)
-        .json({ message: 'Password must be at least 8 characters long' });
+    const { error } = resetPasswordValidation(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
     }
 
     user.password = newPassword;
@@ -286,6 +328,12 @@ export const resetPassword = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc   Refresh expired access token using refresh token
+ * @route  /api/auth/refresh-token
+ * @method POST
+ * @access public
+ */
 export const refreshAccessToken = async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
