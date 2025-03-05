@@ -31,18 +31,7 @@ router.get(
     failureRedirect: '/login',
     session: false,
   }),
-  (req, res) => {
-    try {
-      // Generate tokens using the method from the user model
-      const accessToken = req.user.accessToken();
-      const refreshToken = req.user.refreshToken();
-
-      res.status(201).json({ message: 'user logged with google suceesfuly' });
-    } catch (error) {
-      console.error('Token Generation Error:', error);
-      res.redirect('/login?error=token_generation_failed');
-    }
-  },
+  googleOAuthCallback,
 );
 
 // Google OAuth Login/Signup Endpoint (for mobile/SPA)
