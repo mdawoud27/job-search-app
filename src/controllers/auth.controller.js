@@ -7,6 +7,12 @@ import { googleVerifyIdToken } from '../utils/googleVerifyIdToken.js';
 import { generateOTP, hashOTP, validateOTP } from '../utils/otpUtils.js';
 import { signupValidation } from '../validations/auth.validation.js';
 
+/**
+ * @desc   Register a new user
+ * @route  /api/auth/signup
+ * @method POST
+ * @access public
+ */
 export const signup = async (req, res) => {
   try {
     const { error } = signupValidation(req.body);
@@ -52,6 +58,12 @@ export const signup = async (req, res) => {
   }
 };
 
+/**
+ * @desc   Confirm OTP for user verification
+ * @route  /api/auth/confirm-otp
+ * @method POST
+ * @access public
+ */
 export const confirmOTP = async (req, res, next) => {
   try {
     const { email, otpCode } = req.body;
@@ -97,6 +109,12 @@ export const confirmOTP = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc   Sign in user with email and password
+ * @route  /api/auth/signin
+ * @method POST
+ * @access public
+ */
 export const signin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -142,10 +160,22 @@ export const signin = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc   Google OAuth callback handler
+ * @route  /api/auth/google/callback
+ * @method GET
+ * @access public
+ */
 export const googleOAuthCallback = (req, res) => {
   res.status(200).json({ message: 'user signup successfully' });
 };
 
+/**
+ * @desc   Authenticate user via Google OAuth
+ * @route  /api/auth/google
+ * @method GET
+ * @access public
+ */
 export const googleOAuthLogin = async (req, res) => {
   try {
     const { idToken } = req.body;
@@ -203,6 +233,12 @@ export const googleOAuthLogin = async (req, res) => {
   }
 };
 
+/**
+ * @desc   Send OTP for password reset
+ * @route  /api/auth/forgot-password
+ * @method POST
+ * @access public
+ */
 export const sendForgetPasswordOTP = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -237,6 +273,12 @@ export const sendForgetPasswordOTP = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc   Reset user password using OTP
+ * @route  /api/auth/reset-password
+ * @method POST
+ * @access public
+ */
 export const resetPassword = async (req, res, next) => {
   try {
     const { email, otpCode, newPassword } = req.body;
@@ -286,6 +328,12 @@ export const resetPassword = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc   Refresh expired access token using refresh token
+ * @route  /api/auth/refresh-token
+ * @method POST
+ * @access public
+ */
 export const refreshAccessToken = async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
