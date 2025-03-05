@@ -116,19 +116,47 @@ userSchema.methods.comparePassword = async function (userPassword) {
 
 // generate accessToken
 userSchema.methods.accessToken = function () {
+  if (!process.env.JWT_ACCESS_SECRET) {
+    throw new Error('JWT Access Secret is not defined');
+  }
   return jwt.sign(
-    { id: this._id, role: this.role },
+    { id: this._id, email: this.email, role: this.role },
     /* eslint no-undef: off */
-    process.env.JWT_ACCESS_KEY,
+    'thisisjwtaccesssecretkey12345',
     { expiresIn: '1h' },
   );
 };
 
 // generate refreshToken
 userSchema.methods.refreshToken = function () {
-  return jwt.sign({ id: this._id }, process.env.JWT_REFRESH_KEY, {
+  if (!process.env.JWT_REFRESH_SECRET) {
+    throw new Error('JWT Refresh Secret is not defined');
+  }
+  return jwt.sign({ id: this._id }, 'thisisjwtrefreshsecretkey12345', {
     expiresIn: '7d',
   });
+};
+
+export const generateTokens = (user) => {
+  const accessToken = jwt.sign(
+    {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+    },
+    'thisisjwtaccesssecretkey12345',
+    { expiresIn: '1h' },
+  );
+
+  const refreshToken = jwt.sign(
+    {
+      id: user._id,
+    },
+    'thisisjwtrefreshsecretkey12345',
+    { expiresIn: '7d' },
+  );
+
+  return { accessToken, refreshToken };
 };
 
 // Method to check if user is banned or deleted

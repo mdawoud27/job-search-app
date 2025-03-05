@@ -4,16 +4,31 @@ dotenv.config();
 import morgan from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
+import passport from 'passport';
+import session from 'express-session';
 import { apiLimiter } from './utils/apiLimiter.js';
 import connectToDB from './config/db.js';
 import { errorHandler, notFound } from './middlewares/errorHandler.js';
 import router from './routes/auth.routes.js';
+import { configureGoogleStrategy } from './strategies/google-strategy.js';
 
 const app = express();
 
 // Connect to the database
 connectToDB();
 
+app.use(
+  session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: true,
+  }),
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+configureGoogleStrategy();
 // Apply rate limiter to all requests
 app.use(apiLimiter);
 

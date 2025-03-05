@@ -28,8 +28,8 @@ const cvAttachmentSchema = new mongoose.Schema(
 
 const imageSchema = new mongoose.Schema(
   {
-    secure_url: { type: String, required: true },
-    public_id: { type: String, required: true },
+    secure_url: { type: String },
+    public_id: { type: String },
   },
   { _id: false },
 );
