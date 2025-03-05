@@ -3,6 +3,9 @@ import {
   confirmOTP,
   googleOAuthCallback,
   googleOAuthLogin,
+  refreshAccessToken,
+  resetPassword,
+  sendForgetPasswordOTP,
   signin,
   signup,
 } from '../controllers/auth.controller.js';
@@ -36,5 +39,9 @@ router.get(
 
 // Google OAuth Login/Signup Endpoint (for mobile/SPA)
 router.post('/auth/google', googleOAuthLogin);
+
+router.post('/api/auth/forget-password', sendForgetPasswordOTP);
+router.post('/api/auth/reset-password', resetPassword);
+router.post('/api/auth/refresh-token', refreshAccessToken);
 
 export default router;
