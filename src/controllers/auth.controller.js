@@ -141,12 +141,7 @@ export const signin = async (req, res, next) => {
 };
 
 export const googleOAuthCallback = (req, res) => {
-  const accessToken = req.user.accessToken();
-  const refreshToken = req.user.refreshToken();
-
-  res
-    .status(200)
-    .json({ message: 'user signup successfully', accessToken, refreshToken });
+  res.status(200).json({ message: 'user signup successfully' });
 };
 
 export const googleOAuthLogin = async (req, res) => {
