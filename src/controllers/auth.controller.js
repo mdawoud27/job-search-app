@@ -200,3 +200,37 @@ export const googleOAuthLogin = async (req, res) => {
     });
   }
 };
+
+export const sendForgetPasswordOTP = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email, provider: 'system' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const otpCode = generateOTP();
+    const hashedOtp = hashOTP(otpCode);
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+    user.OTP = user.OTP.filter((otp) => otp.type !== 'forgetPassword');
+
+    user.OTP.push({
+      code: hashedOtp,
+      type: 'forgetPassword',
+      expiresIn: otpExpiry,
+    });
+
+    await user.save();
+
+    await sendOTPEmail(email, otpCode);
+
+    res.status(200).json({
+      message: 'OTP sent successfully. Valid for 10 minutes',
+      expiresAt: otpExpiry,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
