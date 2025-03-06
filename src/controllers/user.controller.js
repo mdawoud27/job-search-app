@@ -1,6 +1,9 @@
 import { User } from '../models/User.js';
 import { encrypt } from '../utils/crypto.js';
-import { updateUserAccountValidation } from '../validations/user.validation.js';
+import {
+  updateUserAccountValidation,
+  updateUserPasswordValidation,
+} from '../validations/user.validation.js';
 
 /**
  * @desc   Update user account
@@ -109,6 +112,53 @@ export const getUserProfile = async (req, res, next) => {
     res.status(200).json({
       message: 'User profile retrieved successfully',
       user: userResponse,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc   Update the user password
+ * @route  PUT /user/profile
+ * @access private
+ */
+export const updateUserPassword = async (req, res, next) => {
+  try {
+    // Ensure req.user is defined
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ message: 'Unauthorized: User not authenticated' });
+    }
+
+    const userId = req.params.id || req.user.id;
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    const { password } = req.body;
+    const { error } = updateUserPasswordValidation(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ message: 'Acount is not active' });
+    }
+
+    // update the user password
+    user.password = password;
+    await user.save();
+
+    res.status(200).json({
+      message: 'User password updated successfully',
+      password: user.password,
     });
   } catch (error) {
     next(error);
