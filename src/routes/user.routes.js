@@ -5,7 +5,6 @@ import { verifyUserPermission } from '../middlewares/verifyUserPermission.js';
 
 const router = Router();
 
-// router.put('/user/update', verifyAccessToken, updateUserAccount);
 router.put(
   '/user/:id',
   verifyAccessToken,
