@@ -26,3 +26,15 @@ export const updateUserAccountValidation = (obj) => {
 
   return schema.validate(obj);
 };
+
+export const updateUserPasswordValidation = (obj) => {
+  const schema = Joi.object({
+    password: Joi.string().required().trim().min(8).max(32).messages({
+      'string.empty': 'Password is required.',
+      'string.min': 'Password must be at least 8 characters long.',
+      'string.max': 'Password must be at most 32 characters long.',
+    }),
+  });
+
+  return schema.validate(obj);
+};
