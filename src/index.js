@@ -9,7 +9,8 @@ import session from 'express-session';
 import { apiLimiter } from './utils/apiLimiter.js';
 import connectToDB from './config/db.js';
 import { errorHandler, notFound } from './middlewares/errorHandler.js';
-import router from './routes/auth.routes.js';
+import authRouter from './routes/auth.routes.js';
+import userRouter from './routes/user.routes.js';
 import { configureGoogleStrategy } from './strategies/google-strategy.js';
 
 const app = express();
@@ -43,7 +44,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use(router);
+app.use(authRouter);
+app.use(userRouter);
 
 // Global error handlers middlewares
 app.use(notFound);
