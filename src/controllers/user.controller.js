@@ -76,3 +76,41 @@ export const updateUserAccount = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * @desc   Get logged in user profile
+ * @route  GET /api/user/profile
+ * @access private
+ */
+export const getUserProfile = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID not found in token' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if user is active
+    if (!user.isActive()) {
+      return res.status(403).json({ message: 'Account is not active' });
+    }
+
+    const userResponse = {
+      username: user.username,
+      mobileNumber: user.mobileNumber,
+      profilePic: user.profilePic,
+      coverPic: user.coverPic,
+    };
+
+    res.status(200).json({
+      message: 'User profile retrieved successfully',
+      user: userResponse,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
