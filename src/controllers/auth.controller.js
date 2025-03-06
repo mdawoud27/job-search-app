@@ -144,6 +144,9 @@ export const signin = async (req, res, next) => {
 
     const { accessToken, refreshToken } = generateTokens(user);
 
+    // Get the decrypted mobile number
+    const decryptedMobileNumber = user.getDecryptedMobileNumber();
+
     res.status(200).json({
       message: 'User logged successfully',
       user: {
@@ -152,6 +155,7 @@ export const signin = async (req, res, next) => {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
+        mobileNumber: decryptedMobileNumber,
       },
       tokens: {
         accesstoken: accessToken,

@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { imageSchema } from './Attachments.js';
 import { otpSchema } from './OtpSchema.js';
-import { encrypt } from '../utils/crypto.js';
+import { decrypt, encrypt } from '../utils/crypto.js';
 
 const userSchema = new mongoose.Schema(
   {
@@ -112,6 +112,10 @@ userSchema.pre('save', async function (next) {
 // Method to compare password
 userSchema.methods.comparePassword = async function (userPassword) {
   return await bcrypt.compare(userPassword, this.password);
+};
+
+userSchema.methods.getDecryptedMobileNumber = function () {
+  return decrypt(this.mobileNumber);
 };
 
 // generate accessToken
