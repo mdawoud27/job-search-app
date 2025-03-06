@@ -1,5 +1,8 @@
 import { Router } from 'express';
-import { updateUserAccount } from '../controllers/user.controller.js';
+import {
+  getUserProfile,
+  updateUserAccount,
+} from '../controllers/user.controller.js';
 import { verifyAccessToken } from '../middlewares/auth.js';
 import { verifyUserPermission } from '../middlewares/verifyUserPermission.js';
 
@@ -11,5 +14,6 @@ router.put(
   verifyUserPermission,
   updateUserAccount,
 );
+router.get('/user/profile', verifyAccessToken, getUserProfile);
 
 export default router;
