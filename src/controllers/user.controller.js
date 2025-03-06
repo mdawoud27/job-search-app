@@ -17,7 +17,7 @@ export const updateUserAccount = async (req, res, next) => {
         .json({ message: 'Unauthorized: User not authenticated' });
     }
 
-    const userId = req.user.id || req.params.id;
+    const userId = req.params.id;
     if (!userId) {
       return res.status(400).json({ message: 'User ID is required' });
     }
