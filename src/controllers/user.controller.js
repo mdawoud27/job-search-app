@@ -1,4 +1,5 @@
 import { User } from '../models/User.js';
+import { encrypt } from '../utils/crypto.js';
 import { updateUserAccountValidation } from '../validations/user.validation.js';
 
 /**
@@ -9,7 +10,17 @@ import { updateUserAccountValidation } from '../validations/user.validation.js';
  */
 export const updateUserAccount = async (req, res, next) => {
   try {
+    // Ensure req.user is defined
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ message: 'Unauthorized: User not authenticated' });
+    }
+
     const userId = req.user.id || req.params.id;
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
 
     const { error, value } = updateUserAccountValidation(req.body);
     if (error) {
@@ -32,8 +43,9 @@ export const updateUserAccount = async (req, res, next) => {
     if (value.lastName) updateData.lastName = value.lastName;
     if (value.gender) updateData.gender = value.gender;
     if (value.DOB) updateData.DOB = value.DOB;
-
-    // TODO: encrypt mobile number if not in pre-save
+    if (value.mobileNumber) {
+      updateData.mobileNumber = encrypt(value.mobileNumber);
+    }
 
     // set updatedBy if admin is making the change
     if (req.user.role === 'Admin' && req.user.id !== userId) {

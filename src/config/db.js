@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
-import { setupOTPCleanupJob } from '../utils/otpCleanup';
+import { setupOTPCleanupJob } from '../utils/otpCleanup.js';
 dotenv.config();
 
 /* eslint no-undef: off */

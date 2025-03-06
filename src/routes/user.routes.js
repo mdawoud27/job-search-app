@@ -1,17 +1,11 @@
 import { Router } from 'express';
-import { verifyUserPermission } from '../middlewares/verifyUserPermission';
-import { updateUserAccount } from '../controllers/user.controller';
-import { verifyAccessToken } from '../middlewares/verifyAccessToken';
+import { verifyUserPermission } from '../middlewares/verifyUserPermission.js';
+import { updateUserAccount } from '../controllers/user.controller.js';
+import { verifyAccessToken } from '../middlewares/auth.js';
 
 const router = Router();
 
-router.put('/user/update', verifyAccessToken, updateUserAccount);
-
-router.put(
-  '/api/user/:userId',
-  verifyAccessToken,
-  verifyUserPermission,
-  updateUserAccount,
-);
+// router.put('/api/user/update', verifyAccessToken, updateUserAccount);
+router.put('/user/:id', verifyAccessToken, updateUserAccount);
 
 export default router;
