@@ -3,11 +3,11 @@ import {
   getUserProfile,
   updateUserAccount,
   updateUserPassword,
-  upload,
   uploadProfilePic,
 } from '../controllers/user.controller.js';
 import { verifyAccessToken } from '../middlewares/auth.js';
 import { verifyUserPermission } from '../middlewares/verifyUserPermission.js';
+import { upload } from '../utils/imageStorage.js';
 
 const router = Router();
 

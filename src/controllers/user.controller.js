@@ -1,4 +1,3 @@
-import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { User } from '../models/User.js';
@@ -168,46 +167,9 @@ export const updateUserPassword = async (req, res, next) => {
   }
 };
 
-// Define the storage directory
-const UPLOAD_DIR = 'public/uploads/profile-pics';
-
-// Ensure upload directory exists
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
-
-// Configure storage for multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, UPLOAD_DIR);
-  },
-  filename: function (req, file, cb) {
-    // Create unique filename using user ID (if available) and timestamp
-    const userId = req.user ? req.user.id : 'unknown';
-    const uniqueFilename = `${userId}-${Date.now()}${path.extname(file.originalname)}`;
-    cb(null, uniqueFilename);
-  },
-});
-
-// File filter to ensure only images are uploaded
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image')) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed!'), false);
-  }
-};
-
-// Initialize multer upload
-export const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limit to 2MB
-});
-
-// Controller function to handle profile picture upload
 export const uploadProfilePic = async (req, res) => {
-  const userId = req.user.id; // Assuming user ID from auth middleware
+  /* eslint no-undef: off */
+  const userId = req.user.id;
 
   if (!req.file) {
     return res.status(400).json({
@@ -217,7 +179,6 @@ export const uploadProfilePic = async (req, res) => {
   }
 
   try {
-    // Find the user
     const user = await User.findById(userId);
 
     if (!user) {
@@ -229,7 +190,10 @@ export const uploadProfilePic = async (req, res) => {
 
     // If user already has a profile pic, delete it
     if (user.profilePic && user.profilePic.public_id) {
-      const oldImagePath = path.join(UPLOAD_DIR, user.profilePic.public_id);
+      const oldImagePath = path.join(
+        process.env.PROFILE_PIC_DIR,
+        user.profilePic.public_id,
+      );
       if (fs.existsSync(oldImagePath)) {
         fs.unlinkSync(oldImagePath);
       }
