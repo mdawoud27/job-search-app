@@ -3,6 +3,7 @@ import {
   deleteCoverPic,
   deleteProfilePic,
   getUserProfile,
+  softDeleteAccount,
   updateUserAccount,
   updateUserPassword,
   uploadCoverPic,
@@ -42,4 +43,8 @@ router.delete('/user/profile/profile-pic', verifyAccessToken, deleteProfilePic);
 
 // Delete cover picture
 router.delete('/user/profile/cover-pic', verifyAccessToken, deleteCoverPic);
+
+// Soft delete user account
+router.delete('/user/delete', verifyAccessToken, softDeleteAccount);
+
 export default router;
