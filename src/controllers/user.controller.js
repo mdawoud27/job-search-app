@@ -286,3 +286,51 @@ export const deleteProfilePic = async (req, res) => {
     });
   }
 };
+
+/**
+ * @desc   Delete cover picture
+ * @route  DELETE /user/cover/pic
+ * @access private
+ */
+export const deleteCoverPic = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Check if the user has a cover picture
+    if (user.coverPic && user.coverPic.public_id) {
+      const imagePath = path.join(
+        process.env.UPLOAD_DIR,
+        user.coverPic.public_id,
+      );
+
+      // Delete the image file from the server
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+
+      // Remove the cover picture from the user document
+      user.coverPic = null;
+      await user.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Cover picture deleted successfully',
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Error deleting cover picture',
+      error: error.message,
+    });
+  }
+};
