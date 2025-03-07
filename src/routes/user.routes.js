@@ -15,24 +15,31 @@ import { upload } from '../utils/imageStorage.js';
 
 const router = Router();
 
+// Update user account
 router.put(
   '/user/:id',
   verifyAccessToken,
   verifyUserPermission,
   updateUserAccount,
 );
+
+// Retrive user profile date
 router.get('/user/profile', verifyAccessToken, getUserProfile);
+
+// Update user password
 router.patch('/user/profile/password', verifyAccessToken, updateUserPassword);
 
+// Upload profile picture
 router.post(
-  '/usr/profile/profile-pic',
+  '/user/profile/profile-pic',
   verifyAccessToken,
   upload.single('profilePic'),
   uploadProfilePic,
 );
 
+// Upload cover picture
 router.post(
-  '/usr/profile/cover-pic',
+  '/user/profile/cover-pic',
   verifyAccessToken,
   upload.single('coverPic'),
   uploadCoverPic,

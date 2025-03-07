@@ -9,7 +9,7 @@ import {
 
 /**
  * @desc   Update user account
- * @route  /api/users/:id
+ * @route  /user/:id
  * @method POST
  * @access private
  */
@@ -84,7 +84,8 @@ export const updateUserAccount = async (req, res, next) => {
 
 /**
  * @desc   Get logged in user profile
- * @route  GET /api/user/profile
+ * @route  /user/profile
+ * @method GET
  * @access private
  */
 export const getUserProfile = async (req, res, next) => {
@@ -122,7 +123,8 @@ export const getUserProfile = async (req, res, next) => {
 
 /**
  * @desc   Update the user password
- * @route  PUT /user/profile
+ * @route  /user/profile/password
+ * @method PATCH
  * @access private
  */
 export const updateUserPassword = async (req, res, next) => {
@@ -167,6 +169,9 @@ export const updateUserPassword = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc  Upload image helper function
+ */
 const uploadImage = async (req, res, fieldName) => {
   const userId = req.user.id;
 
@@ -231,17 +236,30 @@ const uploadImage = async (req, res, fieldName) => {
   }
 };
 
+/**
+ * @desc   Upload Profile picture
+ * @route  /user/profile/profile-pic
+ * @method POST
+ * @access private
+ */
 export const uploadProfilePic = async (req, res) => {
   await uploadImage(req, res, 'profilePic');
 };
 
+/**
+ * @desc   Upload Cover picture
+ * @route  /user/profile/cover-pic
+ * @method POST
+ * @access private
+ */
 export const uploadCoverPic = async (req, res) => {
   await uploadImage(req, res, 'coverPic');
 };
 
 /**
- * @desc   Delete profile picture
- * @route  DELETE /user/profile/pic
+ * @desc   Delete Profile picture
+ * @route  /user/profile/profile-pic
+ * @method DELETE
  * @access private
  */
 export const deleteProfilePic = async (req, res) => {
@@ -288,8 +306,9 @@ export const deleteProfilePic = async (req, res) => {
 };
 
 /**
- * @desc   Delete cover picture
- * @route  DELETE /user/cover/pic
+ * @desc   Delete Cover picture
+ * @route  /user/profile/cover-pic
+ * @method DELETE
  * @access private
  */
 export const deleteCoverPic = async (req, res) => {
@@ -336,8 +355,9 @@ export const deleteCoverPic = async (req, res) => {
 };
 
 /**
- * @desc   Soft delete a user account
- * @route  DELETE /user/delete
+ * @desc   Soft delete account
+ * @route  /user/delete
+ * @method DELETE
  * @access private
  */
 export const softDeleteAccount = async (req, res, next) => {
