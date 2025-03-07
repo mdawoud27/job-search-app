@@ -167,8 +167,7 @@ export const updateUserPassword = async (req, res, next) => {
   }
 };
 
-export const uploadProfilePic = async (req, res) => {
-  /* eslint no-undef: off */
+const uploadImage = async (req, res, fieldName) => {
   const userId = req.user.id;
 
   if (!req.file) {
@@ -188,11 +187,12 @@ export const uploadProfilePic = async (req, res) => {
       });
     }
 
-    // If user already has a profile pic, delete it
-    if (user.profilePic && user.profilePic.public_id) {
+    // If user already has an image, delete it
+    if (user[fieldName] && user[fieldName].public_id) {
       const oldImagePath = path.join(
-        process.env.PROFILE_PIC_DIR,
-        user.profilePic.public_id,
+        /* eslint no-undef: off */
+        process.env.UPLOAD_DIR,
+        user[fieldName].public_id,
       );
       if (fs.existsSync(oldImagePath)) {
         fs.unlinkSync(oldImagePath);
@@ -202,8 +202,8 @@ export const uploadProfilePic = async (req, res) => {
     const serverBaseUrl = `${req.protocol}://${req.get('host')}`;
     const imageUrl = `${serverBaseUrl}/uploads/profile-pics/${req.file.filename}`;
 
-    // Update user profile
-    user.profilePic = {
+    // Update user profile or cover picture
+    user[fieldName] = {
       secure_url: imageUrl,
       public_id: req.file.filename,
     };
@@ -212,9 +212,9 @@ export const uploadProfilePic = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Profile picture uploaded successfully',
+      message: `${fieldName === 'profilePic' ? 'Profile' : 'Cover'} picture uploaded successfully`,
       data: {
-        profilePic: user.profilePic,
+        [fieldName]: user[fieldName],
       },
     });
   } catch (error) {
@@ -225,8 +225,16 @@ export const uploadProfilePic = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: 'Error uploading profile picture',
+      message: `Error uploading ${fieldName === 'profilePic' ? 'profile' : 'cover'} picture`,
       error: error.message,
     });
   }
+};
+
+export const uploadProfilePic = async (req, res) => {
+  await uploadImage(req, res, 'profilePic');
+};
+
+export const uploadCoverPic = async (req, res) => {
+  await uploadImage(req, res, 'coverPic');
 };
