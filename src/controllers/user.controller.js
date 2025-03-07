@@ -334,3 +334,29 @@ export const deleteCoverPic = async (req, res) => {
     });
   }
 };
+
+/**
+ * @desc   Soft delete a user account
+ * @route  DELETE /user/delete
+ * @access private
+ */
+export const softDeleteAccount = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Soft delete the user
+    await user.softDelete();
+
+    res.status(200).json({
+      message: 'User account soft deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};

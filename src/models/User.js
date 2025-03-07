@@ -141,6 +141,12 @@ userSchema.methods.refreshToken = function () {
   });
 };
 
+// Method to soft delete a user
+userSchema.methods.softDelete = function () {
+  this.deletedAt = new Date();
+  return this.save();
+};
+
 export const generateTokens = (user) => {
   const accessToken = jwt.sign(
     {
