@@ -16,6 +16,9 @@ import authRouter from './routes/auth.routes.js';
 import userRouter from './routes/user.routes.js';
 import { configureGoogleStrategy } from './strategies/google-strategy.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
 
 // Connect to the database
@@ -46,9 +49,6 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
