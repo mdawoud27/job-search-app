@@ -14,6 +14,7 @@ import connectToDB from './config/db.js';
 import { errorHandler, notFound } from './middlewares/errorHandler.js';
 import authRouter from './routes/auth.routes.js';
 import userRouter from './routes/user.routes.js';
+import adminRouter from './routes/admin.routes.js';
 import { configureGoogleStrategy } from './strategies/google-strategy.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -54,6 +55,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Routes
 app.use(authRouter);
 app.use(userRouter);
+app.use(adminRouter);
 
 // Global error handlers middlewares
 app.use(notFound);

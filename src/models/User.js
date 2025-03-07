@@ -147,6 +147,16 @@ userSchema.methods.softDelete = function () {
   return this.save();
 };
 
+// Method to check if user is banned or deleted
+userSchema.methods.isActive = function () {
+  return !this.deletedAt && !this.bannedAt;
+};
+
+userSchema.methods.banUnBanUserFunction = function (action) {
+  action === 'true' ? (this.bannedAt = new Date()) : (this.bannedAt = null);
+  return this.save();
+};
+
 export const generateTokens = (user) => {
   const accessToken = jwt.sign(
     {
@@ -167,11 +177,6 @@ export const generateTokens = (user) => {
   );
 
   return { accessToken, refreshToken };
-};
-
-// Method to check if user is banned or deleted
-userSchema.methods.isActive = function () {
-  return !this.deletedAt && !this.bannedAt;
 };
 
 export const User = mongoose.model('User', userSchema);
