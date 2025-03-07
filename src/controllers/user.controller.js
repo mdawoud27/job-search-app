@@ -232,66 +232,7 @@ const uploadImage = async (req, res, fieldName) => {
 };
 
 export const uploadProfilePic = async (req, res) => {
-  const userId = req.user.id;
-
-  if (!req.file) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please upload an image file',
-    });
-  }
-
-  try {
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
-    }
-
-    // If user already has a profile pic, delete it
-    if (user.profilePic && user.profilePic.public_id) {
-      const oldImagePath = path.join(
-        process.env.UPLOAD_DIR,
-        user.profilePic.public_id,
-      );
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
-      }
-    }
-
-    const serverBaseUrl = `${req.protocol}://${req.get('host')}`;
-    const imageUrl = `${serverBaseUrl}/uploads/profile-pics/${req.file.filename}`;
-
-    // Update user profile
-    user.profilePic = {
-      secure_url: imageUrl,
-      public_id: req.file.filename,
-    };
-
-    await user.save();
-
-    return res.status(200).json({
-      success: true,
-      message: 'Profile picture uploaded successfully',
-      data: {
-        profilePic: user.profilePic,
-      },
-    });
-  } catch (error) {
-    // If there's an error, delete the uploaded file
-    if (req.file && req.file.path) {
-      fs.unlinkSync(req.file.path);
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: 'Error uploading profile picture',
-      error: error.message,
-    });
-  }
+  await uploadImage(req, res, 'profilePic');
 };
 
 export const uploadCoverPic = async (req, res) => {
