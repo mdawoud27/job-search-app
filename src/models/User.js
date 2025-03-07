@@ -153,7 +153,7 @@ userSchema.methods.isActive = function () {
 };
 
 userSchema.methods.banUnBanUserFunction = function (action) {
-  action ? (this.bannedAt = new Date()) : (this.bannedAt = null);
+  action === 'true' ? (this.bannedAt = new Date()) : (this.bannedAt = null);
   return this.save();
 };
 
