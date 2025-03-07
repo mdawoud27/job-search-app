@@ -3,6 +3,7 @@ import {
   getUserProfile,
   updateUserAccount,
   updateUserPassword,
+  uploadCoverPic,
   uploadProfilePic,
 } from '../controllers/user.controller.js';
 import { verifyAccessToken } from '../middlewares/auth.js';
@@ -25,6 +26,13 @@ router.post(
   verifyAccessToken,
   upload.single('profilePic'),
   uploadProfilePic,
+);
+
+router.post(
+  '/usr/profile/cover-pic',
+  verifyAccessToken,
+  upload.single('coverPic'),
+  uploadCoverPic,
 );
 
 export default router;

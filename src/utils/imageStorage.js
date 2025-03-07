@@ -5,17 +5,17 @@ import fs from 'fs';
 /* eslint no-undef: off */
 
 // Define the storage directory
-const PROFILE_PIC_DIR = process.env.PROFILE_PIC_DIR;
+const UPLOAD_DIR = process.env.PROFILE_PIC_DIR;
 
 // Ensure upload directory exists
-if (!fs.existsSync(PROFILE_PIC_DIR)) {
-  fs.mkdirSync(PROFILE_PIC_DIR, { recursive: true });
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
 
 // Configure storage for multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, PROFILE_PIC_DIR);
+    cb(null, UPLOAD_DIR);
   },
   filename: function (req, file, cb) {
     // Create unique filename using user ID (if available) and timestamp
@@ -38,5 +38,5 @@ const fileFilter = (req, file, cb) => {
 export const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB file size limit
 });
