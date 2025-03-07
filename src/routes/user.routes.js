@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  deleteProfilePic,
   getUserProfile,
   updateUserAccount,
   updateUserPassword,
@@ -34,5 +35,8 @@ router.post(
   upload.single('coverPic'),
   uploadCoverPic,
 );
+
+// Delete profile picture
+router.delete('/user/profile/profile-pic', verifyAccessToken, deleteProfilePic);
 
 export default router;
