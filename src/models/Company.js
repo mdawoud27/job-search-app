@@ -95,6 +95,11 @@ companySchema.methods.canManage = function (userId) {
   return this.createdBy.equals(userId) || this.isHR(userId);
 };
 
+companySchema.methods.banUnBanCompanyFunction = function (action) {
+  action === 'true' ? (this.bannedAt = new Date()) : (this.bannedAt = null);
+  return this.save();
+};
+
 // indexs for improved query performance
 companySchema.index({ companyName: 1, industry: 1 });
 companySchema.index({ deletedAt: 1, bannedAt: 1, approvedByAdmin: 1 });
