@@ -24,4 +24,12 @@ router.patch(
   banOrUnbanCompany,
 );
 
+// Approve Company
+router.patch(
+  '/admin/company/approve',
+  verifyAccessToken,
+  verifyAdminPermission,
+  banOrUnbanCompany,
+);
+
 export default router;
