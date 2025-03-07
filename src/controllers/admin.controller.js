@@ -62,3 +62,28 @@ export const banOrUnbanCompany = async (req, res, next) => {
     next(error);
   }
 };
+
+export const approveCompany = async (req, res, next) => {
+  try {
+    const { companyId } = req.body;
+
+    if (!companyId) {
+      return res.status(400).json({ message: 'companyId is required' });
+    }
+
+    const company = await Company.findById(companyId);
+    if (!company) {
+      return res.status(404).json({ message: 'Company not found' });
+    }
+
+    company.approvedByAdmin = true;
+    company.save();
+
+    res.status(200).json({
+      message: 'Company is approved Successfully',
+      isApproved: company.approvedByAdmin,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
