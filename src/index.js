@@ -1,4 +1,7 @@
 import express from 'express';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import path from 'path';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import morgan from 'morgan';
@@ -30,6 +33,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 configureGoogleStrategy();
+
 // Apply rate limiter to all requests
 app.use(apiLimiter);
 
@@ -42,6 +46,10 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.use(authRouter);
