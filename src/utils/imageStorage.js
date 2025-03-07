@@ -5,7 +5,7 @@ import fs from 'fs';
 /* eslint no-undef: off */
 
 // Define the storage directory
-const UPLOAD_DIR = process.env.PROFILE_PIC_DIR;
+const UPLOAD_DIR = process.env.UPLOAD_DIR;
 
 // Ensure upload directory exists
 if (!fs.existsSync(UPLOAD_DIR)) {

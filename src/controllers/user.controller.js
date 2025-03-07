@@ -191,7 +191,7 @@ const uploadImage = async (req, res, fieldName) => {
     if (user[fieldName] && user[fieldName].public_id) {
       const oldImagePath = path.join(
         /* eslint no-undef: off */
-        process.env.PROFILE_PIC_DIR,
+        process.env.UPLOAD_DIR,
         user[fieldName].public_id,
       );
       if (fs.existsSync(oldImagePath)) {
@@ -254,7 +254,7 @@ export const uploadProfilePic = async (req, res) => {
     // If user already has a profile pic, delete it
     if (user.profilePic && user.profilePic.public_id) {
       const oldImagePath = path.join(
-        process.env.PROFILE_PIC_DIR,
+        process.env.UPLOAD_DIR,
         user.profilePic.public_id,
       );
       if (fs.existsSync(oldImagePath)) {
