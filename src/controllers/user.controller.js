@@ -238,3 +238,51 @@ export const uploadProfilePic = async (req, res) => {
 export const uploadCoverPic = async (req, res) => {
   await uploadImage(req, res, 'coverPic');
 };
+
+/**
+ * @desc   Delete profile picture
+ * @route  DELETE /user/profile/pic
+ * @access private
+ */
+export const deleteProfilePic = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Check if the user has a profile picture
+    if (user.profilePic && user.profilePic.public_id) {
+      const imagePath = path.join(
+        process.env.UPLOAD_DIR,
+        user.profilePic.public_id,
+      );
+
+      // Delete the image file from the server
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+
+      // Remove the profile picture from the user document
+      user.profilePic = null;
+      await user.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Profile picture deleted successfully',
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Error deleting profile picture',
+      error: error.message,
+    });
+  }
+};
