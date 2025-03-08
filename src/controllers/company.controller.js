@@ -198,3 +198,33 @@ export const softDeleteCompany = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getCompanyWithJobs = async (req, res, next) => {
+  try {
+    const { companyId } = req.params;
+
+    const company = await Company.findById(companyId).populate({
+      path: 'jobs',
+      select:
+        'jobTitle jobLocation workingTime seniorityLevel jobDescription technicalSkills softSkills salary',
+      match: { closed: false },
+    });
+
+    if (!company) {
+      return res.status(404).json({ message: 'Company not found' });
+    }
+
+    if (!company.isActive) {
+      return res.status(403).json({ message: 'Company is not active' });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        company,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
