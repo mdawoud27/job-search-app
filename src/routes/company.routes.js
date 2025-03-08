@@ -3,6 +3,7 @@ import { verifyAccessToken } from '../middlewares/auth.js';
 import { verifyAdminPermission } from '../middlewares/verifyAdminPermission.js';
 import {
   addCompany,
+  getCompanyWithJobs,
   softDeleteCompany,
   updateCompany,
 } from '../controllers/company.controller.js';
@@ -31,6 +32,14 @@ router.delete(
   verifyAccessToken,
   verifyAdminPermission,
   softDeleteCompany,
+);
+
+// Get company with jobs
+router.get(
+  '/api/company/:companyId',
+  verifyAccessToken,
+  verifyAdminPermission,
+  getCompanyWithJobs,
 );
 
 export default router;
