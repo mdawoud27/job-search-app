@@ -386,3 +386,7 @@ const deleteCompanyImage = async (req, res, fieldName) => {
 export const deleteCompanyLogo = async (req, res) => {
   await deleteCompanyImage(req, res, 'logo');
 };
+
+export const deleteCompanyCoverPic = async (req, res) => {
+  await deleteCompanyImage(req, res, 'coverPic');
+};
