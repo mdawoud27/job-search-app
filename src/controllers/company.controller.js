@@ -162,3 +162,39 @@ export const updateCompany = async (req, res, next) => {
     next(error);
   }
 };
+
+export const softDeleteCompany = async (req, res, next) => {
+  try {
+    const { companyId } = req.params;
+
+    const company = await Company.findById(companyId);
+    if (!company) {
+      return res.status(404).json({ message: 'Company not found' });
+    }
+
+    // 4. Check if already deleted
+    if (company.deletedAt) {
+      return res.status(400).json({ message: 'Company is already deleted' });
+    }
+
+    const isAdmin = req.user.role === 'Admin';
+    const isCompanyOwner = company.createdBy.equals(req.user.id);
+
+    if (!isAdmin && !isCompanyOwner) {
+      return res.status(403).json({
+        message: 'Only company owner or admin can delete this company',
+      });
+    }
+
+    company.deletedAt = new Date();
+    await company.save();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Company deleted successfully',
+      data: null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
