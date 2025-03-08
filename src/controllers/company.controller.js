@@ -46,6 +46,8 @@ export const addCompany = async (req, res, next) => {
       createdBy,
     });
 
+    await newCompany.save();
+
     res.status(201).json({
       status: 'success',
       message: 'Company created successfully',
