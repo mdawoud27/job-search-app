@@ -1,5 +1,5 @@
-import { Company } from '../models/Company';
-import { addCompanyValidation } from '../validations/company.validation';
+import { Company } from '../models/Company.js';
+import { addCompanyValidation } from '../validations/company.validation.js';
 
 export const addCompany = async (req, res, next) => {
   try {

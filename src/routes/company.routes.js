@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { verifyAccessToken } from '../middlewares/auth';
-import { verifyAdminPermission } from '../middlewares/verifyAdminPermission';
-import { addCompany } from '../controllers/company.controller';
+import { verifyAccessToken } from '../middlewares/auth.js';
+import { verifyAdminPermission } from '../middlewares/verifyAdminPermission.js';
+import { addCompany } from '../controllers/company.controller.js';
 
 const router = Router();
 
