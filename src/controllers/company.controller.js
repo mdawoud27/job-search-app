@@ -382,3 +382,7 @@ const deleteCompanyImage = async (req, res, fieldName) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+export const deleteCompanyLogo = async (req, res) => {
+  await deleteCompanyImage(req, res, 'logo');
+};
