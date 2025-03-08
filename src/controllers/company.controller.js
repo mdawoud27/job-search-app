@@ -324,3 +324,7 @@ const uploadCompanyImage = async (req, res, fieldName) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+export const uploadCompanyLogo = async (req, res) => {
+  await uploadCompanyImage(req, res, 'logo');
+};
