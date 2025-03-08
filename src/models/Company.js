@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { ImageSchema } from './ImageSchema.js';
+import { imageSchema } from './Attachments.js';
 import { attachmentSchema } from './Attachments.js';
 
 const EMPLOYEE_RANGES = [
@@ -52,8 +52,8 @@ const companySchema = new mongoose.Schema(
       ref: 'User',
       required: [true, 'Company creator is required'],
     },
-    logo: { type: ImageSchema, default: null },
-    coverPic: { type: ImageSchema, default: null },
+    logo: { type: imageSchema, default: null },
+    coverPic: { type: imageSchema, default: null },
     HRs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     bannedAt: { type: Date, default: null },
     deletedAt: { type: Date, default: null },
