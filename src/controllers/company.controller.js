@@ -228,3 +228,33 @@ export const getCompanyWithJobs = async (req, res, next) => {
     next(error);
   }
 };
+
+export const searchCompaniesByName = async (req, res, next) => {
+  try {
+    const { name } = req.query;
+
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ message: 'Search query is required' });
+    }
+
+    // Create a case-insensitive regex pattern for partial matching
+    const searchPattern = new RegExp(name.trim(), 'i');
+
+    const companies = await Company.find({
+      companyName: searchPattern,
+      deletedAt: null,
+      bannedAt: null,
+      approvedByAdmin: true,
+    }).select('companyName industry description logo numberOfEmployees'); // Select only necessary fields
+
+    res.status(200).json({
+      status: 'success',
+      results: companies.length,
+      data: {
+        companies,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
