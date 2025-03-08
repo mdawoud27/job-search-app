@@ -8,8 +8,18 @@ export const addCompany = async (req, res, next) => {
       return res.status(400).json({ message: error.details[0].message });
     }
 
+    const {
+      companyName,
+      description,
+      industry,
+      address,
+      numberOfEmployees,
+      companyEmail,
+      createdBy,
+    } = req.body;
+
     const existingCompanyName = await Company.findOne({
-      companyName: req.body.companyName,
+      companyName: companyName,
       deletedAt: null,
     });
     if (existingCompanyName) {
@@ -17,7 +27,7 @@ export const addCompany = async (req, res, next) => {
     }
 
     const existingCompanyEmail = await Company.findOne({
-      companyEmail: req.body.companyEmail,
+      companyEmail: companyEmail,
       deletedAt: null,
     });
     if (existingCompanyEmail) {
@@ -26,7 +36,15 @@ export const addCompany = async (req, res, next) => {
 
     req.body.createdBy = req.user.id;
 
-    const newCompany = await Company.create(req.body);
+    const newCompany = new Company({
+      companyName,
+      description,
+      industry,
+      address,
+      numberOfEmployees,
+      companyEmail,
+      createdBy,
+    });
 
     res.status(201).json({
       status: 'success',
