@@ -3,6 +3,7 @@ import { verifyAccessToken } from '../middlewares/auth.js';
 import { verifyAdminPermission } from '../middlewares/verifyAdminPermission.js';
 import {
   addCompany,
+  deleteCompanyCoverPic,
   deleteCompanyLogo,
   getCompanyWithJobs,
   searchCompaniesByName,
@@ -76,6 +77,13 @@ router.delete(
   '/api/company/:companyId/logo',
   verifyAccessToken,
   deleteCompanyLogo,
+);
+
+// Delete company cover pic
+router.delete(
+  '/api/company/:companyId/cover-pic',
+  verifyAccessToken,
+  deleteCompanyCoverPic,
 );
 
 export default router;
