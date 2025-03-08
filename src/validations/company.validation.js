@@ -62,3 +62,34 @@ export const addCompanyValidation = (obj) => {
 
   return schema.validate(obj);
 };
+
+export const updateCompanyValidation = (obj) => {
+  const schema = Joi.object({
+    companyName: Joi.string().trim().optional().messages({
+      'string.empty': 'Company name cannot be empty if provided',
+    }),
+    description: Joi.string().trim().optional().messages({
+      'string.empty': 'Description cannot be empty if provided',
+    }),
+    industry: Joi.string().trim().optional().messages({
+      'string.empty': 'Industry cannot be empty if provided',
+    }),
+    address: Joi.string().trim().optional().messages({
+      'string.empty': 'Address cannot be empty if provided',
+    }),
+    numberOfEmployees: Joi.string()
+      .valid(...EMPLOYEE_RANGES)
+      .optional()
+      .messages({
+        'any.only': `Number of employees must be one of the following ranges: ${EMPLOYEE_RANGES.join(', ')}`,
+      }),
+    companyEmail: Joi.string().trim().email().optional().messages({
+      'string.empty': 'Email cannot be empty if provided',
+      'string.email': 'Please provide a valid email address',
+    }),
+    logo: Joi.object().allow(null).optional(),
+    coverPic: Joi.object().allow(null).optional(),
+  }).min(1);
+
+  return schema.validate(obj);
+};
