@@ -1,6 +1,12 @@
 import { Company } from '../models/Company.js';
 import { addCompanyValidation } from '../validations/company.validation.js';
 
+/**
+ * @desc   Add new company
+ * @route  /api/company
+ * @method POST
+ * @access private
+ */
 export const addCompany = async (req, res, next) => {
   try {
     const { error } = addCompanyValidation(req.body);
