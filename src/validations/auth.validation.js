@@ -52,6 +52,7 @@ export const resetPasswordValidation = (obj) => {
       'string.min': 'Password must be at least 8 characters long.',
       'string.max': 'Password must be at most 32 characters long.',
     }),
+    otpCode: Joi.string().required().trim(),
   });
 
   return schema.validate(obj);

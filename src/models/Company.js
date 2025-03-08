@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { ImageSchema } from './ImageSchema.js';
+import { imageSchema } from './Attachments.js';
 import { attachmentSchema } from './Attachments.js';
 
 const EMPLOYEE_RANGES = [
@@ -24,7 +24,7 @@ const companySchema = new mongoose.Schema(
     description: {
       type: String,
       trim: true,
-      required: [true, 'Company discription is required'],
+      required: [true, 'Company description is required'],
     },
     industry: {
       type: String,
@@ -52,8 +52,8 @@ const companySchema = new mongoose.Schema(
       ref: 'User',
       required: [true, 'Company creator is required'],
     },
-    logo: { type: ImageSchema, default: null },
-    coverPic: { type: ImageSchema, default: null },
+    logo: { type: imageSchema, default: null },
+    coverPic: { type: imageSchema, default: null },
     HRs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     bannedAt: { type: Date, default: null },
     deletedAt: { type: Date, default: null },
@@ -69,7 +69,7 @@ const companySchema = new mongoose.Schema(
 
 // Check if company is active
 companySchema.virtual('isActive').get(function () {
-  return !this.deletedAt && !this.bannedAt && !this.approvedByAdmin;
+  return !this.deletedAt && !this.bannedAt && this.approvedByAdmin;
 });
 
 // Methods to manage HRs
@@ -81,7 +81,7 @@ companySchema.methods.addHR = function (userId) {
 };
 
 companySchema.methods.removeHR = function (userId) {
-  this.HRs = this.HRs.filter((hr) => hr.equals(userId));
+  this.HRs = this.HRs.filter((hr) => !hr.equals(userId));
   return this;
 };
 
