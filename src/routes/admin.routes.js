@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { verifyAccessToken } from '../middlewares/auth.js';
 import { verifyAdminPermission } from '../middlewares/verifyAdminPermission.js';
 import {
+  approveCompany,
   banOrUnbanCompany,
   banOrUnbanUser,
 } from '../controllers/admin.controller.js';
@@ -29,7 +30,7 @@ router.patch(
   '/admin/company/approve',
   verifyAccessToken,
   verifyAdminPermission,
-  banOrUnbanCompany,
+  approveCompany,
 );
 
 export default router;
