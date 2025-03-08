@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs';
 import { Company } from '../models/Company.js';
 import {
   addCompanyValidation,
@@ -257,4 +259,72 @@ export const searchCompaniesByName = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+/**
+ * @desc  Helper function to upload company image (logo or cover picture)
+ */
+const uploadCompanyImage = async (req, res, fieldName) => {
+  const { companyId } = req.params;
+
+  if (!req.file) {
+    return res.status(400).json({ message: 'Please upload an image file' });
+  }
+
+  try {
+    const company = await Company.findById(companyId);
+
+    if (!company) {
+      return res.status(404).json({ message: 'Company not found' });
+    }
+
+    // Check if user is authorized to modify company
+    if (!company.canManage(req.user.id)) {
+      return res
+        .status(403)
+        .json({ message: 'You are not authorized to update this company' });
+    }
+
+    // If company already has an image, delete it
+    if (company[fieldName] && company[fieldName].public_id) {
+      const oldImagePath = path.join(
+        /* eslint no-undef: off */
+        process.env.UPLOAD_DIR,
+        company[fieldName].public_id,
+      );
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+    }
+
+    const serverBaseUrl = `${req.protocol}://${req.get('host')}`;
+    const imageUrl = `${serverBaseUrl}/uploads/company-images/${req.file.filename}`;
+
+    // Update company logo or cover picture
+    company[fieldName] = {
+      secure_url: imageUrl,
+      public_id: req.file.filename,
+    };
+
+    await company.save();
+
+    return res.status(200).json({
+      status: 'success',
+      message: `Company ${fieldName === 'logo' ? 'logo' : 'cover picture'} uploaded successfully`,
+      data: {
+        [fieldName]: company[fieldName],
+      },
+    });
+  } catch (error) {
+    // If there's an error, delete the uploaded file
+    if (req.file && req.file.path) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const uploadCompanyLogo = async (req, res) => {
+  await uploadCompanyImage(req, res, 'logo');
 };
