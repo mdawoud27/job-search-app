@@ -4,6 +4,7 @@ import { verifyAdminPermission } from '../middlewares/verifyAdminPermission.js';
 import {
   addCompany,
   getCompanyWithJobs,
+  searchCompaniesByName,
   softDeleteCompany,
   updateCompany,
 } from '../controllers/company.controller.js';
@@ -40,6 +41,14 @@ router.get(
   verifyAccessToken,
   verifyAdminPermission,
   getCompanyWithJobs,
+);
+
+// Search for company by name
+router.get(
+  '/api/company/',
+  verifyAccessToken,
+  verifyAdminPermission,
+  searchCompaniesByName,
 );
 
 export default router;
