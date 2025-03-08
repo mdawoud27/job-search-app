@@ -72,6 +72,13 @@ companySchema.virtual('isActive').get(function () {
   return !this.deletedAt && !this.bannedAt && this.approvedByAdmin;
 });
 
+companySchema.virtual('jobs', {
+  ref: 'JobOpportunity',
+  localField: '_id',
+  foreignField: 'companyId',
+  justOne: false,
+});
+
 // Methods to manage HRs
 companySchema.methods.addHR = function (userId) {
   if (!this.HRs.includes(userId)) {
