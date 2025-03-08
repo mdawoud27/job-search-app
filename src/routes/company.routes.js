@@ -7,7 +7,9 @@ import {
   searchCompaniesByName,
   softDeleteCompany,
   updateCompany,
+  uploadCompanyLogo,
 } from '../controllers/company.controller.js';
+import { upload } from '../utils/uploadImage.js';
 
 const router = Router();
 
@@ -49,6 +51,14 @@ router.get(
   verifyAccessToken,
   verifyAdminPermission,
   searchCompaniesByName,
+);
+
+// Upload company logo
+router.post(
+  '/api/company/:companyId/logo',
+  verifyAccessToken,
+  upload.single('image'),
+  uploadCompanyLogo,
 );
 
 export default router;
