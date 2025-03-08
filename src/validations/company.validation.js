@@ -14,7 +14,7 @@ const EMPLOYEE_RANGES = [
 
 export const addCompanyValidation = (obj) => {
   const schema = Joi.object({
-    companyName: Joi.string().trim().unique().required().messages({
+    companyName: Joi.string().trim().required().messages({
       'string.empty': 'Company name is required',
       'any.required': 'Company name is required',
     }),
