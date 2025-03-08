@@ -332,3 +332,53 @@ export const uploadCompanyLogo = async (req, res) => {
 export const uploadCompanyCoverPic = async (req, res) => {
   await uploadCompanyImage(req, res, 'coverPic');
 };
+
+/**
+ * @desc  Helper function to delete company image (logo or cover picture)
+ */
+const deleteCompanyImage = async (req, res, fieldName) => {
+  const { companyId } = req.params;
+
+  try {
+    const company = await Company.findById(companyId);
+
+    if (!company) {
+      return res.status(404).json({ message: 'Company not found' });
+    }
+
+    // Check if user is authorized to modify company
+    if (!company.canManage(req.user.id)) {
+      return res
+        .status(403)
+        .json({ message: 'You are not authorized to update this company' });
+    }
+
+    // Check if the company has the image
+    if (company[fieldName] && company[fieldName].public_id) {
+      const imagePath = path.join(
+        process.env.UPLOAD_DIR,
+        company[fieldName].public_id,
+      );
+
+      // Delete the image file from the server
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+
+      // Remove the image from the company document
+      company[fieldName] = null;
+      await company.save();
+    } else {
+      return res.status(404).json({
+        message: `Company ${fieldName === 'logo' ? 'logo' : 'cover picture'} not found`,
+      });
+    }
+
+    return res.status(200).json({
+      status: 'success',
+      message: `Company ${fieldName === 'logo' ? 'logo' : 'cover picture'} deleted successfully`,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
