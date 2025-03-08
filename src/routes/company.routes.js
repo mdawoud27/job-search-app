@@ -3,6 +3,7 @@ import { verifyAccessToken } from '../middlewares/auth.js';
 import { verifyAdminPermission } from '../middlewares/verifyAdminPermission.js';
 import {
   addCompany,
+  deleteCompanyLogo,
   getCompanyWithJobs,
   searchCompaniesByName,
   softDeleteCompany,
@@ -68,6 +69,13 @@ router.post(
   verifyAccessToken,
   upload.single('image'),
   uploadCompanyCoverPic,
+);
+
+// Delete company logo
+router.delete(
+  '/api/company/:companyId/logo',
+  verifyAccessToken,
+  deleteCompanyLogo,
 );
 
 export default router;
