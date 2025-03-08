@@ -89,7 +89,7 @@ export const updateCompanyValidation = (obj) => {
     }),
     logo: Joi.object().allow(null).optional(),
     coverPic: Joi.object().allow(null).optional(),
-  });
+  }).min(1);
 
   return schema.validate(obj);
 };
