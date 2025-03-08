@@ -288,7 +288,7 @@ export const sendForgetPasswordOTP = async (req, res, next) => {
  */
 export const resetPassword = async (req, res, next) => {
   try {
-    const { email, otpCode, newPassword } = req.body;
+    const { email, otpCode, password } = req.body;
 
     const user = await User.findOne({ email, provider: 'system' });
     if (!user) {
@@ -316,7 +316,7 @@ export const resetPassword = async (req, res, next) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    user.password = newPassword;
+    user.password = password;
     user.changeCredentialTime = new Date();
 
     // Remove the used OTP
