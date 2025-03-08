@@ -17,7 +17,7 @@ router.post(
 );
 
 // Update company
-router.post(
+router.put(
   '/api/company/:companyId',
   verifyAccessToken,
   verifyAdminPermission,
