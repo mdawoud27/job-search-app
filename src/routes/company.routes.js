@@ -7,6 +7,7 @@ import {
   searchCompaniesByName,
   softDeleteCompany,
   updateCompany,
+  uploadCompanyCoverPic,
   uploadCompanyLogo,
 } from '../controllers/company.controller.js';
 import { upload } from '../utils/uploadImage.js';
@@ -59,6 +60,14 @@ router.post(
   verifyAccessToken,
   upload.single('image'),
   uploadCompanyLogo,
+);
+
+// Upload company cover pic
+router.post(
+  '/api/company/:companyId/cover-pic',
+  verifyAccessToken,
+  upload.single('image'),
+  uploadCompanyCoverPic,
 );
 
 export default router;
