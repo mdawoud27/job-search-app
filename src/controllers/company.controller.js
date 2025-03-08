@@ -71,6 +71,12 @@ export const addCompany = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc   Update company
+ * @route  /api/company/:companyId
+ * @method PUT
+ * @access private
+ */
 export const updateCompany = async (req, res, next) => {
   try {
     const { error } = updateCompanyValidation(req.body);
@@ -165,6 +171,12 @@ export const updateCompany = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc   Soft delete company
+ * @route  /api/company/:companyId
+ * @method DELETE
+ * @access private
+ */
 export const softDeleteCompany = async (req, res, next) => {
   try {
     const { companyId } = req.params;
@@ -201,6 +213,12 @@ export const softDeleteCompany = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc   Get company with jobs
+ * @route  /api/company/:companyId
+ * @method GET
+ * @access private
+ */
 export const getCompanyWithJobs = async (req, res, next) => {
   try {
     const { companyId } = req.params;
@@ -231,6 +249,12 @@ export const getCompanyWithJobs = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc   Search for company by name
+ * @route  /api/company/
+ * @method GET
+ * @access private
+ */
 export const searchCompaniesByName = async (req, res, next) => {
   try {
     const { name } = req.query;
@@ -325,10 +349,22 @@ const uploadCompanyImage = async (req, res, fieldName) => {
   }
 };
 
+/**
+ * @desc   Upload company logo
+ * @route  /api/company/:companyId/logo
+ * @method POST
+ * @access private
+ */
 export const uploadCompanyLogo = async (req, res) => {
   await uploadCompanyImage(req, res, 'logo');
 };
 
+/**
+ * @desc   Upload company cover pic
+ * @route  /api/company/:companyId/cover-pic
+ * @method POST
+ * @access private
+ */
 export const uploadCompanyCoverPic = async (req, res) => {
   await uploadCompanyImage(req, res, 'coverPic');
 };
@@ -383,10 +419,22 @@ const deleteCompanyImage = async (req, res, fieldName) => {
   }
 };
 
+/**
+ * @desc   Delete company logo
+ * @route  /api/company/:companyId/logo
+ * @method DELETE
+ * @access private
+ */
 export const deleteCompanyLogo = async (req, res) => {
   await deleteCompanyImage(req, res, 'logo');
 };
 
+/**
+ * @desc   Delete company cover pic
+ * @route  /api/company/:companyId/cover-pic
+ * @method DELETE
+ * @access private
+ */
 export const deleteCompanyCoverPic = async (req, res) => {
   await deleteCompanyImage(req, res, 'coverPic');
 };
