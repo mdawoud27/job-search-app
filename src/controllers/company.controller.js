@@ -328,3 +328,7 @@ const uploadCompanyImage = async (req, res, fieldName) => {
 export const uploadCompanyLogo = async (req, res) => {
   await uploadCompanyImage(req, res, 'logo');
 };
+
+export const uploadCompanyCoverPic = async (req, res) => {
+  await uploadCompanyImage(req, res, 'coverPic');
+};
