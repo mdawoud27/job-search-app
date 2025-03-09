@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { User } from '../models/User';
+import { User } from '../models/User.js';
 
 export const uploadImage = async (req, res, fieldName) => {
   const userId = req.user.id;
