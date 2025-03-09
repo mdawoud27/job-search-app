@@ -206,26 +206,43 @@ export const deleteJob = async (req, res, next) => {
 export const getJobs = async (req, res, next) => {
   try {
     // Pagination parameters
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 1;
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit) || 11, 1);
     const skip = (page - 1) * limit;
 
     // Sorting
-    const sortBy = req.query.sortBy || 'createdAt';
+    const allowedSortFields = ['createdAt', 'jobTitle', 'salary'];
+    const sortBy = allowedSortFields.includes(req.query.sortBy)
+      ? req.query.sortBy
+      : 'createdAt';
     const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
     const sort = { [sortBy]: sortOrder };
 
-    const query = {};
+    // Filters
+    const filter = {
+      closed: false,
+      $or: [
+        { applicationDeadline: { $exists: false } },
+        { applicationDeadline: { $gt: new Date() } },
+      ],
+    };
 
-    // Company ID filter
-    const companyId = req.params.companyId || req.query.companyId;
-    if (companyId) {
-      query.companyId = companyId;
-    }
+    // Apply filters dynamically
+    [
+      'companyId',
+      'workingTime',
+      'jobLocation',
+      'seniorityLevel',
+      'jobTitle',
+      'technicalSkills',
+    ].forEach((key) => {
+      if (req.query[key]) {
+        filter[key] = req.query[key];
+      }
+    });
 
     // Company name search
     if (req.query.companyName) {
-      // First find companies matching the name
       const companies = await Company.find({
         companyName: { $regex: req.query.companyName, $options: 'i' },
         deletedAt: null,
@@ -233,79 +250,38 @@ export const getJobs = async (req, res, next) => {
         approvedByAdmin: true,
       }).select('_id');
 
-      // Then use their IDs to filter jobs
-      if (companies.length > 0) {
-        const companyIds = companies.map((company) => company._id);
-        query.companyId = { $in: companyIds };
-      } else {
-        // No matching companies found, return empty result
-        return res.status(200).json({
-          success: true,
-          count: 0,
-          totalPages: 0,
-          currentPage: page,
-          data: [],
+      if (companies.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'No companies found with the given name',
         });
       }
+
+      filter.companyId = { $in: companies.map((company) => company._id) };
     }
 
-    // Filter by active status
-    if (req.query.active === 'true') {
-      query.closed = false;
-      query.$or = [
-        { applicationDeadline: { $exists: false } },
-        { applicationDeadline: { $gt: new Date() } },
-      ];
-    } else if (req.query.active === 'false') {
-      query.$or = [
-        { closed: true },
-        { applicationDeadline: { $lte: new Date() } },
-      ];
+    // Search by job title (case-insensitive)
+    if (req.query.jobTitle) {
+      filter.jobTitle = { $regex: req.query.jobTitle, $options: 'i' };
     }
 
-    // Filter by job attributes
-    if (req.query.jobLocation) {
-      query.jobLocation = req.query.jobLocation;
+    // Filter by technical skills (comma-separated)
+    if (req.query.technicalSkills) {
+      filter.technicalSkills = {
+        $in: req.query.technicalSkills.split(',').map((skill) => skill.trim()),
+      };
     }
 
-    if (req.query.workingTime) {
-      query.workingTime = req.query.workingTime;
-    }
+    // Execute query with count for pagination
+    const total = await Job.countDocuments(filter);
 
-    if (req.query.seniorityLevel) {
-      query.seniorityLevel = req.query.seniorityLevel;
-    }
-
-    // Text search for job title, description, and skills
-    if (req.query.search) {
-      query.$text = { $search: req.query.search };
-    }
-
-    // Technical skills filter (comma-separated list)
-    if (req.query.skills) {
-      const skills = req.query.skills.split(',').map((skill) => skill.trim());
-      query.technicalSkills = { $in: skills };
-    }
-
-    // Execute count query for pagination
-    const total = await Job.countDocuments(query);
-
-    // Execute main query with pagination
-    let jobs;
-    if (req.query.search) {
-      // If performing text search, include score and sort by relevance
-      jobs = await Job.find(query, { score: { $meta: 'textScore' } })
-        .sort({ score: { $meta: 'textScore' }, ...sort })
-        .skip(skip)
-        .limit(limit)
-        .populate('companyId', 'companyName logo industry');
-    } else {
-      jobs = await Job.find(query)
-        .sort(sort)
-        .skip(skip)
-        .limit(limit)
-        .populate('companyId', 'companyName logo industry');
-    }
+    // Get jobs with company and user info
+    const jobs = await Job.find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .populate('companyId', 'companyName logo industry')
+      .populate('addedBy', 'firstName lastName');
 
     // Calculate total pages
     const totalPages = Math.ceil(total / limit);
