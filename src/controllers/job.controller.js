@@ -1,6 +1,9 @@
 import { Company } from '../models/Company.js';
 import { Job } from '../models/Job.js';
-import { addJobValidation } from '../validations/job.validation.js';
+import {
+  addJobValidation,
+  updateJobValidation,
+} from '../validations/job.validation.js';
 
 /**
  * @desc   Add new job
@@ -81,6 +84,11 @@ export const updateJob = async (req, res, next) => {
       return res.status(403).json({
         message: 'Only company owners or HRs can update jobs',
       });
+    }
+
+    const { error } = updateJobValidation(req.body);
+    if (error) {
+      res.status(400).json({ message: error.details[0].message });
     }
 
     // Prevent updating certain fields directly
