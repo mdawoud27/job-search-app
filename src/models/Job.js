@@ -66,7 +66,7 @@ const jobSchema = new mongoose.Schema(
     },
     isVisible: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     applicationDeadline: {
       type: Date,
@@ -175,4 +175,4 @@ jobSchema.methods.incrementApplications = function () {
   return this.save();
 };
 
-export const JobOpportunity = mongoose.model('Job', jobSchema);
+export const Job = mongoose.model('Job', jobSchema);
