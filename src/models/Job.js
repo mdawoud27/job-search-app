@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const jobOpportunitySchema = new mongoose.Schema(
+const jobSchema = new mongoose.Schema(
   {
     jobTitle: {
       type: String,
@@ -66,7 +66,7 @@ const jobOpportunitySchema = new mongoose.Schema(
     },
     isVisible: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     applicationDeadline: {
       type: Date,
@@ -107,16 +107,16 @@ const jobOpportunitySchema = new mongoose.Schema(
 );
 
 // Virtual to determine if job is active
-jobOpportunitySchema.virtual('isActive').get(function () {
+jobSchema.virtual('isActive').get(function () {
   const isExpired =
     this.applicationDeadline && new Date() > this.applicationDeadline;
   return !this.closed && !isExpired;
 });
 
 // Index for efficient searching
-jobOpportunitySchema.index({ companyId: 1, closed: 1 });
-jobOpportunitySchema.index({ technicalSkills: 1, seniorityLevel: 1 });
-jobOpportunitySchema.index(
+jobSchema.index({ companyId: 1, closed: 1 });
+jobSchema.index({ technicalSkills: 1, seniorityLevel: 1 });
+jobSchema.index(
   {
     jobTitle: 'text',
     jobDescription: 'text',
@@ -132,7 +132,7 @@ jobOpportunitySchema.index(
 );
 
 // Pre-validate middleware to check if added/updatedBy is an HR
-jobOpportunitySchema.pre('validate', async function (next) {
+jobSchema.pre('validate', async function (next) {
   try {
     if (!this.isNew && !this.updatedBy) {
       return next(new Error('updatedBy field is required when updating a job'));
@@ -148,7 +148,7 @@ jobOpportunitySchema.pre('validate', async function (next) {
 });
 
 // Static method to find all active jobs for a company
-jobOpportunitySchema.statics.findActiveJobsByCompany = function (companyId) {
+jobSchema.statics.findActiveJobsByCompany = function (companyId) {
   return this.find({
     companyId,
     closed: false,
@@ -160,7 +160,7 @@ jobOpportunitySchema.statics.findActiveJobsByCompany = function (companyId) {
 };
 
 // Method to check if HR can update this job
-jobOpportunitySchema.methods.canBeUpdatedBy = async function (userId, Company) {
+jobSchema.methods.canBeUpdatedBy = async function (userId, Company) {
   const company = await Company.findById(this.companyId);
   if (!company) {
     return false;
@@ -170,12 +170,9 @@ jobOpportunitySchema.methods.canBeUpdatedBy = async function (userId, Company) {
 };
 
 // Method to increment application count
-jobOpportunitySchema.methods.incrementApplications = function () {
+jobSchema.methods.incrementApplications = function () {
   this.applications += 1;
   return this.save();
 };
 
-export const JobOpportunity = mongoose.model(
-  'JobOpportunity',
-  jobOpportunitySchema,
-);
+export const Job = mongoose.model('Job', jobSchema);

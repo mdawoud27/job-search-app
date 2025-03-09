@@ -12,7 +12,7 @@ import {
   uploadCompanyCoverPic,
   uploadCompanyLogo,
 } from '../controllers/company.controller.js';
-import { upload } from '../utils/uploadImage.js';
+import { upload } from '../utils/imageStorage.js';
 
 const router = Router();
 

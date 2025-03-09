@@ -73,7 +73,7 @@ companySchema.virtual('isActive').get(function () {
 });
 
 companySchema.virtual('jobs', {
-  ref: 'JobOpportunity',
+  ref: 'Job',
   localField: '_id',
   foreignField: 'companyId',
   justOne: false,
