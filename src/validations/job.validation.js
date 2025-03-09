@@ -162,44 +162,12 @@ export const updateJobValidation = (obj) => {
     applicationDeadline: Joi.date().greater('now').optional().messages({
       'date.greater': 'Application deadline must be in the future',
     }),
-    views: Joi.number().min(0).default(0),
-    applications: Joi.number().min(0).default(0),
     closed: Joi.boolean().default(false),
-    addedBy: Joi.string()
-      .custom((value, helpers) => {
-        if (!mongoose.Types.ObjectId.isValid(value)) {
-          return helpers.error('any.invalid');
-        }
-        return value;
-      })
-      .optional()
-      .messages({
-        'any.invalid': 'Invalid user ID format',
-      }),
-    updatedBy: Joi.string()
-      .custom((value, helpers) => {
-        if (!mongoose.Types.ObjectId.isValid(value)) {
-          return helpers.error('any.invalid');
-        }
-        return value;
-      })
-      .required()
-      .messages({
-        'any.required': 'Updated by field is required',
-        'any.invalid': 'Invalid user ID format',
-      }),
-    companyId: Joi.string()
-      .custom((value, helpers) => {
-        if (!mongoose.Types.ObjectId.isValid(value)) {
-          return helpers.error('any.invalid');
-        }
-        return value;
-      })
-      .optional()
-      .messages({
-        'any.invalid': 'Invalid company ID format',
-      }),
-  }).min(1);
+  })
+    .min(4)
+    .messages({
+      'string.min': 'Update at least 1 key',
+    }); // TODO: Fix the output message
 
   return schema.validate(obj);
 };
