@@ -2,6 +2,12 @@ import { Company } from '../models/Company.js';
 import { Job } from '../models/Job.js';
 import { addJobValidation } from '../validations/job.validation.js';
 
+/**
+ * @desc   Add new job
+ * @route  /api/company/:companyId/job
+ * @method POST
+ * @access private
+ */
 export const addJob = async (req, res, next) => {
   try {
     const { companyId } = req.params;
