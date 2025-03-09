@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Company } from '../models/Company.js';
 import { Job } from '../models/Job.js';
 import {
@@ -315,6 +316,43 @@ export const getJobs = async (req, res, next) => {
       totalPages,
       currentPage: page,
       data: jobs,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc   Get a specific job by ID
+ * @route  /api/jobs/:jobId
+ * @method GET
+ * @access private
+ */
+export const getJobById = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+
+    // Validate jobId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+      return res.status(400).json({ message: 'Invalid job ID format' });
+    }
+
+    // Find job and populate company details
+    const job = await Job.findById(jobId)
+      .populate('companyId', 'companyName logo description industry address')
+      .populate('addedBy', 'firstName lastName');
+
+    if (!job) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+
+    // Increment view count
+    job.views += 1;
+    await job.save();
+
+    res.status(200).json({
+      success: true,
+      data: job,
     });
   } catch (error) {
     next(error);
