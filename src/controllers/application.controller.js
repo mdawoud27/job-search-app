@@ -1,6 +1,6 @@
-import { Application } from '../models/Application';
-import { Company } from '../models/Company';
-import { Job } from '../models/Job';
+import { Application } from '../models/Application.js';
+import { Company } from '../models/Company.js';
+import { Job } from '../models/Job.js';
 
 /**
  * @desc   Get all applications for a specific job
@@ -70,6 +70,82 @@ export const getJobApplications = async (req, res, next) => {
       totalPages,
       currentPage: page,
       data: applications,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Apply to a job
+export const applyToJob = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+    const userId = req.user.id;
+
+    // Check if job exists and is active
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+
+    if (!job.isActive) {
+      return res
+        .status(400)
+        .json({ message: 'This job is no longer accepting applications' });
+    }
+
+    // Check if user has already applied to this job
+    const existingApplication = await Application.findOne({ jobId, userId });
+    if (existingApplication) {
+      return res
+        .status(400)
+        .json({ message: 'You have already applied to this job' });
+    }
+
+    // Validate CV upload
+    if (!req.file) {
+      return res.status(400).json({ message: 'CV is required' });
+    }
+
+    // Create CV attachment object
+    const userCV = {
+      secure_url: req.file.path, // TODO
+      public_id: req.file.filename,
+      fileType: 'pdf',
+    };
+
+    // Create application
+    const application = await Application.create({
+      jobId,
+      userId,
+      userCV,
+      status: 'pending',
+    });
+
+    // Increment the job's applications count
+    await job.incrementApplications();
+
+    // Get company and HR info for notification
+    const company = await Company.findById(job.companyId).populate('HRs');
+
+    // Emit socket event to notify HRs
+    if (req.io && company) {
+      const hrIds = company.HRs.map((hr) => hr._id.toString());
+
+      // TODO: Socket imp
+      req.io.to(hrIds).emit('newApplication', {
+        applicationId: application._id,
+        jobTitle: job.jobTitle,
+        companyName: company.companyName,
+        applicantId: userId,
+        timestamp: new Date(),
+      });
+    }
+
+    res.status(201).json({
+      status: 'success',
+      message: 'Application submitted successfully',
+      data: { application },
     });
   } catch (error) {
     next(error);
