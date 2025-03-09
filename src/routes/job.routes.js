@@ -1,9 +1,15 @@
 import { Router } from 'express';
-import { addJob, deleteJob, updateJob } from '../controllers/job.controller.js';
+import {
+  addJob,
+  deleteJob,
+  getJobById,
+  getJobs,
+  updateJob,
+} from '../controllers/job.controller.js';
 import { verifyAccessToken } from '../middlewares/auth.js';
 import { verifyAdminPermission } from '../middlewares/verifyAdminPermission.js';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // Add job
 router.post(
@@ -28,5 +34,11 @@ router.delete(
   verifyAdminPermission,
   deleteJob,
 );
+
+// Get all jobs
+router.get('/api/jobs/', getJobs);
+
+// Get Job by id
+router.get('/api/jobs/:jobId', getJobById);
 
 export default router;
