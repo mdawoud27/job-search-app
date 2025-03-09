@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   addJob,
   deleteJob,
+  getJobById,
   getJobs,
   updateJob,
 } from '../controllers/job.controller.js';
@@ -36,5 +37,8 @@ router.delete(
 
 // Get all jobs
 router.get('/api/jobs/', getJobs);
+
+// Get Job by id
+router.get('/api/jobs/:jobId', getJobById);
 
 export default router;

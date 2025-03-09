@@ -132,20 +132,20 @@ jobSchema.index(
 );
 
 // Pre-validate middleware to check if added/updatedBy is an HR
-jobSchema.pre('validate', async function (next) {
-  try {
-    if (!this.isNew && !this.updatedBy) {
-      return next(new Error('updatedBy field is required when updating a job'));
-    }
+// jobSchema.pre('validate', async function (next) {
+//   try {
+//     if (!this.isNew && !this.updatedBy) {
+//       return next(new Error('updatedBy field is required when updating a job'));
+//     }
 
-    // We would typically check if user is HR here, but would need Company model access
-    // This can be handled in the controller instead
+//     // We would typically check if user is HR here, but would need Company model access
+//     // This can be handled in the controller instead
 
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
+//     next();
+//   } catch (error) {
+//     next(error);
+//   }
+// });
 
 // Static method to find all active jobs for a company
 jobSchema.statics.findActiveJobsByCompany = function (companyId) {
