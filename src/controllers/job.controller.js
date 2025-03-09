@@ -86,6 +86,21 @@ export const updateJob = async (req, res, next) => {
       });
     }
 
+    const {
+      jobTitle,
+      jobLocation,
+      workingTime,
+      seniorityLevel,
+      jobDescription,
+      technicalSkills,
+      softSkills,
+      salary,
+      currency,
+      isVisible,
+      applicationDeadline,
+      closed,
+    } = req.body;
+
     const { error } = updateJobValidation(req.body);
     if (error) {
       res.status(400).json({ message: error.details[0].message });
@@ -109,7 +124,22 @@ export const updateJob = async (req, res, next) => {
     // Update the job
     const updatedJob = await Job.findByIdAndUpdate(
       jobId,
-      { $set: req.body },
+      {
+        $set: {
+          jobTitle,
+          jobLocation,
+          workingTime,
+          seniorityLevel,
+          jobDescription,
+          technicalSkills,
+          softSkills,
+          salary,
+          currency,
+          isVisible,
+          applicationDeadline,
+          closed,
+        },
+      },
       { new: true, runValidators: true },
     );
 

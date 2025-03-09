@@ -199,7 +199,7 @@ export const updateJobValidation = (obj) => {
       .messages({
         'any.invalid': 'Invalid company ID format',
       }),
-  });
+  }).min(1);
 
   return schema.validate(obj);
 };
