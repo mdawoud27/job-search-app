@@ -17,3 +17,22 @@ export const sendOTPEmail = async (email, otp) => {
     text: `Your OTP for email verification is: ${otp}. It will expire in 10 minutes.`,
   });
 };
+
+export const sendEmail = async () => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.USER_EMAIL,
+      pass: process.env.USER_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.USER_EMAIL,
+    to,
+    subject,
+    html,
+  };
+
+  return transporter.sendMail(mailOptions);
+};
