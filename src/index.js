@@ -17,6 +17,7 @@ import userRouter from './routes/user.routes.js';
 import adminRouter from './routes/admin.routes.js';
 import companyRouter from './routes/company.routes.js';
 import jobRouter from './routes/job.routes.js';
+import applicationRouter from './routes/application.routes.js';
 import { configureGoogleStrategy } from './strategies/google-strategy.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -60,6 +61,7 @@ app.use(userRouter);
 app.use(adminRouter);
 app.use(companyRouter);
 app.use(jobRouter);
+app.use(applicationRouter);
 
 // Global error handlers middlewares
 app.use(notFound);
