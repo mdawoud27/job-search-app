@@ -152,3 +152,46 @@ export const updateJob = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * @desc   Delete Job
+ * @route  /api/jobs/:jobId
+ * @method DELETE
+ * @access private
+ */
+export const deleteJob = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+    const userId = req.user.id;
+
+    // Check if job exists
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+
+    // Verify permission to delete
+    const company = await Company.findById(job.companyId);
+    if (!company) {
+      return res.status(404).json({ message: 'Company not found' });
+    }
+
+    if (!company.canManage(userId)) {
+      return res.status(403).json({
+        message: 'Only company owners or HRs can delete jobs',
+      });
+    }
+
+    // Soft delete by setting closed to true
+    job.closed = true;
+    job.updatedBy = userId;
+    await job.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Job deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};

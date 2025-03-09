@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { addJob, updateJob } from '../controllers/job.controller.js';
+import { addJob, deleteJob, updateJob } from '../controllers/job.controller.js';
 import { verifyAccessToken } from '../middlewares/auth.js';
 import { verifyAdminPermission } from '../middlewares/verifyAdminPermission.js';
 
@@ -19,6 +19,14 @@ router.put(
   verifyAccessToken,
   verifyAdminPermission,
   updateJob,
+);
+
+// Delete Job (soft delete)
+router.delete(
+  '/api/jobs/:jobId',
+  verifyAccessToken,
+  verifyAdminPermission,
+  deleteJob,
 );
 
 export default router;
