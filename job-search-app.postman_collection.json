@@ -1,0 +1,1159 @@
+{
+	"info": {
+		"_postman_id": "38ecc3d6-5f23-4b45-bbfe-0452d9adf15d",
+		"name": "job-search-app",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "32522452"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "User Signup",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"asmaa\",\n    \"lastName\": \"ebrahim\",\n    \"email\": \"asmaaebrahim3899@gmail.com\",\n    \"password\": \"mohamed@2710\",\n    \"gender\": \"Female\",\n    \"DOB\": \"2000-10-27T00:00:00.000Z\",\n    \"mobileNumber\": \"+201158677266\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/api/auth/signup",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Confirm OTP",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"mohamedalidawoud27@gmail.com\",\n    \"otpCode\": \"546843\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/api/auth/confirm-otp",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"auth",
+								"confirm-otp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Signin",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"mohamedalidawoud27@gmail.com\",\n    \"password\": \"mohamed@2710\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/api/auth/signin",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"auth",
+								"signin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forget Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"mohamedalidawoud27@gmail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/api/auth/forget-password",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"auth",
+								"forget-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"mohamedalidawoud27@gmail.com\",\n    \"otpCode\": \"903560\",\n    \"newPassword\": \"ahmed@2025\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/api/auth/reset-password",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"auth",
+								"reset-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImlhdCI6MTc0MTQzMDc0MSwiZXhwIjoxNzQyMDM1NTQxfQ.8t5r6bD3AXV5lCVcH5c8vHMUiTgLwSOaqrt0wNAjP4c\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/api/auth/refresh-token",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"auth",
+								"refresh-token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Update User Account by userId",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YzcxNTUzYzE4ZDlhODgxYzZmMTIyYyIsImVtYWlsIjoibW9oYW1lZGFsaWRhd291ZDI3QGdtYWlsLmNvbSIsInJvbGUiOiJVc2VyIiwiaWF0IjoxNzQxMjYzNDc3LCJleHAiOjE3NDEyNjcwNzd9.DMlw09DcC2eXhymvt95l3TNLnSv5kPkKOAtmZuVcfzs",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"MOHAMED\",\n  \"lastName\": \"DAWOUD\",\n  \"mobileNumber\": \"9999999999999\"\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/user/67c71553c18d9a881c6f122c",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"user",
+								"67c71553c18d9a881c6f122c"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get profile data",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2EwNjhkZDQ4ZmYyOTllOGFmMDVhNSIsImVtYWlsIjoic2FyYWhkYXdvdWQ1NDRAZ21haWwuY29tIiwicm9sZSI6IlVzZXIiLCJpYXQiOjE3NDEyOTM3OTIsImV4cCI6MTc0MTI5NzM5Mn0.fP-OjdHTjIoLSjFYEdVtFNixOZuEV7nebvvNbOlaNaw",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3838/user/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"user",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2EwNjhkZDQ4ZmYyOTllOGFmMDVhNSIsImVtYWlsIjoic2FyYWhkYXdvdWQ1NDRAZ21haWwuY29tIiwicm9sZSI6IlVzZXIiLCJpYXQiOjE3NDEyOTgyMzIsImV4cCI6MTc0MTMwMTgzMn0.iV6ra_UexJ1VsCDfBWw5qSJZFEAY2WFzKVlr3IaRdZo",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"password\": \"mostafa@2710\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/user/profile/password",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"user",
+								"profile",
+								"password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload User Profile",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2EwNjhkZDQ4ZmYyOTllOGFmMDVhNSIsImVtYWlsIjoic2FyYWhkYXdvdWQ1NDRAZ21haWwuY29tIiwicm9sZSI6IlVzZXIiLCJpYXQiOjE3NDEzNDg2NTEsImV4cCI6MTc0MTM1MjI1MX0.ukndS781caEv5neoqE8CEwTEn1OWyVLntpBgpy0Vcq0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "profilePic",
+									"type": "file",
+									"src": "/home/dawoud27/dawoud/Personal/Pic/e909cb2e8b045f64f40afe0ea53746aa.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3838/user/profile/profile-pic",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"user",
+								"profile",
+								"profile-pic"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload User Cover",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2EwNjhkZDQ4ZmYyOTllOGFmMDVhNSIsImVtYWlsIjoic2FyYWhkYXdvdWQ1NDRAZ21haWwuY29tIiwicm9sZSI6IlVzZXIiLCJpYXQiOjE3NDEzNDg2NTEsImV4cCI6MTc0MTM1MjI1MX0.ukndS781caEv5neoqE8CEwTEn1OWyVLntpBgpy0Vcq0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "coverPic",
+									"type": "file",
+									"src": "/home/dawoud27/dawoud/Personal/Pic/7dca07e068ac89ff60129648d67d8698.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3838/user/profile/cover-pic",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"user",
+								"profile",
+								"cover-pic"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User Profile Pic",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2EwNjhkZDQ4ZmYyOTllOGFmMDVhNSIsImVtYWlsIjoic2FyYWhkYXdvdWQ1NDRAZ21haWwuY29tIiwicm9sZSI6IlVzZXIiLCJpYXQiOjE3NDEzNDg2NTEsImV4cCI6MTc0MTM1MjI1MX0.ukndS781caEv5neoqE8CEwTEn1OWyVLntpBgpy0Vcq0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3838/user/profile/profile-pic",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"user",
+								"profile",
+								"profile-pic"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User Cover Pic",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2EwNjhkZDQ4ZmYyOTllOGFmMDVhNSIsImVtYWlsIjoic2FyYWhkYXdvdWQ1NDRAZ21haWwuY29tIiwicm9sZSI6IlVzZXIiLCJpYXQiOjE3NDEzNDg2NTEsImV4cCI6MTc0MTM1MjI1MX0.ukndS781caEv5neoqE8CEwTEn1OWyVLntpBgpy0Vcq0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3838/user/profile/cover-pic",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"user",
+								"profile",
+								"cover-pic"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Soft delete account",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2EwNjhkZDQ4ZmYyOTllOGFmMDVhNSIsImVtYWlsIjoic2FyYWhkYXdvdWQ1NDRAZ21haWwuY29tIiwicm9sZSI6IlVzZXIiLCJpYXQiOjE3NDEzNDg2NTEsImV4cCI6MTc0MTM1MjI1MX0.ukndS781caEv5neoqE8CEwTEn1OWyVLntpBgpy0Vcq0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3838/user/delete",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"user",
+								"delete"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Ban specific user",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Yzk5OWQxZjg1NGY0ZGVmNWExNmE1NyIsImVtYWlsIjoibWE5MzAxMTY4QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTM2NjAzMSwiZXhwIjoxNzQxMzY5NjMxfQ.NgVbB_QzMALvLFJZsyqfu_UCFdsew_G7-qr9e3KKu-U",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": \"67ca068dd48ff299e8af05a5\",\n    \"action\": \"false\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/admin/user/ban",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"admin",
+								"user",
+								"ban"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ban specific company",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3838/admin/company/ban",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"admin",
+								"company",
+								"ban"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve company",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3838/admin/company/approve",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"admin",
+								"company",
+								"approve"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Company",
+			"item": [
+				{
+					"name": "Add new company",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImVtYWlsIjoibWQ5MTIwOTk5QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTQzNDA4NiwiZXhwIjoxNzQxNDM3Njg2fQ.-FQtgntdsc2kAvuDNNd7ArKsfaq8pgOzLhSeuKUmjnA",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"companyName\": \"Readify\",\n      \"description\": \"Readify is a Books API\",\n      \"industry\": \"Software\",\n      \"address\": \"Cairo, Egypt\",\n      \"numberOfEmployees\": \"51-100\",\n      \"companyEmail\": \"readify27@gmail.com\",\n      \"createdBy\": \"67cc1e9308cd361c1e5daa93\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/api/company",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"company"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update company by Id",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImVtYWlsIjoibWQ5MTIwOTk5QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTQzNzA2MCwiZXhwIjoxNzQxNDQwNjYwfQ.fPHq5m7938iYSt66Dfmz3hYcGPbL8cjusJ5hYtPzbRo",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"companyName\": \"Readify book API\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/api/company/67cc2ef4cde5e035b5e6010a",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"company",
+								"67cc2ef4cde5e035b5e6010a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Soft delete company by Id",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImVtYWlsIjoibWQ5MTIwOTk5QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTQzNzA2MCwiZXhwIjoxNzQxNDQwNjYwfQ.fPHq5m7938iYSt66Dfmz3hYcGPbL8cjusJ5hYtPzbRo",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3838/api/company/67cc2ef4cde5e035b5e6010a",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"company",
+								"67cc2ef4cde5e035b5e6010a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get company with jobs",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImVtYWlsIjoibWQ5MTIwOTk5QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTQ0NDIzOCwiZXhwIjoxNzQxNDQ3ODM4fQ.478tQLXst9glpHOLUuCc5r5iWIcRAgeMTT_kLogRmJ0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3838/api/company/67cc2ef4cde5e035b5e6010a",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"company",
+								"67cc2ef4cde5e035b5e6010a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search for company by name",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImVtYWlsIjoibWQ5MTIwOTk5QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTQ0NDIzOCwiZXhwIjoxNzQxNDQ3ODM4fQ.478tQLXst9glpHOLUuCc5r5iWIcRAgeMTT_kLogRmJ0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3838/api/company?name=book",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"company"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "book"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Company logo",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImVtYWlsIjoibWQ5MTIwOTk5QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTQ0NzAxNywiZXhwIjoxNzQxNDUwNjE3fQ.vIGvIZ68f5hPm-STTMSp5SQmKW-FfoWNeh55gfHPWf8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/home/dawoud27/dawoud/Personal/Pic/b55483bba9866c36af19e16bf689deeb.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3838/api/company/67cc2ef4cde5e035b5e6010a/logo",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"company",
+								"67cc2ef4cde5e035b5e6010a",
+								"logo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Company logo",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImVtYWlsIjoibWQ5MTIwOTk5QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTQ0NzAxNywiZXhwIjoxNzQxNDUwNjE3fQ.vIGvIZ68f5hPm-STTMSp5SQmKW-FfoWNeh55gfHPWf8",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3838/api/company/67cc2ef4cde5e035b5e6010a/logo",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"company",
+								"67cc2ef4cde5e035b5e6010a",
+								"logo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Company cover pic",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImVtYWlsIjoibWQ5MTIwOTk5QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTQ0NzAxNywiZXhwIjoxNzQxNDUwNjE3fQ.vIGvIZ68f5hPm-STTMSp5SQmKW-FfoWNeh55gfHPWf8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/home/dawoud27/dawoud/Personal/Pic/8ea89078d4180daa8bc07092ab5f9568.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3838/api/company/67cc2ef4cde5e035b5e6010a/cover-pic",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"company",
+								"67cc2ef4cde5e035b5e6010a",
+								"cover-pic"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImVtYWlsIjoibWQ5MTIwOTk5QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTQ0NzAxNywiZXhwIjoxNzQxNDUwNjE3fQ.vIGvIZ68f5hPm-STTMSp5SQmKW-FfoWNeh55gfHPWf8",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Company cover pic",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImVtYWlsIjoibWQ5MTIwOTk5QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTQ0NzAxNywiZXhwIjoxNzQxNDUwNjE3fQ.vIGvIZ68f5hPm-STTMSp5SQmKW-FfoWNeh55gfHPWf8",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3838/api/company/67cc2ef4cde5e035b5e6010a/cover-pic",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"company",
+								"67cc2ef4cde5e035b5e6010a",
+								"cover-pic"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Job",
+			"item": [
+				{
+					"name": "Add Job",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImVtYWlsIjoibWQ5MTIwOTk5QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTUxNjk5MiwiZXhwIjoxNzQxNTIwNTkyfQ.AakwNV2D1XPKZLIJ_WQIIdAS4kQjWHACHD5gAIzG-38",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"jobTitle\": \"Backend Engineer\",\n  \"jobLocation\": \"onsite\",\n  \"workingTime\": \"full-time\",\n  \"seniorityLevel\": \"Senior\",\n  \"jobDescription\": \"We are looking for a skilled backend engineer with expertise in Node.js and MongoDB. You will work on scalable API development and contribute to system architecture.\",\n  \"technicalSkills\": [\"Node.js\", \"MongoDB\", \"GraphQL\", \"Docker\"],\n  \"softSkills\": [\"Problem-solving\", \"Communication\", \"Teamwork\"],\n  \"closed\": false,\n  \"addedBy\": \"67cc1e9308cd361c1e5daa93\",\n  \"companyId\": \"67cc2ef4cde5e035b5e6010a\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/api/company/67cc2ef4cde5e035b5e6010a/job",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"company",
+								"67cc2ef4cde5e035b5e6010a",
+								"job"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a Job by Id",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImVtYWlsIjoibWQ5MTIwOTk5QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTUyMDc0NCwiZXhwIjoxNzQxNTI0MzQ0fQ.16KGlxH5ELS1_4Gq5TEZgBRjQd9M2IGt_j3JBIKMOSg",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"jobLocation\": \"onsite\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/api/jobs/67cd74a5dbbe96decb1d4e4f",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"jobs",
+								"67cd74a5dbbe96decb1d4e4f"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all jobs",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3838/api/jobs?page=1&companyId=67cc2ef4cde5e035b5e6010a",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"jobs"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "companyId",
+									"value": "67cc2ef4cde5e035b5e6010a"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get job by Id",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MxZTkzMDhjZDM2MWMxZTVkYWE5MyIsImVtYWlsIjoibWQ5MTIwOTk5QGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0MTUyMzY0NywiZXhwIjoxNzQxNTI3MjQ3fQ.aP8KsKJWeVytub-1Dn1FcYbseGD60AsTEPdMHONi5Q0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"updatedBy\": \"adaadadadsa\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3838/api/jobs/67cd759c91160ca23b984f19",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"jobs",
+								"67cd759c91160ca23b984f19"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Application",
+			"item": [
+				{
+					"name": "Get all applications for a specific job",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3838/api/jobs/67cd757679a5b372b2f7ed97/applications",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"jobs",
+								"67cd757679a5b372b2f7ed97",
+								"applications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apply to a job",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2MyMDgzZjVhZjA4NDhkMGRmNDQ2MyIsImVtYWlsIjoibW9oYW1lZGFsaWRhd291ZDI3QGdtYWlsLmNvbSIsInJvbGUiOiJVc2VyIiwiaWF0IjoxNzQxNTMwNDg1LCJleHAiOjE3NDE1MzQwODV9.SWXARFvdj519Zy41vr2MWSGETgApyEAHvVrAPWW7b6M",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3838/api/jobs/67cd74a5dbbe96decb1d4e4f/apply",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"jobs",
+								"67cd74a5dbbe96decb1d4e4f",
+								"apply"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update application status",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3838/api//applications/67cd757679a5b372b2f7ed97/status",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3838",
+							"path": [
+								"api",
+								"",
+								"applications",
+								"67cd757679a5b372b2f7ed97",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
