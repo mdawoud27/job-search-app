@@ -11,13 +11,8 @@ import passport from 'passport';
 import session from 'express-session';
 import { apiLimiter } from './utils/apiLimiter.js';
 import connectToDB from './config/db.js';
+import routes from './routes/index.routes.js';
 import { errorHandler, notFound } from './middlewares/errorHandler.js';
-import authRouter from './routes/auth.routes.js';
-import userRouter from './routes/user.routes.js';
-import adminRouter from './routes/admin.routes.js';
-import companyRouter from './routes/company.routes.js';
-import jobRouter from './routes/job.routes.js';
-import applicationRouter from './routes/application.routes.js';
 import { configureGoogleStrategy } from './strategies/google-strategy.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,12 +51,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
-app.use(authRouter);
-app.use(userRouter);
-app.use(adminRouter);
-app.use(companyRouter);
-app.use(jobRouter);
-app.use(applicationRouter);
+app.use(routes);
 
 // Global error handlers middlewares
 app.use(notFound);
