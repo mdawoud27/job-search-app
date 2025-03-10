@@ -1,15 +1,15 @@
 import nodemailer from 'nodemailer';
 
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.USER_EMAIL,
+    pass: process.env.USER_PASS,
+  },
+});
+
 /* eslint no-undef: off */
 export const sendOTPEmail = async (email, otp) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.USER_EMAIL,
-      pass: process.env.USER_PASS,
-    },
-  });
-
   await transporter.sendMail({
     from: process.env.USER_EMAIL,
     to: email,
@@ -18,15 +18,7 @@ export const sendOTPEmail = async (email, otp) => {
   });
 };
 
-export const sendEmail = async () => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.USER_EMAIL,
-      pass: process.env.USER_PASS,
-    },
-  });
-
+export const sendEmail = async ({ to, subject, html }) => {
   const mailOptions = {
     from: process.env.USER_EMAIL,
     to,
