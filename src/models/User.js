@@ -126,7 +126,7 @@ userSchema.methods.accessToken = function () {
   return jwt.sign(
     { id: this._id, email: this.email, role: this.role },
     /* eslint no-undef: off */
-    'thisisjwtaccesssecretkey12345',
+    process.env.JWT_ACCESS_KEY,
     { expiresIn: '1h' },
   );
 };

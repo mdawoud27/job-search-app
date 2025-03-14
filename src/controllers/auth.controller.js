@@ -350,7 +350,7 @@ export const refreshAccessToken = async (req, res, next) => {
     /* eslint no-undef: off */
     let decoded;
     try {
-      decoded = jwt.verify(refreshToken, 'thisisjwtrefreshsecretkey12345');
+      decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY);
     } catch (error) {
       return res
         .status(401)
