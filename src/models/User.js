@@ -136,7 +136,7 @@ userSchema.methods.refreshToken = function () {
   if (!process.env.JWT_REFRESH_SECRET) {
     throw new Error('JWT Refresh Secret is not defined');
   }
-  return jwt.sign({ id: this._id }, 'thisisjwtrefreshsecretkey12345', {
+  return jwt.sign({ id: this._id }, process.env.JWT_REFRESH_KEY, {
     expiresIn: '7d',
   });
 };
