@@ -225,7 +225,11 @@ const uploadImage = async (req, res, fieldName) => {
   } catch (error) {
     // If there's an error, delete the uploaded file
     if (req.file && req.file.path) {
-      fs.unlinkSync(req.file.path);
+      const uploadDir = path.resolve(process.env.UPLOAD_DIR);
+      const filePath = path.resolve(req.file.path);
+      if (filePath.startsWith(uploadDir)) {
+        fs.unlinkSync(filePath);
+      }
     }
 
     return res.status(500).json({
