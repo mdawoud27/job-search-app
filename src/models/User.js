@@ -164,7 +164,7 @@ export const generateTokens = (user) => {
       email: user.email,
       role: user.role,
     },
-    'thisisjwtaccesssecretkey12345',
+    process.env.JWT_ACCESS_KEY,
     { expiresIn: '1h' },
   );
 
@@ -172,7 +172,7 @@ export const generateTokens = (user) => {
     {
       id: user._id,
     },
-    'thisisjwtrefreshsecretkey12345',
+    process.env.JWT_REFRESH_KEY,
     { expiresIn: '7d' },
   );
 
