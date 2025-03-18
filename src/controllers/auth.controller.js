@@ -249,6 +249,9 @@ export const googleOAuthLogin = async (req, res) => {
 export const sendForgetPasswordOTP = async (req, res, next) => {
   try {
     const { email } = req.body;
+    if (typeof email !== 'string') {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
 
     const user = await User.findOne({ email, provider: 'system' });
     if (!user) {
