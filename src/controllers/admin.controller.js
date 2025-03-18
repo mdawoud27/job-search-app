@@ -14,7 +14,7 @@ export const banOrUnbanUser = async (req, res, next) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findById({ _id: { $eq: userId } });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
