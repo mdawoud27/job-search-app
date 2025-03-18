@@ -237,7 +237,7 @@ export const getJobs = async (req, res, next) => {
       'technicalSkills',
     ].forEach((key) => {
       if (req.query[key]) {
-        filter[key] = req.query[key];
+        filter[key] = { $eq: req.query[key] };
       }
     });
 
