@@ -5,14 +5,15 @@ import adminRouter from './routes/admin.routes.js';
 import companyRouter from './routes/company.routes.js';
 import jobRouter from './routes/job.routes.js';
 import applicationRouter from './routes/application.routes.js';
+import { apiLimiter } from '../utils/apiLimiter.js';
 
 const router = Router();
 
-router.use(authRouter);
-router.use(userRouter);
-router.use(adminRouter);
-router.use(companyRouter);
-router.use(jobRouter);
-router.use(applicationRouter);
+router.use(apiLimiter, authRouter);
+router.use(apiLimiter, userRouter);
+router.use(apiLimiter, adminRouter);
+router.use(apiLimiter, companyRouter);
+router.use(apiLimiter, jobRouter);
+router.use(apiLimiter, applicationRouter);
 
 export default router;
