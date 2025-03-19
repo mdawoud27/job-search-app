@@ -8,6 +8,7 @@ import {
 } from '../controllers/job.controller.js';
 import { verifyAccessToken } from '../middlewares/auth.js';
 import { verifyAdminPermission } from '../middlewares/verifyAdminPermission.js';
+import { apiLimiter } from '../utils/apiLimiter.js';
 
 const router = Router({ mergeParams: true });
 
@@ -16,6 +17,7 @@ router.post(
   '/api/company/:companyId/job',
   verifyAccessToken,
   verifyAdminPermission,
+  apiLimiter,
   addJob,
 );
 
@@ -24,6 +26,7 @@ router.put(
   '/api/jobs/:jobId',
   verifyAccessToken,
   verifyAdminPermission,
+  apiLimiter,
   updateJob,
 );
 
@@ -32,13 +35,14 @@ router.delete(
   '/api/jobs/:jobId',
   verifyAccessToken,
   verifyAdminPermission,
+  apiLimiter,
   deleteJob,
 );
 
 // Get all jobs
-router.get('/api/jobs/', getJobs);
+router.get('/api/jobs/', apiLimiter, getJobs);
 
 // Get Job by id
-router.get('/api/jobs/:jobId', getJobById);
+router.get('/api/jobs/:jobId', apiLimiter, getJobById);
 
 export default router;
