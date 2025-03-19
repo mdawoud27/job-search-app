@@ -13,27 +13,27 @@ const router = Router();
 // Ban or unbanned specific user
 router.patch(
   '/admin/user/ban',
+  apiLimiter,
   verifyAccessToken,
   verifyAdminPermission,
-  apiLimiter,
   banOrUnbanUser,
 );
 
 // Ban or unbanned specific company
 router.patch(
   '/admin/company/ban',
+  apiLimiter,
   verifyAccessToken,
   verifyAdminPermission,
-  apiLimiter,
   banOrUnbanCompany,
 );
 
 // Approve Company
 router.patch(
   '/admin/company/approve',
+  apiLimiter,
   verifyAccessToken,
   verifyAdminPermission,
-  apiLimiter,
   approveCompany,
 );
 
