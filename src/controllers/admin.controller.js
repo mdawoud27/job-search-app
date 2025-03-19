@@ -71,6 +71,9 @@ export const approveCompany = async (req, res, next) => {
       return res.status(400).json({ message: 'companyId is required' });
     }
 
+    if (typeof companyId !== 'string') {
+      return res.status(400).json({ message: 'Invalid companyId' });
+    }
     const company = await Company.findById(companyId);
     if (!company) {
       return res.status(404).json({ message: 'Company not found' });
