@@ -19,58 +19,58 @@ const router = Router();
 // Update user account
 router.put(
   '/user/:id',
+  apiLimiter,
   verifyAccessToken,
   verifyUserPermission,
-  apiLimiter,
   updateUserAccount,
 );
 
 // Retrive user profile date
-router.get('/user/profile', verifyAccessToken, apiLimiter, getUserProfile);
+router.get('/user/profile', apiLimiter, verifyAccessToken, getUserProfile);
 
 // Update user password
 router.patch(
   '/user/profile/password',
-  verifyAccessToken,
   apiLimiter,
+  verifyAccessToken,
   updateUserPassword,
 );
 
 // Upload profile picture
 router.post(
   '/user/profile/profile-pic',
+  apiLimiter,
   verifyAccessToken,
   upload.single('profilePic'),
-  apiLimiter,
   uploadProfilePic,
 );
 
 // Upload cover picture
 router.post(
   '/user/profile/cover-pic',
+  apiLimiter,
   verifyAccessToken,
   upload.single('coverPic'),
-  apiLimiter,
   uploadCoverPic,
 );
 
 // Delete profile picture
 router.delete(
   '/user/profile/profile-pic',
-  verifyAccessToken,
   apiLimiter,
+  verifyAccessToken,
   deleteProfilePic,
 );
 
 // Delete cover picture
 router.delete(
   '/user/profile/cover-pic',
-  verifyAccessToken,
   apiLimiter,
+  verifyAccessToken,
   deleteCoverPic,
 );
 
 // Soft delete user account
-router.delete('/user/delete', verifyAccessToken, apiLimiter, softDeleteAccount);
+router.delete('/user/delete', apiLimiter, verifyAccessToken, softDeleteAccount);
 
 export default router;
