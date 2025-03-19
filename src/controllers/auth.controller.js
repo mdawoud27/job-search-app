@@ -27,7 +27,7 @@ export const signup = async (req, res, next) => {
       req.body;
 
     //check if user exists or not
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: { $eq: email } });
     if (existingUser) {
       return res.status(400).json({ message: 'Email is already exists' });
     }
@@ -71,7 +71,7 @@ export const confirmOTP = async (req, res, next) => {
   try {
     const { email, otpCode } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: { $eq: email } });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -122,7 +122,10 @@ export const signin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email, provider: 'system' });
+    const user = await User.findOne({
+      email: { $eq: email },
+      provider: 'system',
+    });
     if (!user) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }

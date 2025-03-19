@@ -43,7 +43,7 @@ export const banOrUnbanCompany = async (req, res, next) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const company = await Company.findById(companyId);
+    const company = await Company.findById({ _id: { $eq: companyId } });
     if (!company) {
       return res.status(404).json({ message: 'Company not found' });
     }
@@ -71,7 +71,10 @@ export const approveCompany = async (req, res, next) => {
       return res.status(400).json({ message: 'companyId is required' });
     }
 
-    const company = await Company.findById(companyId);
+    if (typeof companyId !== 'string') {
+      return res.status(400).json({ message: 'Invalid companyId' });
+    }
+    const company = await Company.findById({ _id: { $eq: companyId } });
     if (!company) {
       return res.status(404).json({ message: 'Company not found' });
     }
