@@ -43,7 +43,11 @@ export const getJobApplications = async (req, res, next) => {
     // Apply status filter if provided
     const filter = { jobId };
     if (req.query.status) {
-      filter.status = req.query.status;
+      if (typeof req.query.status === 'string') {
+        filter.status = { $eq: req.query.status };
+      } else {
+        return res.status(400).json({ message: 'Invalid status value' });
+      }
     }
 
     // Count total applications for pagination
