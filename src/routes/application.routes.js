@@ -7,6 +7,7 @@ import {
 } from '../controllers/application.controller.js';
 import { verifyAdminPermission } from '../middlewares/verifyAdminPermission.js';
 import { verifyUserPermission } from '../middlewares/verifyUserPermission.js';
+import { apiLimiter } from '../utils/apiLimiter.js';
 
 const router = Router();
 
@@ -15,6 +16,7 @@ router.get(
   '/api/jobs/:jobId/applications',
   verifyAccessToken,
   verifyAdminPermission,
+  apiLimiter,
   getJobApplications,
 );
 
@@ -23,6 +25,7 @@ router.get(
   '/api/jobs/:jobId/apply',
   verifyAccessToken,
   verifyUserPermission,
+  apiLimiter,
   applyToJob,
 );
 
@@ -31,6 +34,7 @@ router.patch(
   '/api/applications/:applicationId/status',
   verifyAccessToken,
   verifyAdminPermission,
+  apiLimiter,
   updateApplicationStatus,
 );
 
