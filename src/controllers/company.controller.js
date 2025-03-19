@@ -31,7 +31,7 @@ export const addCompany = async (req, res, next) => {
     } = req.body;
 
     const existingCompanyName = await Company.findOne({
-      companyName: companyName,
+      companyName: { $eq: companyName },
       deletedAt: null,
     });
     if (existingCompanyName) {
@@ -39,7 +39,7 @@ export const addCompany = async (req, res, next) => {
     }
 
     const existingCompanyEmail = await Company.findOne({
-      companyEmail: companyEmail,
+      companyEmail: { $eq: companyEmail },
       deletedAt: null,
     });
     if (existingCompanyEmail) {
