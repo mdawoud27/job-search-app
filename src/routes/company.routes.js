@@ -20,79 +20,79 @@ const router = Router();
 // Add company
 router.post(
   '/api/company',
+  apiLimiter,
   verifyAccessToken,
   verifyAdminPermission,
-  apiLimiter,
   addCompany,
 );
 
 // Update company
 router.put(
   '/api/company/:companyId',
+  apiLimiter,
   verifyAccessToken,
   verifyAdminPermission,
-  apiLimiter,
   updateCompany,
 );
 
 // Soft delete company
 router.delete(
   '/api/company/:companyId',
+  apiLimiter,
   verifyAccessToken,
   verifyAdminPermission,
-  apiLimiter,
   softDeleteCompany,
 );
 
 // Get company with jobs
 router.get(
   '/api/company/:companyId',
+  apiLimiter,
   verifyAccessToken,
   verifyAdminPermission,
-  apiLimiter,
   getCompanyWithJobs,
 );
 
 // Search for company by name
 router.get(
   '/api/company/',
+  apiLimiter,
   verifyAccessToken,
   verifyAdminPermission,
-  apiLimiter,
   searchCompaniesByName,
 );
 
 // Upload company logo
 router.post(
   '/api/company/:companyId/logo',
+  apiLimiter,
   verifyAccessToken,
   upload.single('image'),
-  apiLimiter,
   uploadCompanyLogo,
 );
 
 // Upload company cover pic
 router.post(
   '/api/company/:companyId/cover-pic',
+  apiLimiter,
   verifyAccessToken,
   upload.single('image'),
-  apiLimiter,
   uploadCompanyCoverPic,
 );
 
 // Delete company logo
 router.delete(
   '/api/company/:companyId/logo',
-  verifyAccessToken,
   apiLimiter,
+  verifyAccessToken,
   deleteCompanyLogo,
 );
 
 // Delete company cover pic
 router.delete(
   '/api/company/:companyId/cover-pic',
-  verifyAccessToken,
   apiLimiter,
+  verifyAccessToken,
   deleteCompanyCoverPic,
 );
 
