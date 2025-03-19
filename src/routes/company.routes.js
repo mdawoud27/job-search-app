@@ -13,6 +13,7 @@ import {
   uploadCompanyLogo,
 } from '../controllers/company.controller.js';
 import { upload } from '../utils/imageStorage.js';
+import { apiLimiter } from '../utils/apiLimiter.js';
 
 const router = Router();
 
@@ -21,6 +22,7 @@ router.post(
   '/api/company',
   verifyAccessToken,
   verifyAdminPermission,
+  apiLimiter,
   addCompany,
 );
 
@@ -29,6 +31,7 @@ router.put(
   '/api/company/:companyId',
   verifyAccessToken,
   verifyAdminPermission,
+  apiLimiter,
   updateCompany,
 );
 
@@ -37,6 +40,7 @@ router.delete(
   '/api/company/:companyId',
   verifyAccessToken,
   verifyAdminPermission,
+  apiLimiter,
   softDeleteCompany,
 );
 
@@ -45,6 +49,7 @@ router.get(
   '/api/company/:companyId',
   verifyAccessToken,
   verifyAdminPermission,
+  apiLimiter,
   getCompanyWithJobs,
 );
 
@@ -53,6 +58,7 @@ router.get(
   '/api/company/',
   verifyAccessToken,
   verifyAdminPermission,
+  apiLimiter,
   searchCompaniesByName,
 );
 
@@ -61,6 +67,7 @@ router.post(
   '/api/company/:companyId/logo',
   verifyAccessToken,
   upload.single('image'),
+  apiLimiter,
   uploadCompanyLogo,
 );
 
@@ -69,6 +76,7 @@ router.post(
   '/api/company/:companyId/cover-pic',
   verifyAccessToken,
   upload.single('image'),
+  apiLimiter,
   uploadCompanyCoverPic,
 );
 
@@ -76,6 +84,7 @@ router.post(
 router.delete(
   '/api/company/:companyId/logo',
   verifyAccessToken,
+  apiLimiter,
   deleteCompanyLogo,
 );
 
@@ -83,6 +92,7 @@ router.delete(
 router.delete(
   '/api/company/:companyId/cover-pic',
   verifyAccessToken,
+  apiLimiter,
   deleteCompanyCoverPic,
 );
 
