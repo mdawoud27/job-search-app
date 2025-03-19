@@ -22,6 +22,7 @@ router.post('/api/auth/signin', apiLimiter, signin);
 // Initiate Google OAuth authentication
 router.get(
   '/auth/google',
+  apiLimiter,
   passport.authenticate('google', {
     scope: ['profile', 'email', 'openid'],
     prompt: 'select_account',
@@ -31,11 +32,11 @@ router.get(
 // Google OAuth callback
 router.get(
   '/auth/google/callback',
+  apiLimiter,
   passport.authenticate('google', {
     failureRedirect: '/login',
     session: false,
   }),
-  apiLimiter,
   googleOAuthCallback,
 );
 
