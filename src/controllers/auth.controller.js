@@ -383,7 +383,7 @@ export const refreshAccessToken = async (req, res, next) => {
         id: user._id,
         role: user.role,
       },
-      'thisisjwtaccesssecretkey12345',
+      process.env.JWT_ACCESS_KEY,
       { expiresIn: '1h' },
     );
 
