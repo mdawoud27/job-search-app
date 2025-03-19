@@ -15,27 +15,27 @@ const router = Router({ mergeParams: true });
 // Add job
 router.post(
   '/api/company/:companyId/job',
+  apiLimiter,
   verifyAccessToken,
   verifyAdminPermission,
-  apiLimiter,
   addJob,
 );
 
 // Update Job
 router.put(
   '/api/jobs/:jobId',
+  apiLimiter,
   verifyAccessToken,
   verifyAdminPermission,
-  apiLimiter,
   updateJob,
 );
 
 // Delete Job (soft delete)
 router.delete(
   '/api/jobs/:jobId',
+  apiLimiter,
   verifyAccessToken,
   verifyAdminPermission,
-  apiLimiter,
   deleteJob,
 );
 
