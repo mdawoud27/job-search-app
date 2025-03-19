@@ -14,27 +14,27 @@ const router = Router();
 // get Job Applications
 router.get(
   '/api/jobs/:jobId/applications',
+  apiLimiter,
   verifyAccessToken,
   verifyAdminPermission,
-  apiLimiter,
   getJobApplications,
 );
 
 // Apply to job
 router.get(
   '/api/jobs/:jobId/apply',
+  apiLimiter,
   verifyAccessToken,
   verifyUserPermission,
-  apiLimiter,
   applyToJob,
 );
 
 // Update application status
 router.patch(
   '/api/applications/:applicationId/status',
+  apiLimiter,
   verifyAccessToken,
   verifyAdminPermission,
-  apiLimiter,
   updateApplicationStatus,
 );
 
