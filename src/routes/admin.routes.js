@@ -6,6 +6,7 @@ import {
   banOrUnbanCompany,
   banOrUnbanUser,
 } from '../controllers/admin.controller.js';
+import { apiLimiter } from '../utils/apiLimiter.js';
 
 const router = Router();
 
@@ -14,6 +15,7 @@ router.patch(
   '/admin/user/ban',
   verifyAccessToken,
   verifyAdminPermission,
+  apiLimiter,
   banOrUnbanUser,
 );
 
@@ -22,6 +24,7 @@ router.patch(
   '/admin/company/ban',
   verifyAccessToken,
   verifyAdminPermission,
+  apiLimiter,
   banOrUnbanCompany,
 );
 
@@ -30,6 +33,7 @@ router.patch(
   '/admin/company/approve',
   verifyAccessToken,
   verifyAdminPermission,
+  apiLimiter,
   approveCompany,
 );
 
