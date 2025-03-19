@@ -344,7 +344,12 @@ const uploadCompanyImage = async (req, res, fieldName) => {
   } catch (error) {
     // If there's an error, delete the uploaded file
     if (req.file && req.file.path) {
-      fs.unlinkSync(req.file.path);
+      const normalizedPath = path.resolve(req.file.path);
+      if (normalizedPath.startsWith(path.resolve(process.env.UPLOAD_DIR))) {
+        fs.unlinkSync(normalizedPath);
+      } else {
+        console.error('Attempted to delete a file outside the upload directory:', normalizedPath);
+      }
     }
 
     return res.status(500).json({ error: error.message });
