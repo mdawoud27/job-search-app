@@ -10,7 +10,7 @@ import { apiLimiter } from '../utils/apiLimiter.js';
 const router = Router();
 
 router.use(apiLimiter, authRouter);
-router.use(apiLimiter, userRouter);
+router.use(userRouter);
 router.use(apiLimiter, adminRouter);
 router.use(apiLimiter, companyRouter);
 router.use(apiLimiter, jobRouter);
