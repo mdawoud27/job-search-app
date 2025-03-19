@@ -296,7 +296,7 @@ export const resetPassword = async (req, res, next) => {
   try {
     const { email, otpCode, password } = req.body;
 
-    const user = await User.findOne({ email, provider: 'system' });
+    const user = await User.findOne({ email: { $eq: email }, provider: 'system' });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
