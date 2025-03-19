@@ -5,6 +5,7 @@ import {
   addCompanyValidation,
   updateCompanyValidation,
 } from '../validations/company.validation.js';
+import _ from 'lodash';
 
 /**
  * @desc   Add new company
@@ -264,7 +265,8 @@ export const searchCompaniesByName = async (req, res, next) => {
     }
 
     // Create a case-insensitive regex pattern for partial matching
-    const searchPattern = new RegExp(name.trim(), 'i');
+    const safeName = _.escapeRegExp(name.trim());
+    const searchPattern = new RegExp(safeName, 'i');
 
     const companies = await Company.find({
       companyName: searchPattern,
