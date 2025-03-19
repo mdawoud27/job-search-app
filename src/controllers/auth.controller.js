@@ -122,7 +122,10 @@ export const signin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email, provider: 'system' });
+    const user = await User.findOne({
+      email: { $eq: email },
+      provider: 'system',
+    });
     if (!user) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
