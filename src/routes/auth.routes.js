@@ -10,12 +10,13 @@ import {
   signup,
 } from '../controllers/auth.controller.js';
 import passport from 'passport';
+import { apiLimiter } from '../utils/apiLimiter.js';
 
 const router = Router();
 
-router.post('/api/auth/signup', signup);
-router.post('/api/auth/confirm-otp', confirmOTP);
-router.post('/api/auth/signin', signin);
+router.post('/api/auth/signup', apiLimiter, signup);
+router.post('/api/auth/confirm-otp', apiLimiter, confirmOTP);
+router.post('/api/auth/signin', apiLimiter, signin);
 
 // Google OAuth Routes
 // Initiate Google OAuth authentication
@@ -34,14 +35,15 @@ router.get(
     failureRedirect: '/login',
     session: false,
   }),
+  apiLimiter,
   googleOAuthCallback,
 );
 
 // Google OAuth Login/Signup Endpoint (for mobile/SPA)
-router.post('/auth/google', googleOAuthLogin);
+router.post('/auth/google', apiLimiter, googleOAuthLogin);
 
-router.post('/api/auth/forget-password', sendForgetPasswordOTP);
-router.post('/api/auth/reset-password', resetPassword);
-router.post('/api/auth/refresh-token', refreshAccessToken);
+router.post('/api/auth/forget-password', apiLimiter, sendForgetPasswordOTP);
+router.post('/api/auth/reset-password', apiLimiter, resetPassword);
+router.post('/api/auth/refresh-token', apiLimiter, refreshAccessToken);
 
 export default router;
