@@ -119,7 +119,7 @@ export const updateCompany = async (req, res, next) => {
     // Check if updated company name already exists (if changing name)
     if (companyName && companyName !== company.companyName) {
       const existingCompanyName = await Company.findOne({
-        companyName: companyName,
+        companyName: { $eq: companyName },
         _id: { $ne: companyId },
         deletedAt: null,
       });
@@ -132,7 +132,7 @@ export const updateCompany = async (req, res, next) => {
     // Check if updated company email already exists (if changing email)
     if (companyEmail && companyEmail !== company.companyEmail) {
       const existingCompanyEmail = await Company.findOne({
-        companyEmail: companyEmail,
+        companyEmail: { $eq: companyEmail },
         _id: { $ne: companyId },
         deletedAt: null,
       });
