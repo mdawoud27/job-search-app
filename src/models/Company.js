@@ -1,17 +1,7 @@
 import mongoose from 'mongoose';
 import { imageSchema } from './Attachments.js';
 import { attachmentSchema } from './Attachments.js';
-
-const EMPLOYEE_RANGES = [
-  '1-10',
-  '11-20',
-  '21-50',
-  '51-100',
-  '101-250',
-  '251-500',
-  '501-1000',
-  '1000+',
-];
+import { EMPLOYEE_RANGES } from '../utils/constants.js';
 
 const companySchema = new mongoose.Schema(
   {
