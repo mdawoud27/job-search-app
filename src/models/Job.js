@@ -20,7 +20,7 @@ const jobSchema = new mongoose.Schema(
     },
     seniorityLevel: {
       type: String,
-      enum: ['Junior', 'Mid-Level', 'Senior', 'Team-Lead', 'CTO'],
+      enum: ['Fresh', 'Junior', 'Mid-Level', 'Senior', 'Team-Lead', 'CTO'],
       required: [true, 'Seniority level is required'],
     },
     jobDescription: {
@@ -34,6 +34,7 @@ const jobSchema = new mongoose.Schema(
     },
     technicalSkills: {
       type: [{ type: String, trim: true }],
+      // TODO: validate with joi
       validate: {
         validator: function (skills) {
           return skills.length > 0;
