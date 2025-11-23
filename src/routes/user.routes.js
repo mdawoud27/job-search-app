@@ -13,8 +13,13 @@ import { verifyAccessToken } from '../middlewares/auth.js';
 import { verifyUserPermission } from '../middlewares/verifyUserPermission.js';
 import { upload } from '../utils/imageStorage.js';
 import { apiLimiter } from '../utils/apiLimiter.js';
+import { userController } from '../container.js';
 
 const router = Router();
+
+router.get('/api/users/:id', (req, res, next) =>
+  userController.getUser(req, res, next),
+);
 
 // Update user account
 router.put(

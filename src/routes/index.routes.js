@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import authRouter from './routes/auth.routes.js';
-import userRouter from './routes/user.routes.js';
-import adminRouter from './routes/admin.routes.js';
-import companyRouter from './routes/company.routes.js';
-import jobRouter from './routes/job.routes.js';
-import applicationRouter from './routes/application.routes.js';
+import authRouter from './auth.routes.js';
+import userRouter from './user.routes.js';
+import adminRouter from './admin.routes.js';
+import companyRouter from './company.routes.js';
+import jobRouter from './job.routes.js';
+import applicationRouter from './application.routes.js';
 
 const router = Router();
 

@@ -1,25 +1,49 @@
 import { Router } from 'express';
-import {
-  confirmOTP,
-  googleOAuthCallback,
-  googleOAuthLogin,
-  refreshAccessToken,
-  resetPassword,
-  sendForgetPasswordOTP,
-  signin,
-  signup,
-} from '../controllers/auth.controller.js';
 import passport from 'passport';
 import { apiLimiter } from '../utils/apiLimiter.js';
+import { AuthController } from '../controllers/auth.controller.js';
+import { authController } from '../container.js';
 
 const router = Router();
+const controller = new AuthController();
 
-router.post('/api/auth/signup', apiLimiter, signup);
-router.post('/api/auth/confirm-otp', apiLimiter, confirmOTP);
-router.post('/api/auth/signin', apiLimiter, signin);
+// -------------------------
+// SYSTEM AUTH ROUTES
+// -------------------------
 
-// Google OAuth Routes
-// Initiate Google OAuth authentication
+router.post('/api/auth/signup', apiLimiter, (req, res, next) =>
+  authController.signup(req, res, next),
+);
+
+router.post('/api/auth/confirm-otp', apiLimiter, (req, res, next) =>
+  authController.confirm(req, res, next),
+);
+
+router.post('/api/auth/signin', apiLimiter, controller.login.bind(controller));
+
+router.post(
+  '/api/auth/forget-password',
+  apiLimiter,
+  controller.forgotPassword.bind(controller),
+);
+
+router.post(
+  '/api/auth/reset-password',
+  apiLimiter,
+  controller.resetPassword.bind(controller),
+);
+
+router.post(
+  '/api/auth/refresh-token',
+  apiLimiter,
+  controller.refreshToken.bind(controller),
+);
+
+// -------------------------
+// GOOGLE OAUTH (Web)
+// -------------------------
+
+// Web redirect login
 router.get(
   '/auth/google',
   apiLimiter,
@@ -37,14 +61,16 @@ router.get(
     failureRedirect: '/login',
     session: false,
   }),
-  googleOAuthCallback,
+  controller.googleOAuthCallback.bind(controller),
 );
 
-// Google OAuth Login/Signup Endpoint (for mobile/SPA)
-router.post('/auth/google', apiLimiter, googleOAuthLogin);
-
-router.post('/api/auth/forget-password', apiLimiter, sendForgetPasswordOTP);
-router.post('/api/auth/reset-password', apiLimiter, resetPassword);
-router.post('/api/auth/refresh-token', apiLimiter, refreshAccessToken);
+// -------------------------
+// GOOGLE OAUTH (Mobile / SPA)
+// -------------------------
+// router.post(
+//   '/auth/google',
+//   apiLimiter,
+//   controller.googleOAuthLogin.bind(controller),
+// );
 
 export default router;
