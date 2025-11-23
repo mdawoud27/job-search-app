@@ -22,13 +22,20 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Email is required'],
       unique: true,
       trim: true,
+      lowercase: true,
     },
     password: {
       type: String,
       trim: true,
-      required: this.provider === 'system',
+      required: function () {
+        return this.provider === 'system';
+      },
     },
-    provider: { type: String, enum: ['google', 'system'], default: 'system' },
+    provider: {
+      type: String,
+      enum: ['google', 'system'],
+      default: 'system',
+    },
     gender: {
       type: String,
       enum: ['Male', 'Female'],
@@ -39,11 +46,18 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     mobileNumber: { type: String, trim: true },
-    role: { type: String, enum: ['User', 'Admin'], default: 'User' },
+    role: {
+      type: String,
+      enum: ['User', 'Admin'],
+      default: 'User',
+    },
     isConfirmed: { type: Boolean, default: false },
     deletedAt: { type: Date, default: null },
     bannedAt: { type: Date, default: null },
-    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
     changeCredentialTime: { type: Date, default: Date.now },
     profilePic: { type: imageSchema, default: null },
     coverPic: { type: imageSchema, default: null },
@@ -51,105 +65,171 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+      transform: function (doc, ret) {
+        delete ret.password;
+        delete ret.__v;
+        return ret;
+      },
+    },
     toObject: { virtuals: true },
   },
 );
 
-// Virtual fields for username
+// Indexes for performance
+userSchema.index({ email: 1 });
+userSchema.index({ deletedAt: 1, bannedAt: 1 });
+
+// ==================== VIRTUALS ====================
 userSchema.virtual('username').get(function () {
   return `${this.firstName}${this.lastName}`;
 });
 
-// Pre-save middleware
-userSchema.pre('save', async function (next) {
-  // hash password
-  if (this.isModified('password') && this.password) {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
-
-  // encrypt mobile number
-  if (this.isModified('mobileNumber') && this.mobileNumber) {
-    this.mobileNumber = encrypt(this.mobileNumber);
-  }
-
-  // Hash OTP codes before saving
-  if (this.isModified('OTP') && this.OTP.length > 0) {
-    for (const otp of this.OTP) {
-      otp.code = bcrypt.hash(otp.code, 10);
-    }
-  }
-  next();
+userSchema.virtual('fullName').get(function () {
+  return `${this.firstName} ${this.lastName}`;
 });
 
-// Method to compare password
+// ==================== MIDDLEWARE ====================
+userSchema.pre('save', async function (next) {
+  try {
+    // Hash password if modified
+    if (this.isModified('password') && this.password) {
+      this.password = await bcrypt.hash(this.password, 10);
+    }
+
+    // Encrypt mobile number if modified
+    if (this.isModified('mobileNumber') && this.mobileNumber) {
+      this.mobileNumber = encrypt(this.mobileNumber);
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ==================== INSTANCE METHODS ====================
+/* eslint no-undef: off */
 userSchema.methods.comparePassword = async function (userPassword) {
+  if (!this.password) {
+    return false;
+  }
   return await bcrypt.compare(userPassword, this.password);
 };
 
 userSchema.methods.getDecryptedMobileNumber = function () {
-  return decrypt(this.mobileNumber);
+  return this.mobileNumber ? decrypt(this.mobileNumber) : null;
 };
 
-// generate accessToken
-userSchema.methods.accessToken = function () {
-  if (!process.env.JWT_ACCESS_SECRET) {
-    throw new Error('JWT Access Secret is not defined');
+userSchema.methods.generateAccessToken = function () {
+  if (!process.env.JWT_ACCESS_KEY) {
+    throw new Error('JWT_ACCESS_KEY is not defined');
   }
   return jwt.sign(
-    { id: this._id, email: this.email, role: this.role },
-    /* eslint no-undef: off */
+    {
+      id: this._id,
+      email: this.email,
+      role: this.role,
+    },
     process.env.JWT_ACCESS_KEY,
     { expiresIn: '1h' },
   );
 };
 
-// generate refreshToken
-userSchema.methods.refreshToken = function () {
-  if (!process.env.JWT_REFRESH_SECRET) {
-    throw new Error('JWT Refresh Secret is not defined');
+userSchema.methods.generateRefreshToken = function () {
+  if (!process.env.JWT_REFRESH_KEY) {
+    throw new Error('JWT_REFRESH_KEY is not defined');
   }
   return jwt.sign({ id: this._id }, process.env.JWT_REFRESH_KEY, {
     expiresIn: '7d',
   });
 };
 
-// Method to soft delete a user
-userSchema.methods.softDelete = function () {
-  this.deletedAt = new Date();
-  return this.save();
+userSchema.methods.generateTokens = function () {
+  return {
+    accessToken: this.generateAccessToken(),
+    refreshToken: this.generateRefreshToken(),
+  };
 };
 
-// Method to check if user is banned or deleted
+userSchema.methods.softDelete = async function () {
+  this.deletedAt = new Date();
+  return await this.save();
+};
+
+userSchema.methods.restore = async function () {
+  this.deletedAt = null;
+  return await this.save();
+};
+
+userSchema.methods.ban = async function () {
+  this.bannedAt = new Date();
+  return await this.save();
+};
+
+userSchema.methods.unban = async function () {
+  this.bannedAt = null;
+  return await this.save();
+};
+
 userSchema.methods.isActive = function () {
   return !this.deletedAt && !this.bannedAt;
 };
 
-userSchema.methods.banUnBanUserFunction = function (action) {
-  action === 'true' ? (this.bannedAt = new Date()) : (this.bannedAt = null);
-  return this.save();
+userSchema.methods.isDeleted = function () {
+  return !!this.deletedAt;
 };
 
-export const generateTokens = (user) => {
-  const accessToken = jwt.sign(
-    {
-      id: user._id,
-      email: user.email,
-      role: user.role,
-    },
-    process.env.JWT_ACCESS_KEY,
-    { expiresIn: '1h' },
-  );
-
-  const refreshToken = jwt.sign(
-    {
-      id: user._id,
-    },
-    process.env.JWT_REFRESH_KEY,
-    { expiresIn: '7d' },
-  );
-
-  return { accessToken, refreshToken };
+userSchema.methods.isBanned = function () {
+  return !!this.bannedAt;
 };
 
+// ==================== STATIC METHODS ====================
+userSchema.statics.findActive = function (filter = {}) {
+  return this.find({
+    ...filter,
+    deletedAt: null,
+    bannedAt: null,
+  });
+};
+
+userSchema.statics.findByEmail = function (email) {
+  return this.findOne({ email: email.toLowerCase() });
+};
+
+userSchema.statics.findActiveById = function (id) {
+  return this.findOne({
+    _id: id,
+    deletedAt: null,
+    bannedAt: null,
+  });
+};
+
+userSchema.statics.hashPassword = async function (password) {
+  return await bcrypt.hash(password, 10);
+};
+
+userSchema.statics.verifyToken = function (token, secret) {
+  try {
+    return jwt.verify(token, secret);
+  } catch (error) {
+    throw new Error('Invalid or expired token: ', error);
+  }
+};
+
+// ==================== QUERY HELPERS ====================
+userSchema.query.active = function () {
+  return this.where({ deletedAt: null, bannedAt: null });
+};
+
+userSchema.query.deleted = function () {
+  return this.where({ deletedAt: { $ne: null } });
+};
+
+userSchema.query.banned = function () {
+  return this.where({ bannedAt: { $ne: null } });
+};
+
+// Export the model
 export const User = mongoose.model('User', userSchema);
