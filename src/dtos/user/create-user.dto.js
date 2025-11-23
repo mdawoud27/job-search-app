@@ -1,0 +1,75 @@
+import Joi from 'joi';
+
+export class CreateUserDto {
+  static validate(body) {
+    const schema = Joi.object({
+      firstName: Joi.string().required().trim().min(3).max(30).messages({
+        'string.empty': 'First name is required',
+        'string.min': 'First name must be at least 3 characters long.',
+        'string.max': 'First name must be at most 30 characters long.',
+      }),
+      lastName: Joi.string().required().trim().messages({
+        'string.empty': 'Last name is required',
+        'string.min': 'Last name must be at least 3 characters long.',
+        'string.max': 'Last name must be at most 30 characters long.',
+      }),
+      email: Joi.string().email().required().trim().messages({
+        'string.empty': 'Email is required.',
+        'string.email': 'Please enter a valid email address.',
+      }),
+      password: Joi.string().required().trim().min(8).max(32).messages({
+        'string.empty': 'Password is required.',
+        'string.min': 'Password must be at least 8 characters long.',
+        'string.max': 'Password must be at most 32 characters long.',
+      }),
+      gender: Joi.string().required().valid('Male', 'Female').messages({
+        'string.empty': 'Gender is required.',
+        'string.only': "Gender must be either 'male' or 'female'.",
+      }),
+      DOB: Joi.date()
+        .required()
+        .max(new Date(new Date().setFullYear(new Date().getFullYear() - 18))) // Ensures the user is at least 18 years old
+        .messages({
+          'date.base': 'Invalid date format for DOB.',
+          'date.empty': 'Date of birth is required.',
+          'date.max': 'You must be at least 18 years old.',
+        }),
+      mobileNumber: Joi.string().required().trim().messages({
+        'string.empty': 'Mobile number is required',
+      }),
+    });
+
+    return schema.validate(body);
+  }
+
+  static fromRequest(body) {
+    return {
+      firstName: body.firstName,
+      lastName: body.lastName,
+      email: body.email,
+      password: body.password,
+      gender: body.gender,
+      DOB: body.DOB,
+      mobileNumber: body.mobileNumber,
+    };
+  }
+  static toResponse(user) {
+    return {
+      message: 'User created successfully',
+      data: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        gender: user.gender,
+        username: user.username,
+        mobileNumber: user.mobileNumber,
+        provider: user.provider,
+        role: user.role,
+        isConfirmed: user.isConfirmed,
+        profilePic: user.profilePic,
+        coverPic: user.coverPic,
+        createdAt: user.createdAt,
+      },
+    };
+  }
+}
