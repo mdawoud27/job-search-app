@@ -25,9 +25,8 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: function () {
-        return this.provider === 'system';
-      },
+      trim: true,
+      required: this.provider === 'system',
     },
     provider: { type: String, enum: ['google', 'system'], default: 'system' },
     gender: {
@@ -38,32 +37,6 @@ const userSchema = new mongoose.Schema(
     DOB: {
       type: Date,
       required: true,
-      validate: {
-        validator: function (value) {
-          // Future dates are not allowed
-          if (value >= new Date()) {
-            return false;
-          }
-
-          // Calculate the age
-          const today = new Date();
-          const birthDate = new Date(value);
-          let age = today.getFullYear() - birthDate.getFullYear();
-
-          // Adjust if birthday hasn't occurred this year yet
-          const monthDiff = today.getMonth() - birthDate.getMonth();
-          if (
-            monthDiff < 0 ||
-            (monthDiff < 0 && today.getDate() < birthDate.getDate())
-          ) {
-            age--;
-          }
-
-          return age >= 18;
-        },
-        message:
-          'User must be at least 18 years old and DOB must be in the past',
-      },
     },
     mobileNumber: { type: String, trim: true },
     role: { type: String, enum: ['User', 'Admin'], default: 'User' },
