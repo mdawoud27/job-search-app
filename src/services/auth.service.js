@@ -1,0 +1,152 @@
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { OtpUtils } from '../utils/otpUtils.js';
+import { sendOTPEmail } from '../utils/emailService.js';
+import { UserResponseDto } from '../dtos/user/user-response.dto.js';
+import { ConfirmOtpDto } from '../dtos/user/confirm-opt.dto.js';
+
+export class AuthService {
+  constructor(userRepository) {
+    this.userRepository = userRepository;
+  }
+
+  // signup
+  async signup(dto) {
+    //check if user exists or not
+    const existingUser = await this.userRepository.findByEmail(dto.email);
+    if (existingUser) {
+      throw new Error('Email is already exists');
+    }
+
+    const otpCode = OtpUtils.generateOTP();
+    const hashedOtp = await OtpUtils.hashOTP(otpCode);
+
+    const otpEntry = {
+      code: hashedOtp,
+      type: 'confirmEmail',
+      expiresIn: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+    };
+
+    const user = await this.userRepository.create({ ...dto, OTP: [otpEntry] });
+
+    // Send OTP email
+    await sendOTPEmail(dto.email, otpCode);
+    return UserResponseDto.toResponse(user);
+  }
+
+  // confirm otp
+  async confirmEmail(dto) {
+    const user = await this.userRepository.findByEmail(dto.email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const lastOtp = user.OTP.findLast((o) => o.type === 'confirmEmail');
+    if (!lastOtp) {
+      throw new Error('No OTP found');
+    }
+
+    const isValid = await OtpUtils.validateOTP(dto.OTP, lastOtp.code);
+    if (!isValid) {
+      throw new Error('Invalid OTP');
+    }
+
+    if (lastOtp.expiresIn < new Date()) {
+      throw new Error('OTP expired');
+    }
+
+    user.isConfirmed = true;
+    await user.save();
+
+    return ConfirmOtpDto.toResponse(user);
+  }
+
+  // login
+  async login(dto) {
+    const user = await this.userRepository.findByEmail(dto.email);
+    if (!user) {
+      throw new Error('Invalid email or password');
+    }
+
+    const match = await bcrypt.compare(dto.password, user.password);
+    if (!match) {
+      throw new Error('Invalid email or password');
+    }
+    const accessToken = jwt.sign(
+      { id: user._id, email: user.email, role: user.role },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: '1h' },
+    );
+
+    const refreshToken = jwt.sign(
+      { id: user._id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: '7d' },
+    );
+    await this.userRepository.updateRefreshToken(user._id, refreshToken);
+
+    return { user, accessToken, refreshToken };
+  }
+
+  // forget password
+  async forgotPassword(dto) {
+    const user = await this.userRepository.findByEmail(dto.email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const otp = generateOTP();
+    const hashed = await hashOTP(otp);
+
+    const otpEntry = {
+      code: hashed,
+      type: 'resetPassword',
+      expiresIn: new Date(Date.now() + 10 * 60 * 1000),
+    };
+
+    await this.userRepository.updateOtp(dto.email, otpEntry);
+
+    await sendOTPEmail(dto.email, otp);
+    return { message: 'OTP sent to email' };
+  }
+
+  // reset password
+  async resetPassword(dto) {
+    const user = await this.userRepository.findByEmailAny(dto.email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const lastOtp = user.OTP[user.OTP.length - 1];
+
+    if (!(await validateOTP(dto.code, lastOtp.code))) {
+      throw new Error('Invalid OTP');
+    }
+
+    if (lastOtp.expiresIn < new Date()) {
+      throw new Error('OTP expired');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    return this.userRepository.updatePassword(user._id, hashedPassword);
+  }
+
+  async refresh(token) {
+    /* eslint no-undef: off */
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    const user = await this.userRepository.findById(decoded.id);
+
+    if (!user || user.refreshToken !== token) {
+      throw new Error('Invalid refresh token');
+    }
+
+    const newAccess = jwt.sign(
+      { id: user._id },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: '1h' },
+    );
+
+    return { accessToken: newAccess };
+  }
+}
