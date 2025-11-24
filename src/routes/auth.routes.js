@@ -27,16 +27,12 @@ router.post('/api/auth/signin', apiLimiter, (req, res, next) =>
   authController.login(req, res, next),
 );
 
-router.post(
-  '/api/auth/forget-password',
-  apiLimiter,
-  controller.forgotPassword.bind(controller),
+router.post('/api/auth/forget-password', apiLimiter, (req, res, next) =>
+  authController.forgotPassword(req, res, next),
 );
 
-router.post(
-  '/api/auth/reset-password',
-  apiLimiter,
-  controller.resetPassword.bind(controller),
+router.post('/api/auth/reset-password', apiLimiter, (req, res, next) =>
+  authController.resetPassword(req, res, next),
 );
 
 router.post(
