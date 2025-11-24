@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
-import { setupOTPCleanupJob } from '../utils/otpCleanup.js';
+// import { setupOTPCleanupJob } from '../utils/otpCleanup.js';
+import { startOTPCleanupJob } from '../jobs/otp-cleanup.job.js';
 dotenv.config();
 
 /* eslint no-undef: off */
@@ -12,7 +13,8 @@ const connectToDB = async () => {
   try {
     await mongoose.connect(`${url}/${dbName}`);
     console.log(`Connected to DB`);
-    setupOTPCleanupJob();
+    startOTPCleanupJob();
+    // setupOTPCleanupJob();
   } catch (err) {
     console.log(`Database connection error: ${err.message}`);
     process.exit(1);
