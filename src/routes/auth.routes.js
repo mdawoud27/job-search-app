@@ -35,10 +35,8 @@ router.post('/api/auth/reset-password', apiLimiter, (req, res, next) =>
   authController.resetPassword(req, res, next),
 );
 
-router.post(
-  '/api/auth/refresh-token',
-  apiLimiter,
-  controller.refreshToken.bind(controller),
+router.post('/api/auth/refresh-token', apiLimiter, (req, res, next) =>
+  authController.refreshToken(req, res, next),
 );
 
 // -------------------------
