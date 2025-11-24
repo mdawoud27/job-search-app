@@ -1,11 +1,8 @@
 import { Router } from 'express';
-import passport from 'passport';
 import { apiLimiter } from '../utils/apiLimiter.js';
-import { AuthController } from '../controllers/auth.controller.js';
 import { authController } from '../container.js';
 
 const router = Router();
-const controller = new AuthController();
 
 // -------------------------
 // SYSTEM AUTH ROUTES
@@ -43,34 +40,12 @@ router.post('/api/auth/refresh-token', apiLimiter, (req, res, next) =>
 // GOOGLE OAUTH (Web)
 // -------------------------
 
-// Web redirect login
-router.get(
-  '/auth/google',
-  apiLimiter,
-  passport.authenticate('google', {
-    scope: ['profile', 'email', 'openid'],
-    prompt: 'select_account',
-  }),
+// Google OAuth routes
+router.get('/api/auth/google', (req, res, next) =>
+  authController.googleAuth(req, res, next),
 );
 
-// Google OAuth callback
-router.get(
-  '/auth/google/callback',
-  apiLimiter,
-  passport.authenticate('google', {
-    failureRedirect: '/login',
-    session: false,
-  }),
-  controller.googleOAuthCallback.bind(controller),
+router.get('/api/auth/google/callback', (req, res, next) =>
+  authController.googleCallback(req, res, next),
 );
-
-// -------------------------
-// GOOGLE OAUTH (Mobile / SPA)
-// -------------------------
-// router.post(
-//   '/auth/google',
-//   apiLimiter,
-//   controller.googleOAuthLogin.bind(controller),
-// );
-
 export default router;
