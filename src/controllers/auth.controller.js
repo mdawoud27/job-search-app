@@ -95,10 +95,10 @@ export class AuthController {
         return res.status(400).json({ error: error.details[0].message });
       }
 
-      const dto = new ResetPasswordDto(req.body);
+      const dto = ResetPasswordDto.fromRequest(req.body);
       const result = await this.authService.resetPassword(dto);
 
-      res.json(result);
+      res.json(ResetPasswordDto.toResponse(result));
     } catch (e) {
       next(e);
     }
