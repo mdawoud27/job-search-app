@@ -19,6 +19,10 @@ router.post('/api/auth/confirm-otp', apiLimiter, (req, res, next) =>
   authController.confirm(req, res, next),
 );
 
+router.post('/api/auth/resend-otp', apiLimiter, (req, res, next) =>
+  authController.resentOTP(req, res, next),
+);
+
 router.post('/api/auth/signin', apiLimiter, controller.login.bind(controller));
 
 router.post(
