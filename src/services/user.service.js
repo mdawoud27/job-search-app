@@ -1,4 +1,4 @@
-import { UserResponseDto } from '../dtos/user/user-response.dto.js';
+import { UserResponseDto } from '../dtos/auth/user-response.dto.js';
 
 export class UserService {
   constructor(userRepository) {

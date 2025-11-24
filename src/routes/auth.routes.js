@@ -4,10 +4,6 @@ import { authController } from '../container.js';
 
 const router = Router();
 
-// -------------------------
-// SYSTEM AUTH ROUTES
-// -------------------------
-
 router.post('/api/auth/signup', apiLimiter, (req, res, next) =>
   authController.signup(req, res, next),
 );
@@ -35,10 +31,6 @@ router.post('/api/auth/reset-password', apiLimiter, (req, res, next) =>
 router.post('/api/auth/refresh-token', apiLimiter, (req, res, next) =>
   authController.refreshToken(req, res, next),
 );
-
-// -------------------------
-// GOOGLE OAUTH (Web)
-// -------------------------
 
 // Google OAuth routes
 router.get('/api/auth/google', (req, res, next) =>
