@@ -62,6 +62,7 @@ const userSchema = new mongoose.Schema(
     profilePic: { type: imageSchema, default: null },
     coverPic: { type: imageSchema, default: null },
     OTP: [otpSchema],
+    refreshToken: { type: String, default: null },
   },
   {
     timestamps: true,
