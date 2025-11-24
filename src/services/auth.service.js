@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import { OtpUtils } from '../utils/otpUtils.js';
 import { sendOTPEmail } from '../utils/emailService.js';
 import { UserResponseDto } from '../dtos/user/user-response.dto.js';
@@ -191,21 +190,21 @@ export class AuthService {
     return { user, message: 'Password reset successfully' };
   }
 
-  async refresh(token) {
+  // refresh tokens
+  async refresh(refreshToken) {
     /* eslint no-undef: off */
-    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-    const user = await this.userRepository.findById(decoded.id);
+    const payload = TokenUtils.verifyRefreshToken(refreshToken);
+    const user = await this.userRepository.findById(payload.id);
 
-    if (!user || user.refreshToken !== token) {
+    if (!user || user.refreshToken !== refreshToken) {
       throw new Error('Invalid refresh token');
     }
 
-    const newAccess = jwt.sign(
-      { id: user._id },
-      process.env.JWT_ACCESS_SECRET,
-      { expiresIn: '1h' },
-    );
-
-    return { accessToken: newAccess };
+    const accessToken = TokenUtils.genAccessToken(user);
+    return {
+      refreshToken,
+      accessToken,
+      message: 'Access token has been generated',
+    };
   }
 }
