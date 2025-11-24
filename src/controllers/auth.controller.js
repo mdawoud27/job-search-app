@@ -64,10 +64,10 @@ export class AuthController {
         return res.status(400).json({ error: error.details[0].message });
       }
 
-      const dto = new LoginDto(req.body);
+      const dto = LoginDto.fromRequest(req.body);
       const result = await this.authService.login(dto);
 
-      res.json(result);
+      res.status(200).json(LoginDto.toResponse(result));
     } catch (e) {
       next(e);
     }
