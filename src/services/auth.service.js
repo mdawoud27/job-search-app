@@ -133,8 +133,22 @@ export class AuthService {
       throw new Error('User not found');
     }
 
-    const otp = generateOTP();
-    const hashed = await hashOTP(otp);
+    const lastOtp = user.OTP.findLast((o) => o.type === 'resetPassword');
+    if (lastOtp) {
+      const timeSinceLastOTP =
+        Date.now() - (lastOtp.expiresIn - 10 * 60 * 1000);
+      const oneMinute = 60 * 1000;
+
+      if (timeSinceLastOTP < oneMinute) {
+        const waitTime = Math.ceil((oneMinute - timeSinceLastOTP) / 1000);
+        throw new Error(
+          `Please wait ${waitTime} seconds before requesting a new OTP`,
+        );
+      }
+    }
+
+    const otp = OtpUtils.generateOTP();
+    const hashed = await OtpUtils.hashOTP(otp);
 
     const otpEntry = {
       code: hashed,
@@ -144,8 +158,8 @@ export class AuthService {
 
     await this.userRepository.updateOtp(dto.email, otpEntry);
 
-    await sendOTPEmail(dto.email, otp);
-    return { message: 'OTP sent to email' };
+    await sendOTPEmail(dto.email, otp, 'Reset your password');
+    return { user, message: 'OTP sent to email' };
   }
 
   // reset password
