@@ -116,6 +116,21 @@ export class AuthController {
       const result = await this.authService.refresh(refreshToken);
       res.status(200).json(TokenDto.toResponse(result));
     } catch (e) {
+      // Handle specific token errors
+      if (e.message.includes('Credentials have been changed')) {
+        return res.status(401).json({
+          error: e.message,
+          requiresLogin: true,
+        });
+      }
+
+      if (e.message.includes('Invalid') || e.message.includes('expired')) {
+        return res.status(401).json({
+          error: 'Invalid or expired refresh token',
+          requiresLogin: true,
+        });
+      }
+
       next(e);
     }
   }
