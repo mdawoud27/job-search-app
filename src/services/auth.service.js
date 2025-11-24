@@ -111,12 +111,16 @@ export class AuthService {
   async login(dto) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      throw new Error('Invalid email or password');
+      throw new Error('Invalid credentials');
     }
 
     const match = await OtpUtils.validate(dto.password, user.password);
     if (!match) {
-      throw new Error('Invalid email or password');
+      throw new Error('Invalid credentials');
+    }
+
+    if (!user.isConfirmed) {
+      throw new Error('Please confirm your email first');
     }
 
     const accessToken = TokenUtils.genAccessToken(user);
@@ -174,7 +178,7 @@ export class AuthService {
       throw new Error('No OTP found');
     }
 
-    if (!(await ResetPasswordDto.validate(dto.code, lastOtp.code))) {
+    if (!ResetPasswordDto.validate(dto.code, lastOtp.code)) {
       throw new Error('Invalid OTP');
     }
 
@@ -186,18 +190,64 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.password, salt);
 
     await this.userRepository.updatePassword(user._id, hashedPassword);
+    user.changeCredentialTime = new Date();
+    user.refreshToken = null;
+    await user.save();
+    return { user, message: 'Password reset successful. Please login.' };
+  }
 
-    return { user, message: 'Password reset successfully' };
+  // When user changes password
+  async changePassword(userId, oldPassword, newPassword) {
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isPasswordValid) {
+      throw new Error('Current password is incorrect');
+    }
+
+    // Hash new password
+    user.password = await bcrypt.hash(newPassword, 10);
+
+    // IMPORTANT: Update credential change time
+    user.changeCredentialTime = new Date();
+
+    user.refreshToken = null;
+
+    await user.save();
+
+    return {
+      message: 'Password changed successfully. Please login again',
+    };
   }
 
   // refresh tokens
   async refresh(refreshToken) {
-    /* eslint no-undef: off */
     const payload = TokenUtils.verifyRefreshToken(refreshToken);
     const user = await this.userRepository.findById(payload.id);
 
-    if (!user || user.refreshToken !== refreshToken) {
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (user.refreshToken !== refreshToken) {
       throw new Error('Invalid refresh token');
+    }
+
+    const tokenIssuedAt = new Date(payload.iat * 1000);
+    const credentialChangedAt = user.changeCredentialTime;
+
+    if (credentialChangedAt && tokenIssuedAt < credentialChangedAt) {
+      // Credentials were changed after this token was issued
+      // Invalidate the refresh token for security
+      user.refreshToken = null;
+      await user.save();
+
+      throw new Error('Credentials have been changed. Please login again');
     }
 
     const accessToken = TokenUtils.genAccessToken(user);
