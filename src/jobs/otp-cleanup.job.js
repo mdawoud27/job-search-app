@@ -1,7 +1,7 @@
 // src/jobs/otp-cleanup.job.js
 
 import cron from 'node-cron';
-import { User } from '../models/user.model.js';
+import { User } from '../models/User.js';
 
 /**
  *  * CRON Job to delete expired OTP codes
