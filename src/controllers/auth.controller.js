@@ -4,6 +4,7 @@ import { ConfirmOtpDto } from '../dtos/user/confirm-opt.dto.js';
 import { ForgotPasswordDto } from '../dtos/user/forgot-password.dto.js';
 import { ResetPasswordDto } from '../dtos/user/reset-password.dto.js';
 import { ResendOtpDto } from '../dtos/user/resend-otp.dto.js';
+import { TokenDto } from '../dtos/user/token.dto.js';
 
 export class AuthController {
   constructor(authService) {
@@ -106,9 +107,14 @@ export class AuthController {
 
   async refreshToken(req, res, next) {
     try {
-      const token = req.body.refreshToken;
-      const result = await this.authService.refresh(token);
-      res.json(result);
+      const { error } = TokenDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+      }
+
+      const { refreshToken } = TokenDto.fromRequest(req.body);
+      const result = await this.authService.refresh(refreshToken);
+      res.status(200).json(TokenDto.toResponse(result));
     } catch (e) {
       next(e);
     }
