@@ -9,7 +9,7 @@ export class OtpUtils {
     return await bcrypt.hash(otp, 10);
   }
 
-  static async validateOTP(otp, hashedOtp) {
+  static async validate(otp, hashedOtp) {
     return bcrypt.compare(otp, hashedOtp);
   }
 }
