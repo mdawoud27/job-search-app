@@ -79,10 +79,10 @@ export class AuthController {
       if (error) {
         return res.status(400).json({ error: error.details[0].message });
       }
-      const dto = new ForgotPasswordDto(req.body);
+      const dto = ForgotPasswordDto.fromRequest(req.body);
       const result = await this.authService.forgotPassword(dto);
 
-      res.json(result);
+      res.status(200).json(ForgotPasswordDto.toResponse(result));
     } catch (e) {
       next(e);
     }
