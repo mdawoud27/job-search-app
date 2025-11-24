@@ -257,4 +257,36 @@ export class AuthService {
       message: 'Access token has been generated',
     };
   }
+
+  // Google OAuth callback handler
+  async googleCallback(user) {
+    if (!user) {
+      throw new Error('Google authentication failed');
+    }
+
+    // Generate tokens
+    const accessToken = TokenUtils.genAccessToken(user);
+    const refreshToken = TokenUtils.genRefreshToken(user);
+
+    // Save refresh token
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    return {
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name || `${user.firstName} ${user.lastName}`.trim(),
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profilePic: user.profilePic,
+        provider: user.provider,
+        isConfirmed: user.isConfirmed,
+        profileComplete: user.profileComplete || (user.DOB && user.gender),
+      },
+      accessToken,
+      refreshToken,
+      message: 'Successfully signed in with Google',
+    };
+  }
 }
