@@ -3,6 +3,7 @@ import { LoginDto } from '../dtos/user/login.dto.js';
 import { ConfirmOtpDto } from '../dtos/user/confirm-opt.dto.js';
 import { ForgotPasswordDto } from '../dtos/user/forgot-password.dto.js';
 import { ResetPasswordDto } from '../dtos/user/reset-password.dto.js';
+import { ResendOtpDto } from '../dtos/user/resend-otp.dto.js';
 
 export class AuthController {
   constructor(authService) {
@@ -34,9 +35,25 @@ export class AuthController {
       const dto = ConfirmOtpDto.fromRequest(req.body);
       const result = await this.authService.confirmEmail(dto);
 
-      res.json(result);
+      res.status(200).json(result);
     } catch (e) {
       next(e);
+    }
+  }
+
+  async resentOTP(req, res, next) {
+    try {
+      const { error } = ResendOtpDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+      }
+
+      const dto = ResendOtpDto.fromRequest(req.body);
+      const result = await this.authService.resendOtpCode(dto);
+
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
     }
   }
 
