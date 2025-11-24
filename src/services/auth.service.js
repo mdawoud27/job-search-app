@@ -5,6 +5,7 @@ import { sendOTPEmail } from '../utils/emailService.js';
 import { UserResponseDto } from '../dtos/user/user-response.dto.js';
 import { ConfirmOtpDto } from '../dtos/user/confirm-opt.dto.js';
 import { TokenUtils } from '../utils/tokens.utils.js';
+import { ResetPasswordDto } from '../dtos/user/reset-password.dto.js';
 
 export class AuthService {
   constructor(userRepository) {
@@ -164,14 +165,17 @@ export class AuthService {
 
   // reset password
   async resetPassword(dto) {
-    const user = await this.userRepository.findByEmailAny(dto.email);
+    const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
       throw new Error('User not found');
     }
 
-    const lastOtp = user.OTP[user.OTP.length - 1];
+    const lastOtp = user.OTP.findLast((o) => o.type === 'resetPassword');
+    if (!lastOtp) {
+      throw new Error('No OTP found');
+    }
 
-    if (!(await validate(dto.code, lastOtp.code))) {
+    if (!(await ResetPasswordDto.validate(dto.code, lastOtp.code))) {
       throw new Error('Invalid OTP');
     }
 
@@ -179,9 +183,12 @@ export class AuthService {
       throw new Error('OTP expired');
     }
 
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(dto.password, salt);
 
-    return this.userRepository.updatePassword(user._id, hashedPassword);
+    await this.userRepository.updatePassword(user._id, hashedPassword);
+
+    return { user, message: 'Password reset successfully' };
   }
 
   async refresh(token) {
