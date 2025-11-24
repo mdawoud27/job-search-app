@@ -61,6 +61,51 @@ export class AuthService {
     return ConfirmOtpDto.toResponse(user);
   }
 
+  // resend OTP code
+  async resendOtpCode(dto) {
+    const user = await this.userRepository.findByEmail(dto.email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (user.isConfirmed) {
+      throw new Error('Email is already confirmed');
+    }
+
+    const lastOtp = user.OTP.findLast((o) => o.type === 'confirmEmail');
+    if (lastOtp) {
+      const timeSinceLastOTP =
+        Date.now() - (lastOtp.expiresIn - 10 * 60 * 1000);
+      const oneMinute = 60 * 1000;
+
+      if (timeSinceLastOTP < oneMinute) {
+        const waitTime = Math.ceil((oneMinute - timeSinceLastOTP) / 1000);
+        throw new Error(
+          `Please wait ${waitTime} seconds before requesting a new OTP`,
+        );
+      }
+    }
+
+    // Generate new otp
+    const otpCode = OtpUtils.generateOTP();
+    const hashedOtp = await OtpUtils.hashOTP(otpCode);
+
+    const otpEntry = {
+      code: hashedOtp,
+      type: 'confirmEmail',
+      expiresIn: new Date(Date.now() + 10 * 60 * 1000),
+    };
+
+    await this.userRepository.updateOtp(dto.email, otpEntry);
+    await user.save();
+    await sendOTPEmail(dto.email, otpCode);
+
+    return {
+      message: 'New OTP sent successfully',
+      email: user.email,
+    };
+  }
+
   // login
   async login(dto) {
     const user = await this.userRepository.findByEmail(dto.email);
