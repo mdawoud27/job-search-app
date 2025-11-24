@@ -28,9 +28,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: function () {
-        return this.provider === 'system';
+        // Password required only if NOT using OAuth
+        return !this.googleId;
+        // return this.provider === 'system';
       },
     },
+    googleId: { type: String, unique: true, sparse: true },
     provider: {
       type: String,
       enum: ['google', 'system'],
@@ -39,11 +42,11 @@ const userSchema = new mongoose.Schema(
     gender: {
       type: String,
       enum: ['Male', 'Female'],
-      required: true,
+      required: false,
     },
     DOB: {
       type: Date,
-      required: true,
+      required: false,
     },
     mobileNumber: { type: String, trim: true },
     role: {
@@ -95,8 +98,11 @@ userSchema.virtual('fullName').get(function () {
 userSchema.pre('save', async function (next) {
   try {
     // Hash password if modified
-    if (this.isModified('password') && this.password) {
-      this.password = await bcrypt.hash(this.password, 10);
+    if (this.isModified('password') && this.password && !this.googleId) {
+      // Don't hash if already hashed
+      if (!this.password.startsWith('$2b$')) {
+        this.password = await bcrypt.hash(this.password, 10);
+      }
     }
 
     // Encrypt mobile number if modified
