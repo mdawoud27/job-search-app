@@ -5,6 +5,7 @@ import { ForgotPasswordDto } from '../dtos/user/forgot-password.dto.js';
 import { ResetPasswordDto } from '../dtos/user/reset-password.dto.js';
 import { ResendOtpDto } from '../dtos/user/resend-otp.dto.js';
 import { TokenDto } from '../dtos/user/token.dto.js';
+import passport from 'passport';
 
 export class AuthController {
   constructor(authService) {
@@ -135,17 +136,52 @@ export class AuthController {
     }
   }
 
-  async googleOAuthCallback(req, res) {
-    try {
-      const user = req.user;
+  // Initiate Google OAuth
+  googleAuth(req, res, next) {
+    passport.authenticate('google', {
+      scope: ['profile', 'email'],
+    })(req, res, next);
+  }
 
-      return res.json({
-        message: 'Google OAuth login successful',
-        user,
-      });
-    } catch (error) {
-      // console.error(error);
-      res.status(500).json({ message: 'Google OAuth failed' + error });
-    }
+  // Google OAuth callback (returns JSON instead of redirect)
+  googleCallback(req, res, next) {
+    passport.authenticate(
+      'google',
+      { session: false },
+      // eslint-disable-next-line
+      async (err, user, info) => {
+        try {
+          if (err) {
+            return res.status(500).json({
+              message: 'Authentication failed',
+              error: err.message,
+            });
+          }
+
+          if (!user) {
+            return res.status(401).json({
+              message: 'Authentication failed: No user returned',
+            });
+          }
+
+          // Generate tokens and app user data
+          const result = await this.authService.googleCallback(user);
+
+          return res.status(200).json({
+            message: 'Google login successful',
+            data: {
+              accessToken: result.accessToken,
+              refreshToken: result.refreshToken,
+              user: result.user,
+            },
+          });
+        } catch (error) {
+          return res.status(500).json({
+            message: 'Internal server error',
+            error: error.message,
+          });
+        }
+      },
+    )(req, res, next);
   }
 }
