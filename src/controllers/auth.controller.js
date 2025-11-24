@@ -1,10 +1,10 @@
-import { CreateUserDto } from '../dtos/user/create-user.dto.js';
-import { LoginDto } from '../dtos/user/login.dto.js';
-import { ConfirmOtpDto } from '../dtos/user/confirm-opt.dto.js';
-import { ForgotPasswordDto } from '../dtos/user/forgot-password.dto.js';
-import { ResetPasswordDto } from '../dtos/user/reset-password.dto.js';
-import { ResendOtpDto } from '../dtos/user/resend-otp.dto.js';
-import { TokenDto } from '../dtos/user/token.dto.js';
+import { CreateUserDto } from '../dtos/auth/create-user.dto.js';
+import { LoginDto } from '../dtos/auth/login.dto.js';
+import { ConfirmOtpDto } from '../dtos/auth/confirm-opt.dto.js';
+import { ForgotPasswordDto } from '../dtos/auth/forgot-password.dto.js';
+import { ResetPasswordDto } from '../dtos/auth/reset-password.dto.js';
+import { ResendOtpDto } from '../dtos/auth/resend-otp.dto.js';
+import { TokenDto } from '../dtos/auth/token.dto.js';
 import passport from 'passport';
 
 export class AuthController {
