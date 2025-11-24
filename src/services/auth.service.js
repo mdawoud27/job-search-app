@@ -4,6 +4,7 @@ import { OtpUtils } from '../utils/otpUtils.js';
 import { sendOTPEmail } from '../utils/emailService.js';
 import { UserResponseDto } from '../dtos/user/user-response.dto.js';
 import { ConfirmOtpDto } from '../dtos/user/confirm-opt.dto.js';
+import { TokenUtils } from '../utils/tokens.utils.js';
 
 export class AuthService {
   constructor(userRepository) {
@@ -46,7 +47,7 @@ export class AuthService {
       throw new Error('No OTP found');
     }
 
-    const isValid = await OtpUtils.validateOTP(dto.OTP, lastOtp.code);
+    const isValid = await OtpUtils.validate(dto.OTP, lastOtp.code);
     if (!isValid) {
       throw new Error('Invalid OTP');
     }
@@ -113,24 +114,16 @@ export class AuthService {
       throw new Error('Invalid email or password');
     }
 
-    const match = await bcrypt.compare(dto.password, user.password);
+    const match = await OtpUtils.validate(dto.password, user.password);
     if (!match) {
       throw new Error('Invalid email or password');
     }
-    const accessToken = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
-      process.env.JWT_ACCESS_SECRET,
-      { expiresIn: '1h' },
-    );
 
-    const refreshToken = jwt.sign(
-      { id: user._id },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: '7d' },
-    );
+    const accessToken = TokenUtils.genAccessToken(user);
+    const refreshToken = TokenUtils.genRefreshToken(user);
     await this.userRepository.updateRefreshToken(user._id, refreshToken);
 
-    return { user, accessToken, refreshToken };
+    return { email: user.email, accessToken, refreshToken };
   }
 
   // forget password
@@ -164,7 +157,7 @@ export class AuthService {
 
     const lastOtp = user.OTP[user.OTP.length - 1];
 
-    if (!(await validateOTP(dto.code, lastOtp.code))) {
+    if (!(await validate(dto.code, lastOtp.code))) {
       throw new Error('Invalid OTP');
     }
 
