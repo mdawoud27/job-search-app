@@ -1,81 +1,80 @@
+// src/routes/user.routes.js
 import { Router } from 'express';
-import {
-  deleteCoverPic,
-  deleteProfilePic,
-  getUserProfile,
-  softDeleteAccount,
-  updateUserAccount,
-  updateUserPassword,
-  uploadCoverPic,
-  uploadProfilePic,
-} from '../controllers/user.controller.js';
-import { verifyAccessToken } from '../middlewares/auth.js';
-import { verifyUserPermission } from '../middlewares/verifyUserPermission.js';
-import { upload } from '../utils/imageStorage.js';
-import { apiLimiter } from '../utils/apiLimiter.js';
+import { Authorization } from '../middlewares/auth.middleware.js';
 import { userController } from '../container.js';
+import { upload } from '../utils/multer.js';
 
 const router = Router();
 
-router.get('/api/users/:id', (req, res, next) =>
-  userController.getUser(req, res, next),
+router.get(
+  '/api/users/:id',
+  Authorization.verifyToken,
+  Authorization.verifyUserPermission,
+  (req, res, next) => userController.getProfile(req, res, next),
 );
 
-// Update user account
+// Authenticated user endpoints
+router.get('/api/user/profile', Authorization.verifyToken, (req, res, next) =>
+  userController.getLoggedUser(req, res, next),
+);
+
 router.put(
-  '/user/:id',
-  apiLimiter,
-  verifyAccessToken,
-  verifyUserPermission,
-  updateUserAccount,
+  '/api/user/profile',
+  Authorization.verifyToken,
+  // Authorization.onlySelf,
+  (req, res, next) => userController.updateAccount(req, res, next),
 );
 
-// Retrive user profile date
-router.get('/user/profile', apiLimiter, verifyAccessToken, getUserProfile);
-
-// Update user password
 router.patch(
-  '/user/profile/password',
-  apiLimiter,
-  verifyAccessToken,
-  updateUserPassword,
+  '/api/user/profile/password',
+  Authorization.verifyToken,
+  // Authorization.onlySelf,
+  (req, res, next) => userController.updatePassword(req, res, next),
 );
 
-// Upload profile picture
-router.post(
-  '/user/profile/profile-pic',
-  apiLimiter,
-  verifyAccessToken,
-  upload.single('profilePic'),
-  uploadProfilePic,
+// Images
+router.patch(
+  '/api/user/profile/profile-pic',
+  Authorization.verifyToken,
+  upload.single('image'),
+  (req, res, next) => userController.uploadProfilePic(req, res, next),
 );
 
-// Upload cover picture
-router.post(
-  '/user/profile/cover-pic',
-  apiLimiter,
-  verifyAccessToken,
-  upload.single('coverPic'),
-  uploadCoverPic,
+router.patch(
+  '/api/user/profile/cover-pic',
+  Authorization.verifyToken,
+  upload.single('image'),
+  (req, res, next) => userController.uploadCoverPic(req, res, next),
 );
 
-// Delete profile picture
 router.delete(
-  '/user/profile/profile-pic',
-  apiLimiter,
-  verifyAccessToken,
-  deleteProfilePic,
+  '/api/user/profile/profile-pic',
+  Authorization.verifyToken,
+  (req, res, next) => userController.deleteProfilePic(req, res, next),
 );
-
-// Delete cover picture
 router.delete(
-  '/user/profile/cover-pic',
-  apiLimiter,
-  verifyAccessToken,
-  deleteCoverPic,
+  '/api/user/profile/cover-pic',
+  Authorization.verifyToken,
+  (req, res, next) => userController.deleteCoverPic(req, res, next),
 );
 
-// Soft delete user account
-router.delete('/user/delete', apiLimiter, verifyAccessToken, softDeleteAccount);
+router.delete('/api/user/delete', Authorization.verifyToken, (req, res, next) =>
+  userController.softDelete(req, res, next),
+);
+
+// For admins only
+router.delete(
+  '/api/user/:id/delete',
+  Authorization.verifyToken,
+  Authorization.verifyUserPermission,
+  (req, res, next) => userController.softDelete(req, res, next),
+);
+
+router.post(
+  '/api/user/:id/restore',
+  Authorization.verifyToken,
+  Authorization.verifyAdminPermission,
+  (req, res, next) => userController.restore(req, res, next),
+);
 
 export default router;
