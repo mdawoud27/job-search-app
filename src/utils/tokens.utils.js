@@ -8,7 +8,7 @@ export class TokenUtils {
     return jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       process.env.JWT_ACCESS_SECRET,
-      { expiresIn: '1h' },
+      { expiresIn: '6h' },
     );
   }
 
@@ -19,6 +19,10 @@ export class TokenUtils {
   }
 
   static verifyRefreshToken(token) {
-    return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    try {
+      return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    } catch (error) {
+      throw new Error('Invalid or expired refresh token', error);
+    }
   }
 }
