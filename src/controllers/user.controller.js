@@ -1,386 +1,144 @@
-import path from 'path';
-import fs from 'fs';
-import { User } from '../models/User.js';
-import { encrypt } from '../utils/crypto.js';
-import {
-  updateUserAccountValidation,
-  updateUserPasswordValidation,
-} from '../validations/user.validation.js';
+import { UpdateUserDto } from '../dtos/user/update-user.dto.js';
+import { UpdatePasswordDto } from '../dtos/user/update-password.dto.js';
+import { uploadBuffer } from '../config/cloudinary.config.js';
 
-/**
- * @desc   Update user account
- * @route  /user/:id
- * @method POST
- * @access private
- */
-export const updateUserAccount = async (req, res, next) => {
-  try {
-    // Ensure req.user is defined
-    if (!req.user) {
-      return res
-        .status(401)
-        .json({ message: 'Unauthorized: User not authenticated' });
-    }
-
-    const userId = req.params.id;
-    if (!userId) {
-      return res.status(400).json({ message: 'User ID is required' });
-    }
-
-    const { error, value } = updateUserAccountValidation(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    if (!user.isActive) {
-      return res.status(403).json({ message: 'Acount is not active' });
-    }
-
-    const updateData = {};
-
-    /* eslint curly: off */
-    if (value.firstName) updateData.firstName = value.firstName;
-    if (value.lastName) updateData.lastName = value.lastName;
-    if (value.gender) updateData.gender = value.gender;
-    if (value.DOB) updateData.DOB = value.DOB;
-    if (value.mobileNumber) {
-      updateData.mobileNumber = encrypt(value.mobileNumber);
-    }
-
-    // set updatedBy if admin is making the change
-    if (req.user.role === 'Admin' && req.user.id !== userId) {
-      updateData.updatedBy = req.user.id;
-    }
-
-    // update the user date
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $set: updateData },
-      { new: true, runValidators: true },
-    );
-
-    const userResponse = {
-      id: updatedUser._id,
-      firstName: updatedUser.firstName,
-      lastName: updatedUser.lastName,
-      email: updatedUser.email,
-      gender: updatedUser.gender,
-      DOB: updatedUser.DOB,
-    };
-
-    res.status(200).json({
-      message: 'User account updated successfully',
-      user: userResponse,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * @desc   Get logged in user profile
- * @route  /user/profile
- * @method GET
- * @access private
- */
-export const getUserProfile = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    if (!userId) {
-      return res.status(400).json({ message: 'User ID not found in token' });
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Check if user is active
-    if (!user.isActive()) {
-      return res.status(403).json({ message: 'Account is not active' });
-    }
-
-    const userResponse = {
-      username: user.username,
-      mobileNumber: user.mobileNumber,
-      profilePic: user.profilePic,
-      coverPic: user.coverPic,
-    };
-
-    res.status(200).json({
-      message: 'User profile retrieved successfully',
-      user: userResponse,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * @desc   Update the user password
- * @route  /user/profile/password
- * @method PATCH
- * @access private
- */
-export const updateUserPassword = async (req, res, next) => {
-  try {
-    // Ensure req.user is defined
-    if (!req.user) {
-      return res
-        .status(401)
-        .json({ message: 'Unauthorized: User not authenticated' });
-    }
-
-    const userId = req.params.id || req.user.id;
-    if (!userId) {
-      return res.status(400).json({ message: 'User ID is required' });
-    }
-
-    const { password } = req.body;
-    const { error } = updateUserPasswordValidation(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    if (!user.isActive) {
-      return res.status(403).json({ message: 'Acount is not active' });
-    }
-
-    // update the user password
-    user.password = password;
-    await user.save();
-
-    res.status(200).json({
-      message: 'User password updated successfully',
-      password: user.password,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * @desc  Upload image helper function
- */
-const uploadImage = async (req, res, fieldName) => {
-  const userId = req.user.id;
-
-  if (!req.file) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please upload an image file',
-    });
+export class UserController {
+  constructor(userService) {
+    this.userService = userService;
   }
 
-  try {
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
-    }
-
-    // If user already has an image, delete it
-    if (user[fieldName] && user[fieldName].public_id) {
-      const oldImagePath = path.join(
-        /* eslint no-undef: off */
-        process.env.UPLOAD_DIR,
-        user[fieldName].public_id,
-      );
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
+  // Update account
+  async updateAccount(req, res, next) {
+    try {
+      const { error } = UpdateUserDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
       }
+
+      const dto = UpdateUserDto.fromRequest(req.body);
+      const result = await this.userService.updateAccount(req.user.id, dto);
+
+      res.status(200).json(UpdateUserDto.toResponse(result));
+    } catch (err) {
+      next(err);
     }
-
-    const serverBaseUrl = `${req.protocol}://${req.get('host')}`;
-    const imageUrl = `${serverBaseUrl}/uploads/profile-pics/${req.file.filename}`;
-
-    // Update user profile or cover picture
-    user[fieldName] = {
-      secure_url: imageUrl,
-      public_id: req.file.filename,
-    };
-
-    await user.save();
-
-    return res.status(200).json({
-      success: true,
-      message: `${fieldName === 'profilePic' ? 'Profile' : 'Cover'} picture uploaded successfully`,
-      data: {
-        [fieldName]: user[fieldName],
-      },
-    });
-  } catch (error) {
-    // If there's an error, delete the uploaded file
-    if (req.file && req.file.path) {
-      const uploadDir = path.resolve(process.env.UPLOAD_DIR);
-      const filePath = path.resolve(req.file.path);
-      if (filePath.startsWith(uploadDir)) {
-        fs.unlinkSync(filePath);
-      }
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: `Error uploading ${fieldName === 'profilePic' ? 'profile' : 'cover'} picture`,
-      error: error.message,
-    });
   }
-};
 
-/**
- * @desc   Upload Profile picture
- * @route  /user/profile/profile-pic
- * @method POST
- * @access private
- */
-export const uploadProfilePic = async (req, res) => {
-  await uploadImage(req, res, 'profilePic');
-};
-
-/**
- * @desc   Upload Cover picture
- * @route  /user/profile/cover-pic
- * @method POST
- * @access private
- */
-export const uploadCoverPic = async (req, res) => {
-  await uploadImage(req, res, 'coverPic');
-};
-
-/**
- * @desc   Delete Profile picture
- * @route  /user/profile/profile-pic
- * @method DELETE
- * @access private
- */
-export const deleteProfilePic = async (req, res) => {
-  const userId = req.user.id;
-
-  try {
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
+  // Get login user data
+  async getLoggedUser(req, res, next) {
+    try {
+      const data = await this.userService.getLoggedUser(req.user.id);
+      res
+        .status(200)
+        .json({ message: 'User profile retrived successfully', data });
+    } catch (err) {
+      next(err);
     }
+  }
 
-    // Check if the user has a profile picture
-    if (user.profilePic && user.profilePic.public_id) {
-      const imagePath = path.join(
-        process.env.UPLOAD_DIR,
-        user.profilePic.public_id,
+  // Get another user's public profile
+  async getProfile(req, res, next) {
+    try {
+      const data = await this.userService.getPublicProfile(req.params.id);
+      res.json({ message: 'Profile retrieved', data });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Update password
+  async updatePassword(req, res, next) {
+    try {
+      const { error } = UpdatePasswordDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+      }
+
+      const dto = UpdatePasswordDto.fromRequest(req.body);
+      const result = await this.userService.changePassword(req.user.id, dto);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Upload Profile Pic
+  async uploadProfilePic(req, res, next) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No image uploaded' });
+      }
+      const cloudResult = await uploadBuffer(req.file.buffer, 'profilePics');
+
+      const result = await this.userService.uploadProfilePic(
+        req.user.id,
+        cloudResult,
       );
 
-      // Delete the image file from the server
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-
-      // Remove the profile picture from the user document
-      user.profilePic = null;
-      await user.save();
+      res.status(200).json(result);
+    } catch (err) {
+      next(err);
     }
-
-    return res.status(200).json({
-      success: true,
-      message: 'Profile picture deleted successfully',
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'Error deleting profile picture',
-      error: error.message,
-    });
   }
-};
 
-/**
- * @desc   Delete Cover picture
- * @route  /user/profile/cover-pic
- * @method DELETE
- * @access private
- */
-export const deleteCoverPic = async (req, res) => {
-  const userId = req.user.id;
+  // Upload Cover Pic
+  async uploadCoverPic(req, res, next) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No image uploaded' });
+      }
+      const cloudResult = await uploadBuffer(req.file.buffer, 'coverPics');
 
-  try {
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
-    }
-
-    // Check if the user has a cover picture
-    if (user.coverPic && user.coverPic.public_id) {
-      const imagePath = path.join(
-        process.env.UPLOAD_DIR,
-        user.coverPic.public_id,
+      const result = await this.userService.uploadCoverPic(
+        req.user.id,
+        cloudResult,
       );
 
-      // Delete the image file from the server
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-
-      // Remove the cover picture from the user document
-      user.coverPic = null;
-      await user.save();
+      res.status(200).json(result);
+    } catch (err) {
+      next(err);
     }
-
-    return res.status(200).json({
-      success: true,
-      message: 'Cover picture deleted successfully',
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'Error deleting cover picture',
-      error: error.message,
-    });
   }
-};
 
-/**
- * @desc   Soft delete account
- * @route  /user/delete
- * @method DELETE
- * @access private
- */
-export const softDeleteAccount = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-
-    // Find the user
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+  // Delete Profile Pic
+  async deleteProfilePic(req, res, next) {
+    try {
+      const result = await this.userService.deleteProfilePic(req.user.id);
+      res.json(result);
+    } catch (err) {
+      next(err);
     }
-
-    // Soft delete the user
-    await user.softDelete();
-
-    res.status(200).json({
-      message: 'User account soft deleted successfully',
-    });
-  } catch (error) {
-    next(error);
   }
-};
+
+  // Delete Cover Pic
+  async deleteCoverPic(req, res, next) {
+    try {
+      const result = await this.userService.deleteCoverPic(req.user.id);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Soft delete
+  async softDelete(req, res, next) {
+    try {
+      const userId = req.params.id ?? req.user.id;
+      const data = await this.userService.softDelete(userId);
+      res.status(200).json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Restore user
+  async restore(req, res, next) {
+    try {
+      const userId = req.params.id ?? req.user.id;
+      const data = await this.userService.restoreAccount(userId);
+      res.status(200).json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+}
