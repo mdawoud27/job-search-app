@@ -18,7 +18,7 @@ export class UserDAO {
     return user.save();
   }
 
-  async update(userId, data) {
+  async updateById(userId, data) {
     return User.findByIdAndUpdate(userId, data, { new: true });
   }
 
