@@ -137,7 +137,7 @@ export class AuthService {
       throw new Error('User not found');
     }
 
-    const lastOtp = user.OTP.findLast((o) => o.type === 'resetPassword');
+    const lastOtp = user.OTP.findLast((o) => o.type === 'forgetPassword');
     if (lastOtp) {
       const timeSinceLastOTP =
         Date.now() - (lastOtp.expiresIn - 10 * 60 * 1000);
@@ -156,7 +156,7 @@ export class AuthService {
 
     const otpEntry = {
       code: hashed,
-      type: 'resetPassword',
+      type: 'forgetPassword',
       expiresIn: new Date(Date.now() + 10 * 60 * 1000),
     };
 
@@ -173,7 +173,7 @@ export class AuthService {
       throw new Error('User not found');
     }
 
-    const lastOtp = user.OTP.findLast((o) => o.type === 'resetPassword');
+    const lastOtp = user.OTP.findLast((o) => o.type === 'forgetPassword');
     if (!lastOtp) {
       throw new Error('No OTP found');
     }
@@ -194,35 +194,6 @@ export class AuthService {
     user.refreshToken = null;
     await user.save();
     return { user, message: 'Password reset successful. Please login.' };
-  }
-
-  // When user changes password
-  async changePassword(userId, oldPassword, newPassword) {
-    const user = await this.userRepository.findById(userId);
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
-
-    if (!isPasswordValid) {
-      throw new Error('Current password is incorrect');
-    }
-
-    // Hash new password
-    user.password = await bcrypt.hash(newPassword, 10);
-
-    // IMPORTANT: Update credential change time
-    user.changeCredentialTime = new Date();
-
-    user.refreshToken = null;
-
-    await user.save();
-
-    return {
-      message: 'Password changed successfully. Please login again',
-    };
   }
 
   // refresh tokens
