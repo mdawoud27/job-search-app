@@ -87,7 +87,10 @@ userSchema.index({ deletedAt: 1, bannedAt: 1 });
 
 // ==================== VIRTUALS ====================
 userSchema.virtual('username').get(function () {
-  return `${this.firstName}${this.lastName}`;
+  if (!this.email) {
+    return null;
+  }
+  return this.email.split('@')[0];
 });
 
 userSchema.virtual('fullName').get(function () {
