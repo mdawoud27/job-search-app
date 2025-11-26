@@ -82,7 +82,6 @@ const userSchema = new mongoose.Schema(
 );
 
 // Indexes for performance
-userSchema.index({ email: 1 });
 userSchema.index({ deletedAt: 1, bannedAt: 1 });
 
 // ==================== VIRTUALS ====================
