@@ -92,9 +92,18 @@ companySchema.methods.canManage = function (userId) {
   return this.createdBy.equals(userId) || this.isHR(userId);
 };
 
-companySchema.methods.banUnBanCompanyFunction = function (action) {
-  action === 'true' ? (this.bannedAt = new Date()) : (this.bannedAt = null);
-  return this.save();
+companySchema.methods.ban = async function () {
+  this.bannedAt = new Date();
+  return await this.save();
+};
+
+companySchema.methods.unban = async function () {
+  this.bannedAt = null;
+  return await this.save();
+};
+
+companySchema.methods.isBanned = function () {
+  return !!this.bannedAt;
 };
 
 // indexs for improved query performance
