@@ -49,4 +49,19 @@ export class UserDAO {
       { new: true },
     );
   }
+
+  async isActive(userId) {
+    const user = await this.findById(userId);
+    return user.deletedAt === null;
+  }
+
+  async isDeleted(userId) {
+    const user = await this.findById(userId);
+    return user.deletedAt !== null;
+  }
+
+  async isBanned(userId) {
+    const user = await this.findById(userId);
+    return user.bannedAt !== null;
+  }
 }
