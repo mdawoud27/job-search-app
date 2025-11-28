@@ -55,7 +55,7 @@ export class CreateUserDto {
   }
   static toResponse(user) {
     return {
-      message: 'User created successfully',
+      message: 'User created successfully. Please confirm your email',
       data: {
         id: user._id,
         fullName: user.fullName,

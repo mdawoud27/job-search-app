@@ -143,7 +143,7 @@ export class AuthController {
     })(req, res, next);
   }
 
-  // Google OAuth callback (returns JSON instead of redirect)
+  // Google OAuth callback
   googleCallback(req, res, next) {
     passport.authenticate(
       'google',
