@@ -18,7 +18,7 @@ export class UserController {
       const dto = UpdateUserDto.fromRequest(req.body);
       const result = await this.userService.updateAccount(req.user.id, dto);
 
-      res.status(200).json(UpdateUserDto.toResponse(result));
+      res.status(200).json(result);
     } catch (err) {
       next(err);
     }
@@ -28,9 +28,7 @@ export class UserController {
   async getLoggedUser(req, res, next) {
     try {
       const data = await this.userService.getLoggedUser(req.user.id);
-      res
-        .status(200)
-        .json({ message: 'User profile retrived successfully', data });
+      res.status(200).json(data);
     } catch (err) {
       next(err);
     }
@@ -40,7 +38,7 @@ export class UserController {
   async getProfile(req, res, next) {
     try {
       const data = await this.userService.getPublicProfile(req.params.id);
-      res.json({ message: 'Profile retrieved', data });
+      res.json(data);
     } catch (err) {
       next(err);
     }
@@ -134,8 +132,9 @@ export class UserController {
   // Restore user
   async restore(req, res, next) {
     try {
-      const userId = req.params.id ?? req.user.id;
-      const data = await this.userService.restoreAccount(userId);
+      const userId = req.params.id ?? req.body.id;
+      const admin = req.user;
+      const data = await this.userService.restoreAccount(userId, admin);
       res.status(200).json(data);
     } catch (err) {
       next(err);
