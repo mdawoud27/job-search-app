@@ -1,8 +1,5 @@
 export class UserResponseDto {
   static toResponse(user) {
-    if (!user) {
-      return null;
-    }
     return {
       id: user._id,
       email: user.email,
