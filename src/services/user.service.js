@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs';
 import { UserResponseDto } from '../dtos/user/user-response.dto.js';
 import { CloudinaryUtils } from '../utils/cloudinary.util.js';
+import { UpdateUserDto } from '../dtos/user/update-user.dto.js';
+import { decrypt } from '../utils/crypto.js';
 
 export class UserService {
   constructor(userRepository) {
@@ -13,7 +15,12 @@ export class UserService {
     if (!updated) {
       throw new Error('User not found or update failed');
     }
-    return updated;
+    return {
+      message: 'Your account is updated successfully',
+      data: {
+        ...UpdateUserDto.toResponse(updated),
+      },
+    };
   }
 
   // Get logged-in user
@@ -24,8 +31,11 @@ export class UserService {
     }
 
     return {
-      ...UserResponseDto.toResponse(user),
-      mobileNumber: user.getDecryptedMobileNumber(),
+      message: 'User profile retrived successfully',
+      data: {
+        ...UserResponseDto.toResponse(user),
+        mobileNumber: decrypt(user.mobileNumber),
+      },
     };
   }
 
@@ -37,10 +47,13 @@ export class UserService {
     }
 
     return {
-      username: user.username,
-      mobileNumber: user.getDecryptedMobileNumber(),
-      profilePic: user.profilePic,
-      coverPic: user.coverPic,
+      message: 'User profile retrived successfully',
+      data: {
+        username: user.username,
+        mobileNumber: decrypt(user.mobileNumber),
+        profilePic: user.profilePic,
+        coverPic: user.coverPic,
+      },
     };
   }
 
@@ -49,6 +62,11 @@ export class UserService {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error('User not found');
+    }
+
+    const isActive = await this.userRepository.isActive(userId);
+    if (!isActive) {
+      throw new Error('User is deleted or banned');
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -72,15 +90,15 @@ export class UserService {
     await user.save();
     return {
       message: 'Password changed successfully. Please login again',
+      data: {
+        email: user.email,
+      },
     };
   }
 
   // Upload profile pic
   async uploadProfilePic(userId, imageData) {
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
+    const user = await this.userRepository.findByIdAndActive(userId);
 
     // Delete old image
     if (user.profilePic?.public_id) {
@@ -93,15 +111,18 @@ export class UserService {
     };
 
     await user.save();
-    return { profilePic: user.profilePic };
+    return {
+      message: 'Profile picture uploaded successfully',
+      data: {
+        email: user.email,
+        profilePic: user.profilePic,
+      },
+    };
   }
 
   // Upload cover pic
   async uploadCoverPic(userId, imageData) {
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
+    const user = await this.userRepository.findByIdAndActive(userId);
 
     if (user.coverPic?.public_id) {
       await CloudinaryUtils.deleteCloudinaryFile(user.coverPic.public_id);
@@ -113,22 +134,30 @@ export class UserService {
     };
 
     await user.save();
-    return { coverPic: user.coverPic };
+    return {
+      message: 'Cover picture uploaded successfully',
+      data: {
+        email: user.email,
+        coverPic: user.coverPic,
+      },
+    };
   }
 
   // Delete profile pic
   async deleteProfilePic(userId) {
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
+    const user = await this.userRepository.findByIdAndActive(userId);
 
     if (user.profilePic?.public_id) {
       // Delete from Cloudinary
       await CloudinaryUtils.deleteCloudinaryFile(user.profilePic.public_id);
       user.profilePic = null; // Remove from DB
       await user.save();
-      return { message: 'Profile picture deleted' };
+      return {
+        message: 'Profile picture deleted',
+        data: {
+          email: user.email,
+        },
+      };
     }
 
     return { message: 'No profile picture to delete' };
@@ -136,17 +165,19 @@ export class UserService {
 
   // Delete cover pic
   async deleteCoverPic(userId) {
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
+    const user = await this.userRepository.findByIdAndActive(userId);
 
     if (user.coverPic?.public_id) {
       // Delete from Cloudinary
       await CloudinaryUtils.deleteCloudinaryFile(user.coverPic.public_id);
       user.coverPic = null; // Remove from DB
       await user.save();
-      return { message: 'Cover picture deleted' };
+      return {
+        message: 'Cover picture deleted',
+        data: {
+          email: user.email,
+        },
+      };
     }
 
     return { message: 'No cover picture to delete' };
@@ -166,11 +197,16 @@ export class UserService {
     user.deletedAt = new Date();
     await user.save();
 
-    return { message: 'Account is deleted', email: user.email };
+    return {
+      message: 'Account is deleted',
+      data: {
+        email: user.email,
+      },
+    };
   }
 
   // Restore user
-  async restoreAccount(userId) {
+  async restoreAccount(userId, admin) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error('User not found');
@@ -183,6 +219,15 @@ export class UserService {
     user.deletedAt = null;
     await user.save();
 
-    return { message: 'Account is restored', email: user.email };
+    return {
+      message: 'Account is restored',
+      data: {
+        email: user.email,
+        restoredBy: {
+          id: admin.id,
+          email: admin.email,
+        },
+      },
+    };
   }
 }
