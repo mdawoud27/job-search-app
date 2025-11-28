@@ -37,22 +37,16 @@ export class UpdateUserDto {
   }
 
   static toResponse(user) {
-    if (!user) {
-      return null;
-    }
     return {
-      message: 'Your account is updated successfully',
-      data: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        gender: user.gender,
-        DOB: user.DOB,
-        username: user.username,
-        profilePic: user.profilePic,
-        coverPic: user.coverPic,
-      },
+      id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      gender: user.gender,
+      DOB: user.DOB,
+      username: user.username,
+      profilePic: user.profilePic,
+      coverPic: user.coverPic,
     };
   }
 }
