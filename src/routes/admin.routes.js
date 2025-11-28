@@ -1,40 +1,42 @@
 import { Router } from 'express';
-import { verifyAccessToken } from '../middlewares/auth.js';
-import { verifyAdminPermission } from '../middlewares/verifyAdminPermission.js';
-import {
-  approveCompany,
-  banOrUnbanCompany,
-  banOrUnbanUser,
-} from '../controllers/admin.controller.js';
-import { apiLimiter } from '../utils/apiLimiter.js';
+import { adminController } from '../container.js';
+import { Authorization } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
-// Ban or unbanned specific user
 router.patch(
-  '/admin/user/ban',
-  apiLimiter,
-  verifyAccessToken,
-  verifyAdminPermission,
-  banOrUnbanUser,
+  '/api/admin/ban-user',
+  Authorization.verifyToken,
+  Authorization.verifyAdminPermission,
+  (req, res, next) => adminController.banUser(req, res, next),
 );
 
-// Ban or unbanned specific company
 router.patch(
-  '/admin/company/ban',
-  apiLimiter,
-  verifyAccessToken,
-  verifyAdminPermission,
-  banOrUnbanCompany,
+  '/api/admin/unban-user',
+  Authorization.verifyToken,
+  Authorization.verifyAdminPermission,
+  (req, res, next) => adminController.unbanUser(req, res, next),
 );
 
-// Approve Company
 router.patch(
-  '/admin/company/approve',
-  apiLimiter,
-  verifyAccessToken,
-  verifyAdminPermission,
-  approveCompany,
+  '/api/admin/ban-company',
+  Authorization.verifyToken,
+  Authorization.verifyAdminPermission,
+  (req, res, next) => adminController.banCompany(req, res, next),
+);
+
+router.patch(
+  '/api/admin/unban-company',
+  Authorization.verifyToken,
+  Authorization.verifyAdminPermission,
+  (req, res, next) => adminController.unbanCompany(req, res, next),
+);
+
+router.patch(
+  '/api/admin/approve-company',
+  Authorization.verifyToken,
+  Authorization.verifyAdminPermission,
+  (req, res, next) => adminController.approveCompany(req, res, next),
 );
 
 export default router;
