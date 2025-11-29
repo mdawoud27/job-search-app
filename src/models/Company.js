@@ -57,54 +57,12 @@ const companySchema = new mongoose.Schema(
   },
 );
 
-// Check if company is active
-companySchema.virtual('isActive').get(function () {
-  return !this.deletedAt && !this.bannedAt && this.approvedByAdmin;
-});
-
 companySchema.virtual('jobs', {
   ref: 'Job',
   localField: '_id',
   foreignField: 'companyId',
   justOne: false,
 });
-
-// Methods to manage HRs
-companySchema.methods.addHR = function (userId) {
-  if (!this.HRs.includes(userId)) {
-    this.HRs.push(userId);
-  }
-  return this;
-};
-
-companySchema.methods.removeHR = function (userId) {
-  this.HRs = this.HRs.filter((hr) => !hr.equals(userId));
-  return this;
-};
-
-// check if a user is an HR for this company
-companySchema.methods.isHR = function (userId) {
-  return this.HRs.some((hr) => hr.equals(userId));
-};
-
-// Check if a user is the creator or an HR
-companySchema.methods.canManage = function (userId) {
-  return this.createdBy.equals(userId) || this.isHR(userId);
-};
-
-companySchema.methods.ban = async function () {
-  this.bannedAt = new Date();
-  return await this.save();
-};
-
-companySchema.methods.unban = async function () {
-  this.bannedAt = null;
-  return await this.save();
-};
-
-companySchema.methods.isBanned = function () {
-  return !!this.bannedAt;
-};
 
 // indexs for improved query performance
 companySchema.index({ companyName: 1, industry: 1 });
