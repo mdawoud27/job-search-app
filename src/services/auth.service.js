@@ -13,6 +13,10 @@ export class AuthService {
 
   // signup
   async signup(dto) {
+    if (dto.role && dto.role === 'Admin') {
+      throw new Error('Invalid role selection');
+    }
+
     //check if user exists or not
     const existingUser = await this.userRepository.findByEmail(dto.email);
     if (existingUser) {
@@ -28,7 +32,11 @@ export class AuthService {
       expiresIn: new Date(Date.now() + 10 * 60 * 1000), // 10 min
     };
 
-    const user = await this.userRepository.create({ ...dto, OTP: [otpEntry] });
+    const user = await this.userRepository.create({
+      ...dto,
+      OTP: [otpEntry],
+      role: dto.role || 'User',
+    });
 
     // Send OTP email
     await sendOTPEmail(dto.email, otpCode);
