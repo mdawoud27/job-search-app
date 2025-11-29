@@ -2,16 +2,20 @@ import { User } from '../models/User.js';
 import { Company } from '../models/Company.js';
 
 export class AdminDao {
-  async banUser(userId) {
+  async banUser(userId, adminId) {
     return User.findByIdAndUpdate(
       userId,
-      { bannedAt: new Date() },
+      { bannedAt: new Date(), updatedBy: adminId, updatedAt: new Date() },
       { new: true },
     );
   }
 
-  async unbanUser(userId) {
-    return User.findByIdAndUpdate(userId, { bannedAt: null }, { new: true });
+  async unbanUser(userId, adminId) {
+    return User.findByIdAndUpdate(
+      userId,
+      { bannedAt: null, updatedBy: adminId, updatedAt: new Date() },
+      { new: true },
+    );
   }
 
   async banCompany(companyId, adminId) {
