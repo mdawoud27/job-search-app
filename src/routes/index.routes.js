@@ -8,11 +8,11 @@ import applicationRouter from './application.routes.js';
 
 const router = Router();
 
-router.use(authRouter);
-router.use(userRouter);
-router.use(adminRouter);
-router.use(companyRouter);
-router.use(jobRouter);
-router.use(applicationRouter);
+router.use('/api/v1', authRouter);
+router.use('/api/v1', userRouter);
+router.use('/api/v1', adminRouter);
+router.use('/api/v1', companyRouter);
+router.use('/api/v1', jobRouter);
+router.use('/api/v1', applicationRouter);
 
 export default router;
