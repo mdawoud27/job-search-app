@@ -10,7 +10,7 @@ export class CompanyResponseDto {
       createdBy: company.createdBy,
       logo: company.logo,
       coverPic: company.coverPic,
-      legalAttachment: company.legalAttachment,
+      // legalAttachment: company.legalAttachment,
     };
   }
 }
