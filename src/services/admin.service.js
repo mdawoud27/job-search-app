@@ -6,11 +6,14 @@ export class AdminService {
   }
 
   async banUser(userId, admin) {
-    const user = await this.userDao.findByIdAndActive(userId);
-    await this.adminDao.banUser(userId);
-    user.updatedBy = admin.id;
-    user.updatedAt = new Date();
-    await user.save();
+    const user = await this.userDao.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    if (user.bannedAt !== null) {
+      throw new Error('User is already banned');
+    }
+    await this.adminDao.banUser(userId, admin.id);
     return {
       message: 'User banned successfully',
       date: {
@@ -30,10 +33,7 @@ export class AdminService {
     if (user.bannedAt === null) {
       throw new Error('User is already unbanned');
     }
-    await this.adminDao.unbanUser(userId);
-    user.updatedBy = admin.id;
-    user.updatedAt = new Date();
-    await user.save();
+    await this.adminDao.unbanUser(userId, admin.id);
     return {
       message: 'User unbanned successfully',
       date: {
@@ -56,11 +56,15 @@ export class AdminService {
       throw new Error('Company is already banned');
     }
 
+    if (!company.approvedByAdmin) {
+      throw new Error('Company is not approved yet');
+    }
+
     await this.adminDao.banCompany(companyId, admin.id);
     return {
       message: 'Company banned successfully',
       date: {
-        name: company.name,
+        name: company.companyName,
         bannedAt: company.updatedAt,
         updatedBy: company.updatedBy,
         bannedBy: admin.email,
@@ -81,7 +85,7 @@ export class AdminService {
     return {
       message: 'Company unbanned successfully',
       date: {
-        name: company.name,
+        name: company.companyName,
         unbannedAt: company.updatedAt,
         updatedBy: company.updatedBy,
         unbannedBy: admin.email,
@@ -101,7 +105,7 @@ export class AdminService {
     return {
       message: 'Company approved successfully',
       date: {
-        name: company.name,
+        name: company.companyName,
         approvedAt: company.updatedAt,
         updatedBy: company.updatedBy,
         approvedBy: admin.email,
