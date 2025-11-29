@@ -15,4 +15,14 @@ router.post(
   },
 );
 
+router.put(
+  '/company/:id',
+  apiLimiter,
+  Authorization.verifyToken,
+  Authorization.verifyHRPermission,
+  (req, res, next) => {
+    companyController.updateCompany(req, res, next);
+  },
+);
+
 export default router;
