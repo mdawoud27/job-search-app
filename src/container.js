@@ -1,5 +1,6 @@
 import { UserDAO } from './daos/user.dao.js';
 import { AdminDao } from './daos/admin.dao.js';
+import { CompanyDAO } from './daos/company.dao.js';
 
 import { AuthService } from './services/auth.service.js';
 import { AuthController } from './controllers/auth.controller.js';
@@ -10,32 +11,45 @@ import { UserController } from './controllers/user.controller.js';
 import { AdminService } from './services/admin.service.js';
 import { AdminController } from './controllers/admin.controller.js';
 
+import { CompanyService } from './services/company.service.js';
+import { CompanyController } from './controllers/company.controller.js';
+
 // Repositories
 const userRepository = new UserDAO();
 const adminRepository = new AdminDao();
+const companyRepository = new CompanyDAO();
 
 // Services
 const authService = new AuthService(userRepository);
 const userService = new UserService(userRepository);
-const adminService = new AdminService(userRepository, adminRepository);
+const adminService = new AdminService(
+  userRepository,
+  adminRepository,
+  companyRepository,
+);
+const companyService = new CompanyService(userRepository, companyRepository);
 
 // Controllers
 const authController = new AuthController(authService);
 const userController = new UserController(userService);
 const adminController = new AdminController(adminService);
+const companyController = new CompanyController(companyService);
 
 export {
   // daos
   userRepository,
   adminRepository,
+  companyRepository,
 
   // services
   authService,
   userService,
   adminService,
+  companyService,
 
   // controllers
   authController,
   userController,
   adminController,
+  companyController,
 };
