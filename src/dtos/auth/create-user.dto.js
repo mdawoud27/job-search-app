@@ -37,6 +37,9 @@ export class CreateUserDto {
       mobileNumber: Joi.string().required().trim().messages({
         'string.empty': 'Mobile number is required',
       }),
+      role: Joi.string().valid('User', 'HR').default('User').messages({
+        'any.only': 'Role must be either User or HR',
+      }),
     });
 
     return schema.validate(body);
@@ -51,6 +54,7 @@ export class CreateUserDto {
       gender: body.gender,
       DOB: body.DOB,
       mobileNumber: body.mobileNumber,
+      role: body.role || 'User',
     };
   }
   static toResponse(user) {
