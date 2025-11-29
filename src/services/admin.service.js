@@ -1,7 +1,8 @@
 export class AdminService {
-  constructor(userDao, adminDao) {
+  constructor(userDao, adminDao, companyDao) {
     this.userDao = userDao;
     this.adminDao = adminDao;
+    this.companyDao = companyDao;
   }
 
   async banUser(userId, admin) {
@@ -44,9 +45,67 @@ export class AdminService {
     };
   }
 
-  async banCompany(companyId) {}
+  async banCompany(companyId, admin) {
+    const company = await this.companyDao.findById(companyId);
 
-  async unbanCompany(companyId) {}
+    if (!company) {
+      throw new Error('Company not found or inactive');
+    }
 
-  async approveCompany(companyId) {}
+    if (company.bannedAt !== null) {
+      throw new Error('Company is already banned');
+    }
+
+    await this.adminDao.banCompany(companyId, admin.id);
+    return {
+      message: 'Company banned successfully',
+      date: {
+        name: company.name,
+        bannedAt: company.updatedAt,
+        updatedBy: company.updatedBy,
+        bannedBy: admin.email,
+      },
+    };
+  }
+
+  async unbanCompany(companyId, admin) {
+    const company = await this.companyDao.findById(companyId);
+    if (!company) {
+      throw new Error('Company not found or inactive');
+    }
+    if (company.bannedAt === null) {
+      throw new Error('Company is already unbanned');
+    }
+
+    await this.adminDao.unbanCompany(companyId, admin.id);
+    return {
+      message: 'Company unbanned successfully',
+      date: {
+        name: company.name,
+        unbannedAt: company.updatedAt,
+        updatedBy: company.updatedBy,
+        unbannedBy: admin.email,
+      },
+    };
+  }
+
+  async approveCompany(companyId, admin) {
+    const company = await this.companyDao.findById(companyId);
+    if (!company) {
+      throw new Error('Company not found or inactive');
+    }
+    if (company.approvedByAdmin) {
+      throw new Error('Company is already approved');
+    }
+    await this.adminDao.approveCompany(companyId, admin.id);
+    return {
+      message: 'Company approved successfully',
+      date: {
+        name: company.name,
+        approvedAt: company.updatedAt,
+        updatedBy: company.updatedBy,
+        approvedBy: admin.email,
+      },
+    };
+  }
 }
