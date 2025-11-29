@@ -14,31 +14,27 @@ export class AdminDao {
     return User.findByIdAndUpdate(userId, { bannedAt: null }, { new: true });
   }
 
-  async banCompany(companyId) {
+  async banCompany(companyId, adminId) {
     return Company.findByIdAndUpdate(
       companyId,
-      { bannedAt: new Date() },
+      { bannedAt: new Date(), updatedBy: adminId },
       { new: true },
     );
   }
 
-  async unbanCompany(companyId) {
+  async unbanCompany(companyId, adminId) {
     return Company.findByIdAndUpdate(
       companyId,
-      { bannedAt: null },
+      { bannedAt: null, updatedBy: adminId },
       { new: true },
     );
   }
 
-  async approveCompany(companyId) {
+  async approveCompany(companyId, adminId) {
     return Company.findByIdAndUpdate(
       companyId,
-      { approvedByAdmin: true },
+      { approvedByAdmin: true, updatedBy: adminId },
       { new: true },
     );
-  }
-
-  async findByIdSafe(id) {
-    return Company.findById(id).select('-password -refreshToken -OTP');
   }
 }
