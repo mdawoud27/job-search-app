@@ -1,8 +1,5 @@
 import { EMPLOYEE_RANGES } from '../../utils/constants.js';
 import Joi from 'joi';
-import joiObjectid from 'joi-objectid';
-
-const JoiObjectId = joiObjectid(Joi);
 
 export class CreateCompanyDto {
   static validate(body) {
