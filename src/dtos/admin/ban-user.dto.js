@@ -10,16 +10,6 @@ export class BanUserDto {
     };
   }
 
-  static toResponse(user) {
-    return {
-      id: user._id,
-      email: user.email,
-      username: user.username,
-      fullName: user.fullName,
-      bannedAt: user.bannedAt,
-    };
-  }
-
   static validate(body) {
     const schema = Joi.object({
       userId: JoiObjectId().required().messages({
