@@ -42,6 +42,10 @@ const companySchema = new mongoose.Schema(
       ref: 'User',
       required: [true, 'Company creator is required'],
     },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
     logo: { type: imageSchema, default: null },
     coverPic: { type: imageSchema, default: null },
     HRs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
