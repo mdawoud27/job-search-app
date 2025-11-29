@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema(
     mobileNumber: { type: String, trim: true },
     role: {
       type: String,
-      enum: ['User', 'Admin'],
+      enum: ['User', 'Admin', 'HR'],
       default: 'User',
     },
     isConfirmed: { type: Boolean, default: false },
