@@ -60,6 +60,16 @@ export const Authorization = {
         'You do not have permission to perform this action [only admins]',
     });
   },
+  // ensure hr
+  verifyHRPermission: (req, res, next) => {
+    if (req.user.role === 'HR' || req.user.role === 'Admin') {
+      return next();
+    }
+    // Otherwise deny access
+    return res.status(403).json({
+      message: 'You do not have permission to perform this action',
+    });
+  },
   onlySelf: (req, res, next) => {
     if (!req.user.id) {
       return res.status(403).json({
