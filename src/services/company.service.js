@@ -28,6 +28,10 @@ export class CompanyService {
 
   async updateCompany(companyId, dto, userId) {
     try {
+      if (dto.legalAttachment) {
+        throw new Error('Legal attachment is not allowed');
+      }
+
       const user = await this.userDao.findByIdAndActive(userId);
       const company = await this.companyDao.update(companyId, dto, userId);
 
@@ -51,5 +55,16 @@ export class CompanyService {
       }
       throw error;
     }
+  }
+
+  async softDeleteCompany(companyId, owner) {
+    const user = await this.userDao.findByIdAndActive(owner.id);
+    const company = await this.companyDao.softDelete(companyId, owner);
+    return {
+      message: 'Company deleted successfully',
+      createdBy: user.email,
+      role: user.role,
+      data: CompanyResponseDto.toResponse(company),
+    };
   }
 }
