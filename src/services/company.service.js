@@ -67,4 +67,20 @@ export class CompanyService {
       data: CompanyResponseDto.toResponse(company),
     };
   }
+
+  async getSpecificCompanyWithJobs(companyId) {
+    const company = await this.companyDao.findByIdWithJobs(companyId);
+    if (!company) {
+      throw new Error('Company not found or deleted or banned');
+    }
+    return {
+      message: 'Company found successfully',
+      createdBy: company.createdBy.email,
+      role: company.createdBy.role,
+      data: {
+        ...CompanyResponseDto.toResponse(company),
+        jobs: company.jobs,
+      },
+    };
+  }
 }
