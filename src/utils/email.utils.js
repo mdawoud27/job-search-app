@@ -9,11 +9,11 @@ const transporter = nodemailer.createTransport({
 });
 
 /* eslint no-undef: off */
-export const sendOTPEmail = async (email, otp) => {
+export const sendOTPEmail = async (email, otp, subject = '') => {
   await transporter.sendMail({
     from: process.env.USER_EMAIL,
     to: email,
-    subject: 'Verify your Email',
+    subject: subject || 'Verify your Email',
     text: `Your OTP for email verification is: ${otp}. It will expire in 10 minutes.`,
   });
 };

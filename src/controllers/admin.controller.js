@@ -1,92 +1,88 @@
-import { Company } from '../models/Company.js';
-import { User } from '../models/User.js';
-import {
-  banOrUnbanComanyValidation,
-  banOrUnbanUserValidation,
-} from '../validations/admin.validation.js';
+import { ApproveCompanyDto } from '../dtos/admin/approve-company.dto.js';
+import { BanCompanyDto } from '../dtos/admin/ban-company.dto.js';
+import { BanUserDto } from '../dtos/admin/ban-user.dto.js';
 
-export const banOrUnbanUser = async (req, res, next) => {
-  try {
-    const { userId, action } = req.body; // action => true or false
-
-    const { error } = banOrUnbanUserValidation(req.body);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
-
-    const user = await User.findById({ _id: { $eq: userId } });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    if (user.bannedAt && action === 'true') {
-      return res.status(400).json({ message: 'User is already banned' });
-    }
-
-    await user.banUnBanUserFunction(action);
-    await user.save();
-
-    res.status(200).json({
-      message: `User ${action === 'true' ? 'baned' : 'unbanned'} succussfully`,
-    });
-  } catch (error) {
-    next(error);
+export class AdminController {
+  constructor(adminService) {
+    this.adminService = adminService;
   }
-};
 
-export const banOrUnbanCompany = async (req, res, next) => {
-  try {
-    const { companyId, action } = req.body; // action => true or false
-
-    const { error } = banOrUnbanComanyValidation(req.body);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
+  async banUser(req, res, next) {
+    try {
+      const { error } = BanUserDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+      }
+      const dto = BanUserDto.fromRequest(req.body);
+      const user = await this.adminService.banUser(dto.userId, req.user);
+      res.json(user);
+    } catch (error) {
+      next(error);
     }
-
-    const company = await Company.findById({ _id: { $eq: companyId } });
-    if (!company) {
-      return res.status(404).json({ message: 'Company not found' });
-    }
-
-    if (company.bannedAt && action === 'true') {
-      return res.status(400).json({ message: 'Company is already banned' });
-    }
-
-    await company.banUnBanCompanyFunction(action);
-    await company.save();
-
-    res.status(200).json({
-      message: `Company ${action === 'true' ? 'baned' : 'unbanned'} succussfully`,
-    });
-  } catch (error) {
-    next(error);
   }
-};
 
-export const approveCompany = async (req, res, next) => {
-  try {
-    const { companyId } = req.body;
-
-    if (!companyId) {
-      return res.status(400).json({ message: 'companyId is required' });
+  async unbanUser(req, res, next) {
+    try {
+      const { error } = BanUserDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+      }
+      const dto = BanUserDto.fromRequest(req.body);
+      const user = await this.adminService.unbanUser(dto.userId, req.user);
+      res.json(user);
+    } catch (error) {
+      next(error);
     }
-
-    if (typeof companyId !== 'string') {
-      return res.status(400).json({ message: 'Invalid companyId' });
-    }
-    const company = await Company.findById({ _id: { $eq: companyId } });
-    if (!company) {
-      return res.status(404).json({ message: 'Company not found' });
-    }
-
-    company.approvedByAdmin = true;
-    company.save();
-
-    res.status(200).json({
-      message: 'Company is approved Successfully',
-      isApproved: company.approvedByAdmin,
-    });
-  } catch (error) {
-    next(error);
   }
-};
+
+  async banCompany(req, res, next) {
+    try {
+      const { error } = BanCompanyDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+      }
+      const dto = BanCompanyDto.fromRequest(req.body);
+      const company = await this.adminService.banCompany(
+        dto.companyId,
+        req.user,
+      );
+      res.json(company);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async unbanCompany(req, res, next) {
+    try {
+      const { error } = BanCompanyDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+      }
+      const dto = BanCompanyDto.fromRequest(req.body);
+      const company = await this.adminService.unbanCompany(
+        dto.companyId,
+        req.user,
+      );
+      res.json(company);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async approveCompany(req, res, next) {
+    try {
+      const { error } = ApproveCompanyDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+      }
+      const dto = ApproveCompanyDto.fromRequest(req.body);
+      const company = await this.adminService.approveCompany(
+        dto.companyId,
+        req.user,
+      );
+      res.json(company);
+    } catch (error) {
+      next(error);
+    }
+  }
+}

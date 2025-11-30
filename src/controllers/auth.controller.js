@@ -1,400 +1,187 @@
-import jwt from 'jsonwebtoken';
-import * as dotenv from 'dotenv';
-dotenv.config();
-import { generateTokens, User } from '../models/User.js';
-import { sendOTPEmail } from '../utils/emailService.js';
-import { googleVerifyIdToken } from '../utils/googleVerifyIdToken.js';
-import { generateOTP, hashOTP, validateOTP } from '../utils/otpUtils.js';
-import {
-  resetPasswordValidation,
-  signupValidation,
-} from '../validations/auth.validation.js';
+import { CreateUserDto } from '../dtos/auth/create-user.dto.js';
+import { LoginDto } from '../dtos/auth/login.dto.js';
+import { ConfirmOtpDto } from '../dtos/auth/confirm-opt.dto.js';
+import { ForgotPasswordDto } from '../dtos/auth/forgot-password.dto.js';
+import { ResetPasswordDto } from '../dtos/auth/reset-password.dto.js';
+import { ResendOtpDto } from '../dtos/auth/resend-otp.dto.js';
+import { TokenDto } from '../dtos/auth/token.dto.js';
+import passport from 'passport';
 
-/**
- * @desc   Register a new user
- * @route  /api/auth/signup
- * @method POST
- * @access public
- */
-export const signup = async (req, res, next) => {
-  try {
-    const { error } = signupValidation(req.body);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
-
-    const { firstName, lastName, email, password, gender, DOB, mobileNumber } =
-      req.body;
-
-    //check if user exists or not
-    const existingUser = await User.findOne({ email: { $eq: email } });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email is already exists' });
-    }
-
-    const otpCode = generateOTP();
-    const hashedOtp = await hashOTP(otpCode);
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
-
-    const newUser = new User({
-      firstName,
-      lastName,
-      email,
-      password,
-      gender,
-      DOB,
-      mobileNumber,
-      OTP: [{ code: hashedOtp, type: 'confirmEmail', expiresIn: otpExpiry }],
-    });
-
-    const savedUser = await newUser.save();
-
-    // Send OTP email
-    await sendOTPEmail(email, otpCode);
-
-    res.status(201).json({
-      newUser: savedUser,
-      message: 'User registered. Please verify OTP within 10 minutes.',
-    });
-  } catch (error) {
-    next(error);
+export class AuthController {
+  constructor(authService) {
+    this.authService = authService;
   }
-};
 
-/**
- * @desc   Confirm OTP for user verification
- * @route  /api/auth/confirm-otp
- * @method POST
- * @access public
- */
-export const confirmOTP = async (req, res, next) => {
-  try {
-    const { email, otpCode } = req.body;
-
-    const user = await User.findOne({ email: { $eq: email } });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    const otpEntry = user.OTP.find(
-      (otp) =>
-        otp.type === 'confirmEmail' && new Date(otp.expiresIn) > new Date(),
-    );
-    if (!otpEntry) {
-      return res
-        .status(400)
-        .json({ message: 'No valid OTP found or OTP has expired' });
-    }
-
-    // verify the entry otp
-    const isOTPValid = validateOTP(otpCode, otpEntry.code);
-    if (!isOTPValid) {
-      return res.status(400).json({ message: 'Invalid OTP' });
-    }
-
-    // mark user as confirmied
-    user.isConfirmed = true;
-
-    // remove the used otp
-    user.OTP = user.OTP.filter((otp) => otp.type !== 'confirmEmail');
-
-    await user.save();
-    res.status(200).json({
-      message: 'Email confirmed successfully',
-      user: {
-        id: user._id,
-        email: user.email,
-        isConfirmed: user.isConfirmed,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * @desc   Sign in user with email and password
- * @route  /api/auth/signin
- * @method POST
- * @access public
- */
-export const signin = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({
-      email: { $eq: email },
-      provider: 'system',
-    });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password' });
-    }
-
-    if (!user.isConfirmed) {
-      return res
-        .status(403)
-        .json({ message: 'Please confirm your email first' });
-    }
-
-    if (!user.isActive()) {
-      return res.status(403).json({ message: 'Account is not active' });
-    }
-
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      return res.status(400).json({ message: 'Invalid email or password' });
-    }
-
-    const { accessToken, refreshToken } = generateTokens(user);
-
-    // Get the decrypted mobile number
-    // const decryptedMobileNumber = user.getDecryptedMobileNumber();
-
-    res.status(200).json({
-      message: 'User logged successfully',
-      user: {
-        id: user._id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        // mobileNumber: decryptedMobileNumber,
-      },
-      tokens: {
-        accesstoken: accessToken,
-        refreshtoken: refreshToken,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * @desc   Google OAuth callback handler
- * @route  /api/auth/google/callback
- * @method GET
- * @access public
- */
-export const googleOAuthCallback = (req, res) => {
-  res.status(200).json({ message: 'user signup successfully' });
-};
-
-/**
- * @desc   Authenticate user via Google OAuth
- * @route  /api/auth/google
- * @method GET
- * @access public
- */
-export const googleOAuthLogin = async (req, res) => {
-  try {
-    const { idToken } = req.body;
-
-    // Verify Google ID Token
-    const ticket = await googleVerifyIdToken(idToken);
-    const payload = ticket.getPayload();
-
-    // Find or create user
-    let user = await User.findOne({
-      email: payload.email,
-      provider: 'google',
-    });
-
-    if (!user) {
-      user = new User({
-        firstName: payload.given_name,
-        lastName: payload.family_name,
-        email: payload.email,
-        provider: 'google',
-        isConfirmed: true,
-        profilePic: {
-          url: payload.picture,
-          publicId: null,
-        },
-        gender: 'Male', // Default
-        DOB: new Date(Date.now() - 18 * 365 * 24 * 60 * 60 * 1000),
-        mobileNumber: null,
-      });
-
-      await user.save();
-    }
-
-    // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user);
-
-    res.status(200).json({
-      message: 'Google authentication successful',
-      user: {
-        id: user._id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      },
-      tokens: {
-        accessToken,
-        refreshToken,
-      },
-    });
-  } catch (error) {
-    res.status(400).json({
-      message: 'Google authentication failed',
-      error: error.message,
-    });
-  }
-};
-
-/**
- * @desc   Send OTP for password reset
- * @route  /api/auth/forgot-password
- * @method POST
- * @access public
- */
-export const sendForgetPasswordOTP = async (req, res, next) => {
-  try {
-    const { email } = req.body;
-    if (typeof email !== 'string') {
-      return res.status(400).json({ message: 'Invalid email format' });
-    }
-
-    const user = await User.findOne({ email, provider: 'system' });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    const otpCode = generateOTP();
-    const hashedOtp = await hashOTP(otpCode);
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-
-    user.OTP = user.OTP.filter((otp) => otp.type !== 'forgetPassword');
-
-    user.OTP.push({
-      code: hashedOtp,
-      type: 'forgetPassword',
-      expiresIn: otpExpiry,
-    });
-
-    await user.save();
-
-    await sendOTPEmail(email, otpCode);
-
-    res.status(200).json({
-      message: 'OTP sent successfully. Valid for 10 minutes',
-      expiresAt: otpExpiry,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * @desc   Reset user password using OTP
- * @route  /api/auth/reset-password
- * @method POST
- * @access public
- */
-export const resetPassword = async (req, res, next) => {
-  try {
-    const { email, otpCode, password } = req.body;
-
-    const user = await User.findOne({ email: { $eq: email }, provider: 'system' });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    const otpEntry = user.OTP.find(
-      (otp) =>
-        otp.type === 'forgetPassword' && new Date(otp.expiresIn) > new Date(),
-    );
-
-    if (!otpEntry) {
-      return res
-        .status(400)
-        .json({ message: 'No valid OTP found or OTP has expired' });
-    }
-
-    const isOtpValid = validateOTP(otpCode, otpEntry.code);
-    if (!isOtpValid) {
-      return res.status(400).json({ message: 'Invalid OTP' });
-    }
-
-    const { error } = resetPasswordValidation(req.body);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
-
-    user.password = password;
-    user.changeCredentialTime = new Date();
-
-    // Remove the used OTP
-    user.OTP = user.OTP.filter((otp) => otp.type !== 'forgetPassword');
-
-    await user.save();
-
-    res.status(200).json({
-      message: 'Password reset successfully',
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * @desc   Refresh expired access token using refresh token
- * @route  /api/auth/refresh-token
- * @method POST
- * @access public
- */
-export const refreshAccessToken = async (req, res, next) => {
-  try {
-    const { refreshToken } = req.body;
-
-    if (!refreshToken) {
-      return res.status(401).json({ message: 'Refresh token required' });
-    }
-
-    // Verify refresh token
-    /* eslint no-undef: off */
-    let decoded;
+  async signup(req, res, next) {
     try {
-      decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY);
-    } catch (error) {
-      return res
-        .status(401)
-        .json({ message: 'Invalid refresh token', error: error.message });
+      const dto = CreateUserDto.fromRequest(req.body);
+
+      const { error } = CreateUserDto.validate(dto);
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+      }
+
+      const result = await this.authService.signup(dto);
+      return res.status(201).json(CreateUserDto.toResponse(result));
+    } catch (e) {
+      next(e);
     }
-
-    // Find user
-    const user = await User.findById(decoded.id);
-
-    if (!user) {
-      return res.status(403).json({ message: 'User not found' });
-    }
-
-    // Check if tokens were issued before credential change
-    const lastCredentialChange = user.changeCredentialTime || new Date(0);
-
-    // Verify refresh token was issued after last credential change
-    if (decoded.issuedAt && new Date(decoded.issuedAt) < lastCredentialChange) {
-      return res
-        .status(401)
-        .json({ message: 'Token invalidated by credential change' });
-    }
-
-    // Generate new access token
-    const accessToken = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-      },
-      process.env.JWT_ACCESS_KEY,
-      { expiresIn: '1h' },
-    );
-
-    res.status(200).json({
-      accessToken,
-      message: 'Access token refreshed successfully',
-    });
-  } catch (error) {
-    next(error);
   }
-};
+
+  async confirm(req, res, next) {
+    try {
+      const { error } = ConfirmOtpDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+      }
+      const dto = ConfirmOtpDto.fromRequest(req.body);
+      const result = await this.authService.confirmEmail(dto);
+
+      res.status(200).json(result);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async resentOTP(req, res, next) {
+    try {
+      const { error } = ResendOtpDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+      }
+
+      const dto = ResendOtpDto.fromRequest(req.body);
+      const result = await this.authService.resendOtpCode(dto);
+
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async login(req, res, next) {
+    try {
+      const { error } = LoginDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+      }
+
+      const dto = LoginDto.fromRequest(req.body);
+      const result = await this.authService.login(dto);
+
+      res.status(200).json(LoginDto.toResponse(result));
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async forgotPassword(req, res, next) {
+    try {
+      const { error } = ForgotPasswordDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+      }
+      const dto = ForgotPasswordDto.fromRequest(req.body);
+      const result = await this.authService.forgotPassword(dto);
+
+      res.status(200).json(ForgotPasswordDto.toResponse(result));
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async resetPassword(req, res, next) {
+    try {
+      const { error } = ResetPasswordDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+      }
+
+      const dto = ResetPasswordDto.fromRequest(req.body);
+      const result = await this.authService.resetPassword(dto);
+
+      res.json(ResetPasswordDto.toResponse(result));
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async refreshToken(req, res, next) {
+    try {
+      const { error } = TokenDto.validate(req.body);
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+      }
+
+      const { refreshToken } = TokenDto.fromRequest(req.body);
+      const result = await this.authService.refresh(refreshToken);
+      res.status(200).json(TokenDto.toResponse(result));
+    } catch (e) {
+      // Handle specific token errors
+      if (e.message.includes('Credentials have been changed')) {
+        return res.status(401).json({
+          error: e.message,
+          requiresLogin: true,
+        });
+      }
+
+      if (e.message.includes('Invalid') || e.message.includes('expired')) {
+        return res.status(401).json({
+          error: 'Invalid or expired refresh token',
+          requiresLogin: true,
+        });
+      }
+
+      next(e);
+    }
+  }
+
+  // Initiate Google OAuth
+  googleAuth(req, res, next) {
+    passport.authenticate('google', {
+      scope: ['profile', 'email'],
+    })(req, res, next);
+  }
+
+  // Google OAuth callback
+  googleCallback(req, res, next) {
+    passport.authenticate(
+      'google',
+      { session: false },
+      // eslint-disable-next-line
+      async (err, user, info) => {
+        try {
+          if (err) {
+            return res.status(500).json({
+              message: 'Authentication failed',
+              error: err.message,
+            });
+          }
+
+          if (!user) {
+            return res.status(401).json({
+              message: 'Authentication failed: No user returned',
+            });
+          }
+
+          // Generate tokens and app user data
+          const result = await this.authService.googleCallback(user);
+
+          return res.status(200).json({
+            message: 'Google login successful',
+            data: {
+              accessToken: result.accessToken,
+              refreshToken: result.refreshToken,
+              user: result.user,
+            },
+          });
+        } catch (error) {
+          return res.status(500).json({
+            message: 'Internal server error',
+            error: error.message,
+          });
+        }
+      },
+    )(req, res, next);
+  }
+}

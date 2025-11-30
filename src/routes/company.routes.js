@@ -1,99 +1,99 @@
 import { Router } from 'express';
-import { verifyAccessToken } from '../middlewares/auth.js';
-import { verifyAdminPermission } from '../middlewares/verifyAdminPermission.js';
-import {
-  addCompany,
-  deleteCompanyCoverPic,
-  deleteCompanyLogo,
-  getCompanyWithJobs,
-  searchCompaniesByName,
-  softDeleteCompany,
-  updateCompany,
-  uploadCompanyCoverPic,
-  uploadCompanyLogo,
-} from '../controllers/company.controller.js';
-import { upload } from '../utils/imageStorage.js';
+import { Authorization } from '../middlewares/auth.middleware.js';
 import { apiLimiter } from '../utils/apiLimiter.js';
+import { companyController } from '../container.js';
+import { upload } from '../utils/multer.js';
 
 const router = Router();
 
-// Add company
 router.post(
-  '/api/company',
+  '/company/create',
   apiLimiter,
-  verifyAccessToken,
-  verifyAdminPermission,
-  addCompany,
+  Authorization.verifyToken,
+  Authorization.verifyHRPermission,
+  (req, res, next) => {
+    companyController.createCompany(req, res, next);
+  },
 );
 
-// Update company
 router.put(
-  '/api/company/:companyId',
+  '/company/:id',
   apiLimiter,
-  verifyAccessToken,
-  verifyAdminPermission,
-  updateCompany,
+  Authorization.verifyToken,
+  Authorization.verifyHRPermission,
+  (req, res, next) => {
+    companyController.updateCompany(req, res, next);
+  },
 );
 
-// Soft delete company
 router.delete(
-  '/api/company/:companyId',
+  '/company/:id',
   apiLimiter,
-  verifyAccessToken,
-  verifyAdminPermission,
-  softDeleteCompany,
+  Authorization.verifyToken,
+  Authorization.verifyHRPermission,
+  (req, res, next) => {
+    companyController.softDeleteCompany(req, res, next);
+  },
 );
 
-// Get company with jobs
 router.get(
-  '/api/company/:companyId',
+  '/company/search/:name',
   apiLimiter,
-  verifyAccessToken,
-  verifyAdminPermission,
-  getCompanyWithJobs,
+  Authorization.verifyToken,
+  (req, res, next) => {
+    companyController.searchCompanywithName(req, res, next);
+  },
 );
 
-// Search for company by name
 router.get(
-  '/api/company/',
+  '/company/:id',
   apiLimiter,
-  verifyAccessToken,
-  verifyAdminPermission,
-  searchCompaniesByName,
+  Authorization.verifyToken,
+  (req, res, next) => {
+    companyController.getSpecificCompanyWithJobs(req, res, next);
+  },
 );
 
-// Upload company logo
-router.post(
-  '/api/company/:companyId/logo',
+router.patch(
+  '/company/:id/logo',
   apiLimiter,
-  verifyAccessToken,
+  Authorization.verifyToken,
+  Authorization.verifyHRPermission,
   upload.single('image'),
-  uploadCompanyLogo,
+  (req, res, next) => {
+    companyController.uploadCompanyLogo(req, res, next);
+  },
 );
 
-// Upload company cover pic
-router.post(
-  '/api/company/:companyId/cover-pic',
+router.delete(
+  '/company/:id/logo',
   apiLimiter,
-  verifyAccessToken,
+  Authorization.verifyToken,
+  Authorization.verifyHRPermission,
+  (req, res, next) => {
+    companyController.deleteCompanyLogo(req, res, next);
+  },
+);
+
+router.patch(
+  '/company/:id/cover',
+  apiLimiter,
+  Authorization.verifyToken,
+  Authorization.verifyHRPermission,
   upload.single('image'),
-  uploadCompanyCoverPic,
+  (req, res, next) => {
+    companyController.uploadCompanyCover(req, res, next);
+  },
 );
 
-// Delete company logo
 router.delete(
-  '/api/company/:companyId/logo',
+  '/company/:id/cover',
   apiLimiter,
-  verifyAccessToken,
-  deleteCompanyLogo,
-);
-
-// Delete company cover pic
-router.delete(
-  '/api/company/:companyId/cover-pic',
-  apiLimiter,
-  verifyAccessToken,
-  deleteCompanyCoverPic,
+  Authorization.verifyToken,
+  Authorization.verifyHRPermission,
+  (req, res, next) => {
+    companyController.deleteCompanyCover(req, res, next);
+  },
 );
 
 export default router;
