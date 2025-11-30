@@ -62,6 +62,36 @@ export class CompanyDAO {
     return company;
   }
 
+  async updateCompanyLogo(companyId, logo) {
+    return await Company.findByIdAndUpdate(
+      companyId,
+      {
+        $set: {
+          logo: {
+            secure_url: logo.secure_url,
+            public_id: logo.public_id,
+          },
+        },
+      },
+      { new: true },
+    );
+  }
+
+  async updateCompanyCover(companyId, cover) {
+    return await Company.findByIdAndUpdate(
+      companyId,
+      {
+        $set: {
+          coverPic: {
+            secure_url: cover.secure_url,
+            public_id: cover.public_id,
+          },
+        },
+      },
+      { new: true },
+    );
+  }
+
   async softDelete(id, user) {
     const isOwner = (await this.isOwner(id, user.id)) || user.role === 'Admin';
     if (!isOwner) {
@@ -91,7 +121,7 @@ export class CompanyDAO {
       deletedAt: null,
       bannedAt: null,
       approvedByAdmin: true,
-    }).lean();
+    });
 
     if (!company) {
       throw new Error('Company not found or inactive');
