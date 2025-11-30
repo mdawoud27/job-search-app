@@ -44,4 +44,13 @@ router.get(
   },
 );
 
+router.get(
+  '/company/search/:name',
+  apiLimiter,
+  Authorization.verifyToken,
+  (req, res, next) => {
+    companyController.searchCompanywithName(req, res, next);
+  },
+);
+
 export default router;

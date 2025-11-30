@@ -61,4 +61,15 @@ export class CompanyController {
       next(error);
     }
   }
+
+  async searchCompanywithName(req, res, next) {
+    try {
+      const company = await this.companyService.searchCompanywithName(
+        req.params.name,
+      );
+      res.status(200).json(company);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

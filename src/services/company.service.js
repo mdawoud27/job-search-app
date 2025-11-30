@@ -83,4 +83,25 @@ export class CompanyService {
       },
     };
   }
+
+  async searchCompanywithName(companyName) {
+    const companies = await this.companyDao.findByCompanyName(companyName);
+
+    if (!companies || companies.length === 0) {
+      const error = new Error('No companies found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return {
+      message: 'Companies found successfully',
+      count: companies.length,
+      data: companies.map((company) => {
+        return {
+          ...CompanyResponseDto.toResponse(company),
+          jobs: company.jobs,
+        };
+      }),
+    };
+  }
 }

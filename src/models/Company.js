@@ -46,6 +46,7 @@ const companySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
+    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     logo: { type: imageSchema, default: null },
     coverPic: { type: imageSchema, default: null },
     HRs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

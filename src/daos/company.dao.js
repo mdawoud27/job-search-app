@@ -5,12 +5,28 @@ export class CompanyDAO {
     return Company.findById(id);
   }
 
+  async findByIdWithJobs(id) {
+    return Company.findOne({
+      _id: id,
+      deletedAt: null,
+      bannedAt: null,
+    }).populate('jobs');
+  }
+
   async findByEmail(email) {
     return Company.findOne({ email });
   }
 
-  async findByCompanyName(companyName) {
-    return Company.findOne({ companyName });
+  async findByCompanyName(companyName, limit = 10) {
+    const escapedName = companyName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    return await Company.find({
+      companyName: { $regex: new RegExp(escapedName, 'i') },
+      deletedAt: null,
+      bannedAt: null,
+    })
+      .limit(limit)
+      .populate('jobs');
   }
 
   async findAll(filters = {}) {
@@ -23,12 +39,50 @@ export class CompanyDAO {
     return company.save();
   }
 
-  async updateById(id, updateData) {
-    return Company.findByIdAndUpdate(id, updateData, { new: true });
+  async update(id, dto, userId) {
+    const isOwner = await this.isOwner(id, userId);
+    if (!isOwner) {
+      throw new Error('You do not have permission to update this company');
+    }
+
+    await this.isActive(id);
+
+    const company = await Company.findOneAndUpdate(
+      { _id: id, createdBy: userId },
+      { $set: { ...dto, updatedBy: userId } },
+      { new: true },
+    );
+
+    if (!company) {
+      throw new Error(
+        'Company not found or you do not have permission to update it',
+      );
+    }
+
+    return company;
   }
 
-  async deleteById(id) {
-    return Company.findByIdAndDelete(id);
+  async softDelete(id, user) {
+    const isOwner = (await this.isOwner(id, user.id)) || user.role === 'Admin';
+    if (!isOwner) {
+      throw new Error('You do not have permission to delete this company');
+    }
+
+    await this.isActive(id);
+
+    const company = await Company.findOneAndUpdate(
+      { _id: id },
+      { $set: { deletedAt: new Date(), deletedBy: user.id } },
+      { new: true },
+    );
+
+    if (!company) {
+      throw new Error(
+        'Company not found or you do not have permission to delete it',
+      );
+    }
+
+    return company;
   }
 
   async isActive(id) {
@@ -74,10 +128,16 @@ export class CompanyDAO {
   async canManage(id, userId) {
     const company = await Company.findOne({
       _id: id,
-      $or: {
-        createdBy: userId,
-        HRs: userId,
-      },
+      $or: [{ createdBy: userId }, { HRs: userId }],
+    });
+
+    return !!company;
+  }
+
+  async isOwner(id, userId) {
+    const company = await Company.findOne({
+      _id: id,
+      createdBy: userId,
     });
 
     return !!company;
