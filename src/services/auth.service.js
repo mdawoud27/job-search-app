@@ -3,7 +3,6 @@ import { OtpUtils } from '../utils/otpUtils.js';
 import { UserResponseDto } from '../dtos/auth/user-response.dto.js';
 import { ConfirmOtpDto } from '../dtos/auth/confirm-opt.dto.js';
 import { TokenUtils } from '../utils/tokens.utils.js';
-import { ResetPasswordDto } from '../dtos/auth/reset-password.dto.js';
 import { sendOTPEmail } from '../utils/email.utils.js';
 
 export class AuthService {
