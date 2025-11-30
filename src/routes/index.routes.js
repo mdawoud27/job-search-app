@@ -8,7 +8,7 @@ import applicationRouter from './application.routes.js';
 
 const router = Router();
 
-router.use('/api/v1', authRouter);
+router.use('/api', authRouter);
 router.use('/api/v1', userRouter);
 router.use('/api/v1', adminRouter);
 router.use('/api/v1', companyRouter);
