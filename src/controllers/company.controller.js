@@ -1,3 +1,4 @@
+import { uploadBuffer } from '../config/cloudinary.config.js';
 import { CreateCompanyDto } from '../dtos/company/create-company.dto.js';
 import { UpdateCompanyDto } from '../dtos/company/update-company.dto.js';
 
@@ -66,6 +67,60 @@ export class CompanyController {
     try {
       const company = await this.companyService.searchCompanywithName(
         req.params.name,
+      );
+      res.status(200).json(company);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async uploadCompanyLogo(req, res, next) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+      const cloudResult = await uploadBuffer(req.file.buffer, 'companyLogos');
+      const company = await this.companyService.uploadCompanyLogo(
+        req.params.id,
+        cloudResult,
+      );
+      res.status(200).json(company);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteCompanyLogo(req, res, next) {
+    try {
+      const company = await this.companyService.deleteCompanyLogo(
+        req.params.id,
+      );
+      res.status(200).json(company);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async uploadCompanyCover(req, res, next) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+      const cloudResult = await uploadBuffer(req.file.buffer, 'companyCovers');
+      const company = await this.companyService.uploadCompanyCover(
+        req.params.id,
+        cloudResult,
+      );
+      res.status(200).json(company);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteCompanyCover(req, res, next) {
+    try {
+      const company = await this.companyService.deleteCompanyCover(
+        req.params.id,
       );
       res.status(200).json(company);
     } catch (error) {
