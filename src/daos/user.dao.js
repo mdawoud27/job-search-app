@@ -101,4 +101,16 @@ export class UserDAO {
     }
     return user.bannedAt !== null;
   }
+
+  async updatePassword(userId, hashedPassword) {
+    const isActive = await this.isActive(userId);
+    if (!isActive) {
+      throw new Error('User is deleted or banned');
+    }
+    return User.findOneAndUpdate(
+      { _id: { $eq: userId } },
+      { password: hashedPassword, changeCredentialTime: new Date() },
+      { new: true },
+    );
+  }
 }

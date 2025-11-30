@@ -37,20 +37,20 @@ router.delete(
 );
 
 router.get(
-  '/company/:id',
-  apiLimiter,
-  Authorization.verifyToken,
-  (req, res, next) => {
-    companyController.getSpecificCompanyWithJobs(req, res, next);
-  },
-);
-
-router.get(
   '/company/search/:name',
   apiLimiter,
   Authorization.verifyToken,
   (req, res, next) => {
     companyController.searchCompanywithName(req, res, next);
+  },
+);
+
+router.get(
+  '/company/:id',
+  apiLimiter,
+  Authorization.verifyToken,
+  (req, res, next) => {
+    companyController.getSpecificCompanyWithJobs(req, res, next);
   },
 );
 

@@ -198,7 +198,6 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.password, salt);
 
     await this.userRepository.updatePassword(user._id, hashedPassword);
-    user.changeCredentialTime = new Date();
     user.refreshToken = null;
     await user.save();
     return { user, message: 'Password reset successful. Please login.' };
