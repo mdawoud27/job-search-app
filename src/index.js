@@ -8,7 +8,6 @@ import morgan from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
 import passport from 'passport';
-import session from 'express-session';
 import { apiLimiter } from './utils/apiLimiter.js';
 import connectToDB from './config/db.js';
 import routes from './routes/index.routes.js';
@@ -22,18 +21,6 @@ const app = express();
 
 // Connect to the database
 connectToDB();
-
-app.use(
-  session({
-    secret: 'secret',
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: true,
-    },
-  }),
-);
 
 // Apply rate limiter to all requests
 app.use(apiLimiter);
