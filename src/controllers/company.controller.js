@@ -28,7 +28,6 @@ export class CompanyController {
       if (error) {
         return res.status(400).json({ error: error.details[0].message });
       }
-      console.log(value);
       const company = await this.companyService.updateCompany(
         req.params.id,
         value,
@@ -45,6 +44,17 @@ export class CompanyController {
       const company = await this.companyService.softDeleteCompany(
         req.params.id,
         req.user,
+      );
+      res.status(200).json(company);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getSpecificCompanyWithJobs(req, res, next) {
+    try {
+      const company = await this.companyService.getSpecificCompanyWithJobs(
+        req.params.id,
       );
       res.status(200).json(company);
     } catch (error) {
