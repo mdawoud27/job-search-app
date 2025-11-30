@@ -25,4 +25,14 @@ router.put(
   },
 );
 
+router.delete(
+  '/company/:id',
+  apiLimiter,
+  Authorization.verifyToken,
+  Authorization.verifyHRPermission,
+  (req, res, next) => {
+    companyController.softDeleteCompany(req, res, next);
+  },
+);
+
 export default router;
