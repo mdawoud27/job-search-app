@@ -39,4 +39,16 @@ export class CompanyController {
       next(error);
     }
   }
+
+  async softDeleteCompany(req, res, next) {
+    try {
+      const company = await this.companyService.softDeleteCompany(
+        req.params.id,
+        req.user,
+      );
+      res.status(200).json(company);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
