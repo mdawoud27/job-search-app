@@ -4,7 +4,7 @@ export class TokenDto {
   static validate(body) {
     const schema = Joi.object({
       refreshToken: Joi.string().trim().required().messages({
-        'string.empty': 'Email is required.',
+        'string.empty': 'Refresh token is required.',
       }),
     });
 

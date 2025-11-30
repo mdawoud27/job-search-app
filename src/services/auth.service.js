@@ -186,7 +186,8 @@ export class AuthService {
       throw new Error('No OTP found');
     }
 
-    if (!ResetPasswordDto.validate(dto.code, lastOtp.code)) {
+    const isValid = await OtpUtils.validate(dto.OTP, lastOtp.code);
+    if (!isValid) {
       throw new Error('Invalid OTP');
     }
 
