@@ -2,7 +2,7 @@ import { Company } from '../models/Company.js';
 
 export class CompanyDAO {
   async findById(id) {
-    return Company.findById(id);
+    return Company.findOne({ _id: { $eq: id } });
   }
 
   async findByIdWithJobs(id) {
