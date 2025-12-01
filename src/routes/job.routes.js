@@ -11,4 +11,11 @@ router.post(
   (req, res, next) => jobController.createJob(req, res, next),
 );
 
+router.put(
+  '/job/:companyId/:jobId',
+  Authorization.verifyToken,
+  Authorization.verifyHRPermission,
+  (req, res, next) => jobController.updateJob(req, res, next),
+);
+
 export default router;
