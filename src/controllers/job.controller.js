@@ -53,4 +53,23 @@ export class JobController {
       next(error);
     }
   }
+
+  async getJobs(req, res, next) {
+    try {
+      const query = { ...req.query, ...req.params };
+      const result = await this.jobService.getJobs(query);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getJob(req, res, next) {
+    try {
+      const job = await this.jobService.getJob(req.params.jobId);
+      res.status(200).json(job);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
