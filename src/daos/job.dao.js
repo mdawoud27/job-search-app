@@ -45,4 +45,17 @@ export class JobDao {
 
     return job;
   }
+
+  async findAll(filter = {}, skip = 0, limit = 10, sort = { createdAt: -1 }) {
+    const query = { ...filter, isVisible: true, closed: false };
+    const [jobs, totalCount] = await Promise.all([
+      Job.find(query).sort(sort).skip(skip).limit(limit),
+      Job.countDocuments(query),
+    ]);
+    return { jobs, totalCount };
+  }
+
+  async findById(jobId) {
+    return Job.findOne({ _id: { $eq: jobId }, isVisible: true, closed: false });
+  }
 }
