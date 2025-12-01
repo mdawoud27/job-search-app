@@ -203,4 +203,42 @@ export class CompanyService {
       },
     };
   }
+
+  async addHR(companyId, userId) {
+    const company = await this.companyDao.isActive(companyId);
+    if (!company) {
+      throw new Error('Company not found or deleted or banned');
+    }
+    const user = await this.userDao.findByIdAndActive(userId);
+    if (!user) {
+      throw new Error('User not found or deleted or banned');
+    }
+    const updatedCompany = await this.companyDao.addHR(companyId, userId);
+    user.role = 'HR';
+    await user.save();
+    return {
+      message: 'HR added successfully',
+      data: {
+        company: updatedCompany,
+      },
+    };
+  }
+
+  async removeHR(companyId, userId) {
+    const company = await this.companyDao.isActive(companyId);
+    if (!company) {
+      throw new Error('Company not found or deleted or banned');
+    }
+    const user = await this.userDao.findByIdAndActive(userId);
+    if (!user) {
+      throw new Error('User not found or deleted or banned');
+    }
+    const updatedCompany = await this.companyDao.removeHR(companyId, userId);
+    return {
+      message: 'HR removed successfully',
+      data: {
+        company: updatedCompany,
+      },
+    };
+  }
 }

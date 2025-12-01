@@ -127,4 +127,28 @@ export class CompanyController {
       next(error);
     }
   }
+
+  async addHR(req, res, next) {
+    try {
+      const company = await this.companyService.addHR(
+        req.params.id,
+        req.body.userId,
+      );
+      res.status(200).json(company);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async removeHR(req, res, next) {
+    try {
+      const company = await this.companyService.removeHR(
+        req.params.id,
+        req.body.userId,
+      );
+      res.status(200).json(company);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

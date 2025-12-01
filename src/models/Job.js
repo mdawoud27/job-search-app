@@ -34,22 +34,30 @@ const jobSchema = new mongoose.Schema(
     },
     technicalSkills: {
       type: [{ type: String, trim: true }],
-      // TODO: validate with joi
-      validate: {
-        validator: function (skills) {
-          return skills.length > 0;
-        },
-        message: 'At least one technical skill is required',
-      },
+      required: [true, 'Technical skills is required'],
     },
     softSkills: {
       type: [{ type: String, trim: true }],
-      validate: {
-        validator: function (skills) {
-          return skills.length > 0;
-        },
-        message: 'At least one soft skill is required',
-      },
+      required: [true, 'Soft skills is required'],
+    },
+    addedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'Job must have a creator'],
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    closed: {
+      type: Boolean,
+      default: false,
+    },
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Company',
+      required: [true, 'Job must be associated with a company'],
+      index: true,
     },
     salary: {
       from: {
@@ -69,9 +77,6 @@ const jobSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    applicationDeadline: {
-      type: Date,
-    },
     views: {
       type: Number,
       default: 0,
@@ -79,25 +84,6 @@ const jobSchema = new mongoose.Schema(
     applications: {
       type: Number,
       default: 0,
-    },
-    closed: {
-      type: Boolean,
-      default: false,
-    },
-    addedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: [true, 'Job must have a creator'],
-    },
-    updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    companyId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Company',
-      required: [true, 'Job must be associated with a company'],
-      index: true,
     },
   },
   {
@@ -107,14 +93,6 @@ const jobSchema = new mongoose.Schema(
   },
 );
 
-// Virtual to determine if job is active
-jobSchema.virtual('isActive').get(function () {
-  const isExpired =
-    this.applicationDeadline && new Date() > this.applicationDeadline;
-  return !this.closed && !isExpired;
-});
-
-// Index for efficient searching
 jobSchema.index({ companyId: 1, closed: 1 });
 jobSchema.index({ technicalSkills: 1, seniorityLevel: 1 });
 jobSchema.index(
@@ -131,49 +109,5 @@ jobSchema.index(
     },
   },
 );
-
-// Pre-validate middleware to check if added/updatedBy is an HR
-// jobSchema.pre('validate', async function (next) {
-//   try {
-//     if (!this.isNew && !this.updatedBy) {
-//       return next(new Error('updatedBy field is required when updating a job'));
-//     }
-
-//     // We would typically check if user is HR here, but would need Company model access
-//     // This can be handled in the controller instead
-
-//     next();
-//   } catch (error) {
-//     next(error);
-//   }
-// });
-
-// Static method to find all active jobs for a company
-jobSchema.statics.findActiveJobsByCompany = function (companyId) {
-  return this.find({
-    companyId,
-    closed: false,
-    $or: [
-      { applicationDeadline: { $exists: false } },
-      { applicationDeadline: { $gt: new Date() } },
-    ],
-  });
-};
-
-// Method to check if HR can update this job
-jobSchema.methods.canBeUpdatedBy = async function (userId, Company) {
-  const company = await Company.findById(this.companyId);
-  if (!company) {
-    return false;
-  }
-
-  return company.canManage(userId);
-};
-
-// Method to increment application count
-jobSchema.methods.incrementApplications = function () {
-  this.applications += 1;
-  return this.save();
-};
 
 export const Job = mongoose.model('Job', jobSchema);
