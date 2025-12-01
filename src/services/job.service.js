@@ -27,4 +27,26 @@ export class JobService {
       },
     };
   }
+
+  async updateJob(dto, userId, companyId, jobId) {
+    const user = await this.userDao.findByIdAndActive(userId);
+    const company = await this.companyDao.isActive(companyId);
+    const canManage = await this.companyDao.canManage(companyId, userId);
+
+    if (!canManage) {
+      throw new Error(
+        'You do not have permission to update a job in this company',
+      );
+    }
+
+    const job = await this.jobDao.updateJob(dto, user.id, company.id, jobId);
+    return {
+      message: 'Job updated successfully',
+      updatedBy: user.email,
+      data: {
+        companyName: company.companyName,
+        ...JobResponseDto.toResponse(job),
+      },
+    };
+  }
 }
