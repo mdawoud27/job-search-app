@@ -13,8 +13,31 @@ export class JobDao {
       {
         _id: { $eq: jobId },
         companyId,
+        isVisible: true,
+        closed: false,
       },
       { ...dto, updatedBy: userId },
+      {
+        new: true,
+      },
+    );
+
+    return job;
+  }
+
+  async deleteJob(userId, companyId, jobId) {
+    const job = await Job.findOneAndUpdate(
+      {
+        _id: { $eq: jobId },
+        companyId,
+        isVisible: true,
+        closed: false,
+      },
+      {
+        updatedBy: userId,
+        isVisible: false,
+        closed: true,
+      },
       {
         new: true,
       },
