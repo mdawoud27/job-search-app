@@ -66,6 +66,7 @@ export class JobService {
     }
 
     const job = await this.jobDao.deleteJob(user.id, company.id, jobId);
+
     if (!job) {
       throw new Error('Job not found or already deleted');
     }
@@ -78,5 +79,65 @@ export class JobService {
         deletedBy: user.email,
       },
     };
+  }
+
+  async getJobs(query) {
+    const {
+      page = 1,
+      limit = 10,
+      sort = '-createdAt',
+      companyId,
+      companyName,
+    } = query;
+
+    const skip = (page - 1) * limit;
+    const filter = {};
+
+    if (companyId) {
+      filter.companyId = companyId;
+    } else if (companyName) {
+      const companies = await this.companyDao.findByCompanyName(companyName);
+      if (companies.length === 0) {
+        return {
+          jobs: [],
+          totalCount: 0,
+          totalPages: 0,
+          currentPage: page,
+        };
+      }
+      filter.companyId = { $in: companies.map((c) => c._id) };
+    }
+
+    const sortOptions = {};
+    if (sort) {
+      const parts = sort.split(',');
+      parts.forEach((part) => {
+        const field = part.startsWith('-') ? part.substring(1) : part;
+        const order = part.startsWith('-') ? -1 : 1;
+        sortOptions[field] = order;
+      });
+    }
+
+    const { jobs, totalCount } = await this.jobDao.findAll(
+      filter,
+      skip,
+      limit,
+      sortOptions,
+    );
+
+    return {
+      jobs: jobs.map((job) => JobResponseDto.toResponse(job)),
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: Number(page),
+    };
+  }
+
+  async getJob(jobId) {
+    const job = await this.jobDao.findById(jobId);
+    if (!job) {
+      throw new Error('Job not found');
+    }
+    return JobResponseDto.toResponse(job);
   }
 }
