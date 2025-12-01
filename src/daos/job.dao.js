@@ -7,4 +7,19 @@ export class JobDao {
     job.companyId = companyId;
     return job.save();
   }
+
+  async updateJob(dto, userId, companyId, jobId) {
+    const job = await Job.findOneAndUpdate(
+      {
+        _id: { $eq: jobId },
+        companyId,
+      },
+      { ...dto, updatedBy: userId },
+      {
+        new: true,
+      },
+    );
+
+    return job;
+  }
 }
