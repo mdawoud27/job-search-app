@@ -1,4 +1,5 @@
 import { JobResponseDto } from '../dtos/job/job-response.dto.js';
+import _ from 'lodash';
 
 export class JobService {
   constructor(userDao, companyDao, jobDao) {
@@ -123,7 +124,7 @@ export class JobService {
       filter.seniorityLevel = seniorityLevel;
     }
     if (jobTitle) {
-      filter.jobTitle = { $regex: new RegExp(jobTitle, 'i') };
+      filter.jobTitle = { $regex: new RegExp(_.escapeRegExp(jobTitle), 'i') };
     }
     if (technicalSkills) {
       const skills = technicalSkills.split(',');
