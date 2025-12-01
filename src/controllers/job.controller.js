@@ -40,4 +40,17 @@ export class JobController {
       next(error);
     }
   }
+
+  async deleteJob(req, res, next) {
+    try {
+      const job = await this.jobService.deleteJob(
+        req.user.id,
+        req.params.companyId,
+        req.params.jobId,
+      );
+      res.status(201).json(job);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
