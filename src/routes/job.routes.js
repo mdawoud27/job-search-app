@@ -18,4 +18,11 @@ router.put(
   (req, res, next) => jobController.updateJob(req, res, next),
 );
 
+router.put(
+  '/job/:companyId/delete/:jobId',
+  Authorization.verifyToken,
+  Authorization.verifyHRPermission,
+  (req, res, next) => jobController.deleteJob(req, res, next),
+);
+
 export default router;
