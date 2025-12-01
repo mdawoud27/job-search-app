@@ -8,3 +8,14 @@ export const EMPLOYEE_RANGES = [
   '501-1000',
   '1000+',
 ];
+
+export const JOB_LOCATIONS = ['onsite', 'remotely', 'hybrid'];
+export const WORKING_TIME = ['part-time', 'full-time'];
+export const SENIORITY_LEVELS = [
+  'Fresh',
+  'Junior',
+  'Mid-Level',
+  'Senior',
+  'Team-Lead',
+  'CTO',
+];
