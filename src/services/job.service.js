@@ -88,6 +88,11 @@ export class JobService {
       sort = '-createdAt',
       companyId,
       companyName,
+      workingTime,
+      jobLocation,
+      seniorityLevel,
+      jobTitle,
+      technicalSkills,
     } = query;
 
     const skip = (page - 1) * limit;
@@ -106,6 +111,23 @@ export class JobService {
         };
       }
       filter.companyId = { $in: companies.map((c) => c._id) };
+    }
+
+    if (workingTime) {
+      filter.workingTime = workingTime;
+    }
+    if (jobLocation) {
+      filter.jobLocation = jobLocation;
+    }
+    if (seniorityLevel) {
+      filter.seniorityLevel = seniorityLevel;
+    }
+    if (jobTitle) {
+      filter.jobTitle = { $regex: new RegExp(jobTitle, 'i') };
+    }
+    if (technicalSkills) {
+      const skills = technicalSkills.split(',');
+      filter.technicalSkills = { $in: skills.map((s) => s.trim()) };
     }
 
     const sortOptions = {};
