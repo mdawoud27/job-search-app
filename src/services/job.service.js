@@ -1,0 +1,30 @@
+import { JobResponseDto } from '../dtos/job/job-response.dto.js';
+
+export class JobService {
+  constructor(userDao, companyDao, jobDao) {
+    this.jobDao = jobDao;
+    this.userDao = userDao;
+    this.companyDao = companyDao;
+  }
+
+  async createJob(dto, userId, companyId) {
+    const user = await this.userDao.findByIdAndActive(userId);
+    const company = await this.companyDao.isActive(companyId);
+    const canManage = await this.companyDao.canManage(companyId, userId);
+
+    if (!canManage) {
+      throw new Error(
+        'You do not have permission to create a job in this company',
+      );
+    }
+
+    const job = await this.jobDao.createJob(dto, user.id, company.id);
+    return {
+      message: 'Job created successfully',
+      data: {
+        companyName: company.companyName,
+        ...JobResponseDto.toResponse(job),
+      },
+    };
+  }
+}
