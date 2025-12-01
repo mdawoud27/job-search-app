@@ -40,12 +40,42 @@ export class JobService {
     }
 
     const job = await this.jobDao.updateJob(dto, user.id, company.id, jobId);
+    if (!job) {
+      throw new Error('Job not found, already deleted, or closed');
+    }
+
     return {
       message: 'Job updated successfully',
       updatedBy: user.email,
       data: {
         companyName: company.companyName,
         ...JobResponseDto.toResponse(job),
+      },
+    };
+  }
+
+  async deleteJob(userId, companyId, jobId) {
+    const user = await this.userDao.findByIdAndActive(userId);
+    const company = await this.companyDao.isActive(companyId);
+    const canManage = await this.companyDao.canManage(companyId, userId);
+
+    if (!canManage) {
+      throw new Error(
+        'You do not have permission to delete a job in this company',
+      );
+    }
+
+    const job = await this.jobDao.deleteJob(user.id, company.id, jobId);
+    if (!job) {
+      throw new Error('Job not found or already deleted');
+    }
+
+    return {
+      message: 'Job deleted successfully',
+      deletedBy: user.email,
+      data: {
+        companyName: company.companyName,
+        deletedBy: user.email,
       },
     };
   }
