@@ -1,3 +1,32 @@
 # Job Search App
 
-The **Job Search App** is a web application designed to help users find jobs relevant to their domain or area of interest. The app provides a seamless experience for job seekers by offering features like filtering jobs, handling user and company data, and managing job applications. The application is built with a modular structure, making it easy to maintain and extends the database and follows a modular architecture.
+A RESTful API for a job search platform built with Node.js, Express, and MongoDB. This application enables users to find jobs, companies to post positions, and administrators to manage the platform.
+
+## How to Run
+
+1. **Install Dependencies**
+
+   ```bash
+   npm install
+   ```
+
+2. **Environment Setup**
+   Copy the example environment file and configure your variables:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Start the Server**
+   ```bash
+   npm run start:dev
+   ```
+   The server will start on `http://localhost:3000`.
+
+## API Documentation
+
+The API documentation is available via Swagger UI:
+
+👉 **[http://localhost:3000/api-docs](http://localhost:3000/api-docs)**
+
+You can explore all endpoints, schemas, and test the API directly from there.

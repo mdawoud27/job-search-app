@@ -13,6 +13,7 @@ import connectToDB from './config/db.js';
 import routes from './routes/index.routes.js';
 import { errorHandler, notFound } from './middlewares/errorHandler.js';
 import { configurePassport } from './config/passport.config.js';
+import { setupSwagger } from './config/swagger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -47,6 +48,7 @@ configurePassport();
 
 // Routes
 app.use(routes);
+setupSwagger(app);
 
 // Global error handlers middlewares
 app.use(notFound);
