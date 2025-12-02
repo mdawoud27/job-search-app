@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Authorization } from '../middlewares/auth.middleware.js';
 import { userController } from '../container.js';
-import { upload } from '../utils/multer.js';
+import { uploadImage } from '../utils/multer.js';
 
 const router = Router();
 
@@ -35,14 +35,14 @@ router.patch(
 router.patch(
   '/user/profile/profile-pic',
   Authorization.verifyToken,
-  upload.single('image'),
+  uploadImage.single('image'),
   (req, res, next) => userController.uploadProfilePic(req, res, next),
 );
 
 router.patch(
   '/user/profile/cover-pic',
   Authorization.verifyToken,
-  upload.single('image'),
+  uploadImage.single('image'),
   (req, res, next) => userController.uploadCoverPic(req, res, next),
 );
 
