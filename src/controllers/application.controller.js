@@ -22,4 +22,18 @@ export class ApplicationController {
       next(error);
     }
   }
+
+  async getAllApplicationsForSpecificJob(req, res, next) {
+    try {
+      const applications =
+        await this.applicationService.getAllApplicationsForSpecificJob(
+          req.params.jobId,
+          req.user.id,
+          req.query,
+        );
+      res.status(200).json(applications);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
