@@ -15,4 +15,12 @@ router.post(
   },
 );
 
+router.get(
+  '/jobs/:jobId/applications',
+  Authorization.verifyToken,
+  (req, res, next) => {
+    applicationController.getAllApplicationsForSpecificJob(req, res, next);
+  },
+);
+
 export default router;
