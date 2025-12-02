@@ -54,6 +54,7 @@ const applicationService = new ApplicationService(
   userRepository,
   jobRepository,
   applicationRepository,
+  companyRepository,
 );
 
 // Controllers
