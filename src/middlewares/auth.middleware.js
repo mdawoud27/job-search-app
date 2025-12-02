@@ -40,7 +40,7 @@ export const Authorization = {
 
   // ensure user is updating his own account or he is an admin
   verifyUserPermission: (req, res, next) => {
-    if (req.params.id === req.user.id || req.user.role === 'Admin') {
+    if (req.user.role === 'User' || req.user.role === 'Admin') {
       return next();
     }
     // Otherwise deny access
