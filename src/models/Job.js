@@ -93,6 +93,13 @@ const jobSchema = new mongoose.Schema(
   },
 );
 
+jobSchema.virtual('jobApplications', {
+  ref: 'Application',
+  localField: '_id',
+  foreignField: 'jobId',
+  justOne: false,
+});
+
 jobSchema.index({ companyId: 1, closed: 1 });
 jobSchema.index({ technicalSkills: 1, seniorityLevel: 1 });
 jobSchema.index(
