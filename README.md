@@ -27,6 +27,6 @@ A RESTful API for a job search platform built with Node.js, Express, and MongoDB
 
 The API documentation is available via Swagger UI:
 
-👉 **[http://localhost:3000/api-docs](http://localhost:3000/api-docs)**
+[http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
 You can explore all endpoints, schemas, and test the API directly from there.
