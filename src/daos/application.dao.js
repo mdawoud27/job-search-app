@@ -8,8 +8,13 @@ export class ApplicationDAO {
       userCV: {
         secure_url: cv.secure_url,
         public_id: cv.public_id,
+        fileType: 'pdf',
       },
     });
     return application;
+  }
+
+  async countApplications(jobId) {
+    return Application.countDocuments({ jobId });
   }
 }
