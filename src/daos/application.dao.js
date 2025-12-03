@@ -17,4 +17,18 @@ export class ApplicationDAO {
   async countApplications(jobId) {
     return Application.countDocuments({ jobId });
   }
+
+  async findById(applicationId) {
+    return Application.findById(applicationId)
+      .populate('userId', 'firstName lastName email')
+      .populate('jobId', 'jobTitle companyId');
+  }
+
+  async updateStatus(applicationId, status) {
+    return Application.findOneAndUpdate(
+      { _id: { $eq: applicationId } },
+      { status },
+      { new: true },
+    );
+  }
 }
