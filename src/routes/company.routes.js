@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { Authorization } from '../middlewares/auth.middleware.js';
 import { apiLimiter } from '../utils/apiLimiter.js';
 import { companyController } from '../container.js';
-import { upload } from '../utils/multer.js';
+import { uploadImage } from '../utils/multer.js';
 
 const router = Router();
 
@@ -59,7 +59,7 @@ router.patch(
   apiLimiter,
   Authorization.verifyToken,
   Authorization.verifyHRPermission,
-  upload.single('image'),
+  uploadImage.single('image'),
   (req, res, next) => {
     companyController.uploadCompanyLogo(req, res, next);
   },
@@ -80,7 +80,7 @@ router.patch(
   apiLimiter,
   Authorization.verifyToken,
   Authorization.verifyHRPermission,
-  upload.single('image'),
+  uploadImage.single('image'),
   (req, res, next) => {
     companyController.uploadCompanyCover(req, res, next);
   },

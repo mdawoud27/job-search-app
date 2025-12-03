@@ -56,6 +56,37 @@ export class JobDao {
   }
 
   async findById(jobId) {
-    return Job.findOne({ _id: { $eq: jobId }, isVisible: true, closed: false });
+    return Job.findOne({
+      _id: { $eq: jobId },
+      isVisible: true,
+      closed: false,
+    });
+  }
+
+  async findByIdWithApplications(
+    jobId,
+    skip = 0,
+    limit = 10,
+    sort = '-createdAt',
+  ) {
+    return Job.findOne({
+      _id: { $eq: jobId },
+      isVisible: true,
+      closed: false,
+    }).populate({
+      path: 'jobApplications',
+      options: { skip, limit, sort },
+      select: '-__v',
+      populate: [
+        {
+          path: 'jobId',
+          select: 'jobTitle jobLocation workingTime seniorityLevel',
+        },
+        {
+          path: 'userId',
+          select: 'firstName lastName email profilePic',
+        },
+      ],
+    });
   }
 }

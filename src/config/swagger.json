@@ -75,11 +75,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "user",
-              "hr",
-              "admin"
-            ]
+            "enum": ["user", "hr", "admin"]
           }
         }
       },
@@ -163,10 +159,7 @@
           },
           "gender": {
             "type": "string",
-            "enum": [
-              "Male",
-              "Female"
-            ],
+            "enum": ["Male", "Female"],
             "example": "Male"
           },
           "username": {
@@ -179,11 +172,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "User",
-              "HR",
-              "Admin"
-            ],
+            "enum": ["User", "HR", "Admin"],
             "example": "User"
           },
           "provider": {
@@ -312,19 +301,12 @@
           },
           "jobLocation": {
             "type": "string",
-            "enum": [
-              "onsite",
-              "remotely",
-              "hybrid"
-            ],
+            "enum": ["onsite", "remotely", "hybrid"],
             "example": "hybrid"
           },
           "workingTime": {
             "type": "string",
-            "enum": [
-              "part-time",
-              "full-time"
-            ],
+            "enum": ["part-time", "full-time"],
             "example": "full-time"
           },
           "seniorityLevel": {
@@ -348,23 +330,14 @@
             "items": {
               "type": "string"
             },
-            "example": [
-              "JavaScript",
-              "Node.js",
-              "React",
-              "MongoDB"
-            ]
+            "example": ["JavaScript", "Node.js", "React", "MongoDB"]
           },
           "softSkills": {
             "type": "array",
             "items": {
               "type": "string"
             },
-            "example": [
-              "Communication",
-              "Team work",
-              "Problem solving"
-            ]
+            "example": ["Communication", "Team work", "Problem solving"]
           },
           "addedBy": {
             "type": "string",
@@ -700,6 +673,239 @@
           }
         }
       },
+      "ApplicationResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Application created successfully"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "user": {
+                "type": "string",
+                "format": "email",
+                "example": "user@example.com"
+              },
+              "job": {
+                "type": "string",
+                "example": "Backend Engineer"
+              },
+              "cv": {
+                "type": "object",
+                "properties": {
+                  "secure_url": {
+                    "type": "string",
+                    "example": "https://cloudinary.com/cv.pdf"
+                  },
+                  "public_id": {
+                    "type": "string",
+                    "example": "cv/123456"
+                  },
+                  "fileType": {
+                    "type": "string",
+                    "example": "pdf"
+                  }
+                }
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "accepted",
+                  "viewed",
+                  "in consideration",
+                  "rejected"
+                ],
+                "example": "pending"
+              }
+            }
+          }
+        }
+      },
+      "UpdateApplicationStatusRequest": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["accepted", "rejected"],
+            "description": "New status for the application",
+            "example": "accepted"
+          }
+        }
+      },
+      "UpdateApplicationStatusResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Application accepted successfully"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "applicationId": {
+                "type": "string",
+                "example": "507f1f77bcf86cd799439011"
+              },
+              "status": {
+                "type": "string",
+                "enum": ["accepted", "rejected"],
+                "example": "accepted"
+              },
+              "applicant": {
+                "type": "string",
+                "example": "John Doe"
+              },
+              "job": {
+                "type": "string",
+                "example": "Backend Engineer"
+              }
+            }
+          }
+        }
+      },
+      "ApplicationListResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Applications retrieved successfully"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "applications": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "example": "507f1f77bcf86cd799439011"
+                    },
+                    "jobId": {
+                      "type": "object",
+                      "properties": {
+                        "jobTitle": {
+                          "type": "string",
+                          "example": "Backend Engineer"
+                        },
+                        "jobLocation": {
+                          "type": "string",
+                          "enum": ["onsite", "remotely", "hybrid"],
+                          "example": "hybrid"
+                        },
+                        "workingTime": {
+                          "type": "string",
+                          "enum": ["part-time", "full-time"],
+                          "example": "full-time"
+                        },
+                        "seniorityLevel": {
+                          "type": "string",
+                          "enum": [
+                            "Fresh",
+                            "Junior",
+                            "Mid-Level",
+                            "Senior",
+                            "Team-Lead",
+                            "CTO"
+                          ],
+                          "example": "Senior"
+                        }
+                      }
+                    },
+                    "userId": {
+                      "type": "object",
+                      "properties": {
+                        "firstName": {
+                          "type": "string",
+                          "example": "John"
+                        },
+                        "lastName": {
+                          "type": "string",
+                          "example": "Doe"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email",
+                          "example": "john.doe@example.com"
+                        },
+                        "profilePic": {
+                          "type": "string",
+                          "nullable": true,
+                          "example": "https://cloudinary.com/profile.jpg"
+                        }
+                      }
+                    },
+                    "userCV": {
+                      "type": "object",
+                      "properties": {
+                        "secure_url": {
+                          "type": "string",
+                          "example": "https://cloudinary.com/cv.pdf"
+                        },
+                        "public_id": {
+                          "type": "string",
+                          "example": "cv/123456"
+                        },
+                        "fileType": {
+                          "type": "string",
+                          "example": "pdf"
+                        }
+                      }
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "accepted",
+                        "viewed",
+                        "in consideration",
+                        "rejected"
+                      ],
+                      "example": "pending"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-01T00:00:00.000Z"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-01T00:00:00.000Z"
+                    }
+                  }
+                }
+              },
+              "pagination": {
+                "type": "object",
+                "properties": {
+                  "total": {
+                    "type": "number",
+                    "example": 25
+                  },
+                  "page": {
+                    "type": "number",
+                    "example": 1
+                  },
+                  "limit": {
+                    "type": "number",
+                    "example": 10
+                  },
+                  "pages": {
+                    "type": "number",
+                    "example": 3
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "AdminActionResponse": {
         "type": "object",
         "properties": {
@@ -720,9 +926,7 @@
       },
       "BanUserRequest": {
         "type": "object",
-        "required": [
-          "userId"
-        ],
+        "required": ["userId"],
         "properties": {
           "userId": {
             "type": "string",
@@ -759,9 +963,7 @@
       },
       "BanCompanyRequest": {
         "type": "object",
-        "required": [
-          "companyId"
-        ],
+        "required": ["companyId"],
         "properties": {
           "companyId": {
             "type": "string",
@@ -1046,9 +1248,7 @@
   "paths": {
     "/api/auth/signup": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Register a new user",
         "description": "Create a new user account and send OTP for email verification",
         "requestBody": {
@@ -1085,10 +1285,7 @@
                   },
                   "role": {
                     "type": "string",
-                    "enum": [
-                      "user",
-                      "hr"
-                    ],
+                    "enum": ["user", "hr"],
                     "example": "user"
                   },
                   "recoveryEmail": {
@@ -1129,9 +1326,7 @@
     },
     "/api/auth/confirm-otp": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Confirm OTP",
         "description": "Verify email using OTP sent during signup",
         "requestBody": {
@@ -1140,10 +1335,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "email",
-                  "otp"
-                ],
+                "required": ["email", "otp"],
                 "properties": {
                   "email": {
                     "type": "string",
@@ -1178,9 +1370,7 @@
     },
     "/api/auth/resend-otp": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Resend OTP",
         "description": "Request a new OTP for email verification",
         "requestBody": {
@@ -1189,9 +1379,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "email"
-                ],
+                "required": ["email"],
                 "properties": {
                   "email": {
                     "type": "string",
@@ -1222,9 +1410,7 @@
     },
     "/api/auth/signin": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Sign in",
         "description": "Authenticate user and receive access token",
         "requestBody": {
@@ -1233,10 +1419,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "email",
-                  "password"
-                ],
+                "required": ["email", "password"],
                 "properties": {
                   "email": {
                     "type": "string",
@@ -1272,9 +1455,7 @@
     },
     "/api/auth/forget-password": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Forgot password",
         "description": "Request password reset OTP",
         "requestBody": {
@@ -1283,9 +1464,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "email"
-                ],
+                "required": ["email"],
                 "properties": {
                   "email": {
                     "type": "string",
@@ -1316,9 +1495,7 @@
     },
     "/api/auth/reset-password": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Reset password",
         "description": "Reset password using OTP",
         "requestBody": {
@@ -1327,11 +1504,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "email",
-                  "otp",
-                  "newPassword"
-                ],
+                "required": ["email", "otp", "newPassword"],
                 "properties": {
                   "email": {
                     "type": "string",
@@ -1371,9 +1544,7 @@
     },
     "/api/auth/refresh-token": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Refresh access token",
         "description": "Get a new access token using refresh token",
         "requestBody": {
@@ -1382,9 +1553,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "refreshToken"
-                ],
+                "required": ["refreshToken"],
                 "properties": {
                   "refreshToken": {
                     "type": "string"
@@ -1413,9 +1582,7 @@
     },
     "/api/auth/google": {
       "get": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Google OAuth login",
         "description": "Initiate Google OAuth authentication flow",
         "responses": {
@@ -1427,9 +1594,7 @@
     },
     "/api/auth/google/callback": {
       "get": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Google OAuth callback",
         "description": "Handle Google OAuth callback",
         "responses": {
@@ -1451,9 +1616,7 @@
     },
     "/api/v1/user/profile": {
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Get logged-in user profile",
         "description": "Retrieve the profile of the currently authenticated user",
         "security": [
@@ -1478,9 +1641,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Update user account",
         "description": "Update the authenticated user's profile information",
         "security": [
@@ -1543,9 +1704,7 @@
     },
     "/api/v1/user/profile/password": {
       "patch": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Update password",
         "description": "Change the authenticated user's password",
         "security": [
@@ -1559,10 +1718,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "oldPassword",
-                  "newPassword"
-                ],
+                "required": ["oldPassword", "newPassword"],
                 "properties": {
                   "oldPassword": {
                     "type": "string",
@@ -1601,9 +1757,7 @@
     },
     "/api/v1/user/profile/profile-pic": {
       "patch": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Upload profile picture",
         "description": "Upload or update user's profile picture",
         "security": [
@@ -1617,9 +1771,7 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "image"
-                ],
+                "required": ["image"],
                 "properties": {
                   "image": {
                     "type": "string",
@@ -1650,9 +1802,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Delete profile picture",
         "description": "Remove user's profile picture",
         "security": [
@@ -1679,9 +1829,7 @@
     },
     "/api/v1/user/profile/cover-pic": {
       "patch": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Upload cover picture",
         "description": "Upload or update user's cover picture",
         "security": [
@@ -1695,9 +1843,7 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "image"
-                ],
+                "required": ["image"],
                 "properties": {
                   "image": {
                     "type": "string",
@@ -1728,9 +1874,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Delete cover picture",
         "description": "Remove user's cover picture",
         "security": [
@@ -1757,9 +1901,7 @@
     },
     "/api/v1/users/{id}": {
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Get user by ID",
         "description": "Retrieve a specific user's profile (requires admin permission)",
         "security": [
@@ -1800,9 +1942,7 @@
     },
     "/api/v1/user/delete": {
       "delete": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Soft delete own account",
         "description": "Soft delete the authenticated user's account",
         "security": [
@@ -1829,9 +1969,7 @@
     },
     "/api/v1/user/{id}/delete": {
       "delete": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Soft delete user account (Admin)",
         "description": "Soft delete a user account by ID (admin only)",
         "security": [
@@ -1871,9 +2009,7 @@
     },
     "/api/v1/user/{id}/restore": {
       "post": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Restore deleted user (Admin)",
         "description": "Restore a soft-deleted user account (admin only)",
         "security": [
@@ -1913,9 +2049,7 @@
     },
     "/api/v1/company/create": {
       "post": {
-        "tags": [
-          "Companies"
-        ],
+        "tags": ["Companies"],
         "summary": "Create a company",
         "description": "Create a new company (HR role required)",
         "security": [
@@ -1987,9 +2121,7 @@
     },
     "/api/v1/company/{id}": {
       "get": {
-        "tags": [
-          "Companies"
-        ],
+        "tags": ["Companies"],
         "summary": "Get company with jobs",
         "description": "Retrieve a specific company's details along with its job postings",
         "security": [
@@ -2028,9 +2160,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Companies"
-        ],
+        "tags": ["Companies"],
         "summary": "Update company",
         "description": "Update company information (HR role required)",
         "security": [
@@ -2099,9 +2229,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Companies"
-        ],
+        "tags": ["Companies"],
         "summary": "Soft delete company",
         "description": "Soft delete a company (HR role required)",
         "security": [
@@ -2141,9 +2269,7 @@
     },
     "/api/v1/company/search/{name}": {
       "get": {
-        "tags": [
-          "Companies"
-        ],
+        "tags": ["Companies"],
         "summary": "Search company by name",
         "description": "Search for companies by name",
         "security": [
@@ -2181,9 +2307,7 @@
     },
     "/api/v1/company/{id}/logo": {
       "patch": {
-        "tags": [
-          "Companies"
-        ],
+        "tags": ["Companies"],
         "summary": "Upload company logo",
         "description": "Upload or update company logo (HR role required)",
         "security": [
@@ -2207,9 +2331,7 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "image"
-                ],
+                "required": ["image"],
                 "properties": {
                   "image": {
                     "type": "string",
@@ -2240,9 +2362,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Companies"
-        ],
+        "tags": ["Companies"],
         "summary": "Delete company logo",
         "description": "Remove company logo (HR role required)",
         "security": [
@@ -2282,9 +2402,7 @@
     },
     "/api/v1/company/{id}/cover": {
       "patch": {
-        "tags": [
-          "Companies"
-        ],
+        "tags": ["Companies"],
         "summary": "Upload company cover",
         "description": "Upload or update company cover image (HR role required)",
         "security": [
@@ -2308,9 +2426,7 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "image"
-                ],
+                "required": ["image"],
                 "properties": {
                   "image": {
                     "type": "string",
@@ -2341,9 +2457,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Companies"
-        ],
+        "tags": ["Companies"],
         "summary": "Delete company cover",
         "description": "Remove company cover image (HR role required)",
         "security": [
@@ -2383,9 +2497,7 @@
     },
     "/api/v1/company/{id}/hr": {
       "post": {
-        "tags": [
-          "Companies"
-        ],
+        "tags": ["Companies"],
         "summary": "Add HR to company",
         "description": "Add an HR user to a company",
         "security": [
@@ -2409,9 +2521,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "userId"
-                ],
+                "required": ["userId"],
                 "properties": {
                   "userId": {
                     "type": "string",
@@ -2439,9 +2549,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Companies"
-        ],
+        "tags": ["Companies"],
         "summary": "Remove HR from company",
         "description": "Remove an HR user from a company",
         "security": [
@@ -2465,9 +2573,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "userId"
-                ],
+                "required": ["userId"],
                 "properties": {
                   "userId": {
                     "type": "string",
@@ -2497,9 +2603,7 @@
     },
     "/api/v1/job/create/{companyId}": {
       "post": {
-        "tags": [
-          "Jobs"
-        ],
+        "tags": ["Jobs"],
         "summary": "Create a job",
         "description": "Create a new job posting for a company (HR role required)",
         "security": [
@@ -2590,9 +2694,7 @@
     },
     "/api/v1/job/{companyId}/{jobId}": {
       "put": {
-        "tags": [
-          "Jobs"
-        ],
+        "tags": ["Jobs"],
         "summary": "Update a job",
         "description": "Update an existing job posting (HR role required)",
         "security": [
@@ -2682,9 +2784,7 @@
     },
     "/api/v1/job/{companyId}/delete/{jobId}": {
       "delete": {
-        "tags": [
-          "Jobs"
-        ],
+        "tags": ["Jobs"],
         "summary": "Delete a job",
         "description": "Delete a job posting (HR role required)",
         "security": [
@@ -2741,9 +2841,7 @@
     },
     "/api/v1/job": {
       "get": {
-        "tags": [
-          "Jobs"
-        ],
+        "tags": ["Jobs"],
         "summary": "Get all jobs",
         "description": "Retrieve all job postings with optional pagination and filters",
         "security": [
@@ -2788,10 +2886,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": [
-                "part-time",
-                "full-time"
-              ]
+              "enum": ["part-time", "full-time"]
             }
           },
           {
@@ -2799,11 +2894,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": [
-                "onsite",
-                "remotely",
-                "hybrid"
-              ]
+              "enum": ["onsite", "remotely", "hybrid"]
             }
           },
           {
@@ -2856,9 +2947,7 @@
     },
     "/api/v1/job/specific/{jobId}": {
       "get": {
-        "tags": [
-          "Jobs"
-        ],
+        "tags": ["Jobs"],
         "summary": "Get specific job",
         "description": "Retrieve details of a specific job posting",
         "security": [
@@ -2896,11 +2985,196 @@
         }
       }
     },
+    "/api/v1/jobs/{jobId}/application": {
+      "post": {
+        "tags": ["Applications"],
+        "summary": "Apply for a job",
+        "description": "Submit a job application with a CV",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["cv"],
+                "properties": {
+                  "cv": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Application created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{jobId}/applications": {
+      "get": {
+        "tags": ["Applications"],
+        "summary": "Get all applications for a job",
+        "description": "Retrieve all applications for a specific job (Company Owner or HR only)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Page number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Number of items per page"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "-createdAt"
+            },
+            "description": "Sort order (e.g., -createdAt, createdAt)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Applications retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Only company owner or HR can view applications"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        }
+      }
+    },
+    "/api/v1/applications/{applicationId}/status": {
+      "patch": {
+        "tags": ["Applications"],
+        "summary": "Accept or reject an application",
+        "description": "HR can accept or reject a job application. An email notification will be sent to the applicant.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateApplicationStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Application status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateApplicationStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid status"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Only HR or company owner can update application status"
+          },
+          "404": {
+            "description": "Application not found"
+          }
+        }
+      }
+    },
     "/api/v1/job/{companyId}": {
       "get": {
-        "tags": [
-          "Jobs"
-        ],
+        "tags": ["Jobs"],
         "summary": "Get jobs by company",
         "description": "Retrieve all job postings for a specific company",
         "security": [
@@ -2937,9 +3211,7 @@
     },
     "/api/v1/admin/ban-user": {
       "patch": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Ban a user",
         "description": "Ban a user account (admin only)",
         "security": [
@@ -2979,9 +3251,7 @@
     },
     "/api/v1/admin/unban-user": {
       "patch": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Unban a user",
         "description": "Unban a user account (admin only)",
         "security": [
@@ -3021,9 +3291,7 @@
     },
     "/api/v1/admin/ban-company": {
       "patch": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Ban a company",
         "description": "Ban a company (admin only)",
         "security": [
@@ -3063,9 +3331,7 @@
     },
     "/api/v1/admin/unban-company": {
       "patch": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Unban a company",
         "description": "Unban a company (admin only)",
         "security": [
@@ -3105,9 +3371,7 @@
     },
     "/api/v1/admin/approve-company": {
       "patch": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Approve a company",
         "description": "Approve a company registration (admin only)",
         "security": [

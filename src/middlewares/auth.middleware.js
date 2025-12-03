@@ -40,7 +40,7 @@ export const Authorization = {
 
   // ensure user is updating his own account or he is an admin
   verifyUserPermission: (req, res, next) => {
-    if (req.params.id === req.user.id || req.user.role === 'Admin') {
+    if (req.user.role === 'User' || req.user.role === 'Admin') {
       return next();
     }
     // Otherwise deny access
@@ -78,5 +78,15 @@ export const Authorization = {
     }
 
     next();
+  },
+  // ensure user role only
+  verifyUserRole: (req, res, next) => {
+    if (req.user.role === 'User') {
+      return next();
+    }
+    // Otherwise deny access
+    return res.status(403).json({
+      message: 'Only users can apply for jobs',
+    });
   },
 };
