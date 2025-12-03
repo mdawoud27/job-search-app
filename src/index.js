@@ -1,4 +1,5 @@
 import express from 'express';
+import { createServer } from 'http';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import path from 'path';
@@ -14,11 +15,16 @@ import routes from './routes/index.routes.js';
 import { errorHandler, notFound } from './middlewares/errorHandler.js';
 import { configurePassport } from './config/passport.config.js';
 import { setupSwagger } from './config/swagger.js';
+import { initSocket } from './config/socket.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
+const server = createServer(app);
+
+// Initialize Socket.IO
+initSocket(server);
 
 // Connect to the database
 connectToDB();
@@ -55,7 +61,7 @@ app.use(notFound);
 app.use(errorHandler);
 
 /* eslint no-undef: off */
-app.listen(process.env.PORT, () => {
+server.listen(process.env.PORT, () => {
   /* eslint no-console:off */
   console.log(
     `Server is running in ${process.env.NODE_ENV} enviroment on port ${process.env.PORT}`,
