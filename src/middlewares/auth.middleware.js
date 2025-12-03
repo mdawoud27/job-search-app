@@ -79,4 +79,14 @@ export const Authorization = {
 
     next();
   },
+  // ensure user role only
+  verifyUserRole: (req, res, next) => {
+    if (req.user.role === 'User') {
+      return next();
+    }
+    // Otherwise deny access
+    return res.status(403).json({
+      message: 'Only users can apply for jobs',
+    });
+  },
 };
