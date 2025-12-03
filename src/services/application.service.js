@@ -1,3 +1,5 @@
+import { getIO } from '../config/socket.js';
+
 export class ApplicationService {
   constructor(
     userRepository,
@@ -24,6 +26,23 @@ export class ApplicationService {
       jobId,
       cv,
     );
+
+    // Emit socket event to notify HRs of this company
+    try {
+      const io = getIO();
+      io.to(`company:${job.companyId}`).emit('newApplication', {
+        jobId: job._id,
+        applicationId: application._id,
+        userName: `${user.firstName} ${user.lastName}`,
+        userEmail: user.email,
+        jobTitle: job.jobTitle,
+        companyId: job.companyId,
+        status: application.status,
+      });
+      console.log(`Notification sent to company room: ${job.companyId}`);
+    } catch (error) {
+      console.error('Failed to emit socket event:', error.message);
+    }
 
     return {
       message: 'Application created successfully',
