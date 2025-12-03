@@ -35,6 +35,10 @@
     {
       "name": "Admin",
       "description": "Administrative endpoints"
+    },
+    {
+      "name": "Chat",
+      "description": "Chat and messaging endpoints"
     }
   ],
   "components": {
@@ -762,6 +766,116 @@
               "job": {
                 "type": "string",
                 "example": "Backend Engineer"
+              }
+            }
+          }
+        }
+      },
+      "MessageObject": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Hello, how are you?"
+          },
+          "senderId": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string",
+                "example": "507f1f77bcf86cd799439011"
+              },
+              "firstName": {
+                "type": "string",
+                "example": "John"
+              },
+              "lastName": {
+                "type": "string",
+                "example": "Doe"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "example": "john.doe@example.com"
+              },
+              "profilePic": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "secure_url": {
+                    "type": "string",
+                    "example": "https://cloudinary.com/profile.jpg"
+                  }
+                }
+              }
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-01T12:00:00.000Z"
+          }
+        }
+      },
+      "ChatHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Chat history retrieved successfully"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "messages": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MessageObject"
+                }
+              },
+              "otherUser": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "example": "507f1f77bcf86cd799439011"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Jane Smith"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["User", "HR", "Admin"],
+                    "example": "User"
+                  },
+                  "profilePic": {
+                    "type": "string",
+                    "nullable": true,
+                    "example": "https://cloudinary.com/profile.jpg"
+                  }
+                }
+              },
+              "pagination": {
+                "type": "object",
+                "properties": {
+                  "total": {
+                    "type": "number",
+                    "example": 150
+                  },
+                  "page": {
+                    "type": "number",
+                    "example": 1
+                  },
+                  "limit": {
+                    "type": "number",
+                    "example": 50
+                  },
+                  "pages": {
+                    "type": "number",
+                    "example": 3
+                  }
+                }
               }
             }
           }
@@ -3405,6 +3519,92 @@
           },
           "403": {
             "description": "Forbidden - Admin only"
+          }
+        }
+      }
+    },
+    "/api/v1/chat/{userId}": {
+      "get": {
+        "tags": ["Chat"],
+        "summary": "Get chat history with a user",
+        "description": "Retrieve chat history between the authenticated user and another user. Supports pagination and sorting.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the user to get chat history with",
+            "schema": {
+              "type": "string",
+              "example": "507f1f77bcf86cd799439011"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Page number for pagination",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1,
+              "example": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Number of messages per page",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100,
+              "example": 50
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Sort order for messages by timestamp",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc",
+              "example": "asc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat history retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatHistoryResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token"
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
