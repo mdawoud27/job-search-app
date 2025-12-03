@@ -4,6 +4,7 @@ import { AdminDao } from './daos/admin.dao.js';
 import { CompanyDAO } from './daos/company.dao.js';
 import { JobDao } from './daos/job.dao.js';
 import { ApplicationDAO } from './daos/application.dao.js';
+import { ChatDAO } from './daos/chat.dao.js';
 
 // Auth
 import { AuthService } from './services/auth.service.js';
@@ -29,12 +30,17 @@ import { JobController } from './controllers/job.controller.js';
 import { ApplicationService } from './services/application.service.js';
 import { ApplicationController } from './controllers/application.controller.js';
 
+// Chat
+import { ChatService } from './services/chat.service.js';
+import { ChatController } from './controllers/chat.controller.js';
+
 // Repositories
 const userRepository = new UserDAO();
 const adminRepository = new AdminDao();
 const companyRepository = new CompanyDAO();
 const jobRepository = new JobDao();
 const applicationRepository = new ApplicationDAO();
+const chatRepository = new ChatDAO();
 
 // Services
 const authService = new AuthService(userRepository);
@@ -56,6 +62,7 @@ const applicationService = new ApplicationService(
   applicationRepository,
   companyRepository,
 );
+const chatService = new ChatService(chatRepository, userRepository);
 
 // Controllers
 const authController = new AuthController(authService);
@@ -64,6 +71,7 @@ const adminController = new AdminController(adminService);
 const companyController = new CompanyController(companyService);
 const jobController = new JobController(jobService);
 const applicationController = new ApplicationController(applicationService);
+const chatController = new ChatController(chatService);
 
 export {
   // daos
@@ -72,6 +80,7 @@ export {
   companyRepository,
   jobRepository,
   applicationRepository,
+  chatRepository,
 
   // services
   authService,
@@ -80,6 +89,7 @@ export {
   companyService,
   jobService,
   applicationService,
+  chatService,
 
   // controllers
   authController,
@@ -88,4 +98,5 @@ export {
   companyController,
   jobController,
   applicationController,
+  chatController,
 };
