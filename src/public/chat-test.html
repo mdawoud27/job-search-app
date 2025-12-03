@@ -600,6 +600,17 @@
         document.getElementById('messageInput').value = '';
       }
 
+      // Simple HTML escaper for user input
+      function escapeHtml(str) {
+        // Converts &, <, >, ", and ' to HTML-safe equivalents.
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
       function addMessageToChat(text, type, profilePic = null) {
         const chatBox = document.getElementById('chatBox');
         const messageDiv = document.createElement('div');
@@ -612,7 +623,7 @@
           // Placeholder for missing profile pic
           content += `<div style="width: 30px; height: 30px; border-radius: 50%; background: #ccc; display: inline-block; vertical-align: middle; margin-right: 5px; text-align: center; line-height: 30px; color: white; font-size: 12px;">👤</div>`;
         }
-        content += `<span>${text}</span>`;
+        content += `<span>${escapeHtml(text)}</span>`;
 
         messageDiv.innerHTML = content;
         chatBox.appendChild(messageDiv);
