@@ -724,6 +724,49 @@
           }
         }
       },
+      "UpdateApplicationStatusRequest": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["accepted", "rejected"],
+            "description": "New status for the application",
+            "example": "accepted"
+          }
+        }
+      },
+      "UpdateApplicationStatusResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Application accepted successfully"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "applicationId": {
+                "type": "string",
+                "example": "507f1f77bcf86cd799439011"
+              },
+              "status": {
+                "type": "string",
+                "enum": ["accepted", "rejected"],
+                "example": "accepted"
+              },
+              "applicant": {
+                "type": "string",
+                "example": "John Doe"
+              },
+              "job": {
+                "type": "string",
+                "example": "Backend Engineer"
+              }
+            }
+          }
+        }
+      },
       "ApplicationListResponse": {
         "type": "object",
         "properties": {
@@ -3068,6 +3111,63 @@
           },
           "404": {
             "description": "Job not found"
+          }
+        }
+      }
+    },
+    "/api/v1/applications/{applicationId}/status": {
+      "patch": {
+        "tags": ["Applications"],
+        "summary": "Accept or reject an application",
+        "description": "HR can accept or reject a job application. An email notification will be sent to the applicant.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateApplicationStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Application status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateApplicationStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid status"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Only HR or company owner can update application status"
+          },
+          "404": {
+            "description": "Application not found"
           }
         }
       }
