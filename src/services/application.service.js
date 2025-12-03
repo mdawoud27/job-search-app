@@ -1,4 +1,8 @@
 import { getIO } from '../config/socket.js';
+import {
+  sendAcceptanceEmail,
+  sendRejectionEmail,
+} from '../utils/email.utils.js';
 
 export class ApplicationService {
   constructor(
@@ -99,6 +103,82 @@ export class ApplicationService {
           limit,
           pages: Math.ceil(totalCount / limit),
         },
+      },
+    };
+  }
+
+  async updateApplicationStatus(applicationId, status, hrUserId) {
+    // Fetch application with user and job data
+    const application =
+      await this.applicationRepository.findById(applicationId);
+
+    if (!application) {
+      throw new Error('Application not found');
+    }
+
+    const canManage = await this.companyRepository.canManage(
+      application.jobId.companyId,
+      hrUserId,
+    );
+
+    if (!canManage) {
+      throw new Error('You do not have permission to update this application');
+    }
+
+    const hrUser = await this.userRepository.findById(hrUserId);
+
+    if (!hrUser) {
+      throw new Error('HR user not found');
+    }
+
+    const company = await this.companyRepository.findById(
+      application.jobId.companyId,
+    );
+
+    if (!company) {
+      throw new Error('Company not found');
+    }
+
+    const updatedApplication = await this.applicationRepository.updateStatus(
+      applicationId,
+      status,
+    );
+
+    try {
+      const applicantName = `${application.userId.firstName} ${application.userId.lastName}`;
+      const applicantEmail = application.userId.email;
+      const jobTitle = application.jobId.jobTitle;
+      const companyName = company.companyName;
+
+      if (status === 'accepted') {
+        await sendAcceptanceEmail(
+          company.companyEmail || hrUser.email,
+          applicantEmail,
+          applicantName,
+          jobTitle,
+          companyName,
+        );
+      } else {
+        await sendRejectionEmail(
+          company.companyEmail || hrUser.email,
+          applicantEmail,
+          applicantName,
+          jobTitle,
+          companyName,
+        );
+      }
+      console.log(`${status} email sent to ${applicantEmail}`);
+    } catch (error) {
+      console.error('Failed to send email:', error.message);
+    }
+
+    return {
+      message: `Application ${status} successfully`,
+      data: {
+        applicationId: updatedApplication._id,
+        status: updatedApplication.status,
+        applicant: `${application.userId.firstName} ${application.userId.lastName}`,
+        job: application.jobId.jobTitle,
       },
     };
   }
