@@ -8,7 +8,7 @@ const router = Router();
 router.post(
   '/jobs/:jobId/application',
   Authorization.verifyToken,
-  Authorization.verifyUserPermission,
+  Authorization.verifyUserRole,
   uploadCV.single('cv'),
   (req, res, next) => {
     applicationController.createApplication(req, res, next);
@@ -18,6 +18,7 @@ router.post(
 router.get(
   '/jobs/:jobId/applications',
   Authorization.verifyToken,
+  Authorization.verifyHRPermission,
   (req, res, next) => {
     applicationController.getAllApplicationsForSpecificJob(req, res, next);
   },
