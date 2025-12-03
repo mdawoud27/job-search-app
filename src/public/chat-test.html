@@ -1,0 +1,638 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Enhanced Chat & Jobs Test Client</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .section {
+        background: white;
+        border: 1px solid #ccc;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+      .hr-section {
+        background: #fff3cd;
+      }
+      .user-section {
+        background: #d1ecf1;
+      }
+      .chat-box {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 10px 0;
+        height: 300px;
+        overflow-y: auto;
+        background: #f9f9f9;
+      }
+      .list-box {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        background: white;
+        margin-top: 10px;
+      }
+      .message {
+        padding: 5px;
+        margin: 5px 0;
+        border-radius: 5px;
+      }
+      .sent {
+        background: #d4edda;
+        text-align: right;
+      }
+      .received {
+        background: #d1ecf1;
+      }
+      .typing {
+        color: #666;
+        font-style: italic;
+        font-size: 12px;
+      }
+      input,
+      button {
+        margin: 5px;
+        padding: 8px;
+      }
+      .error {
+        color: red;
+        padding: 10px;
+        background: #f8d7da;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .success {
+        color: green;
+        padding: 10px;
+        background: #d4edda;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .item-card {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        background: #fafafa;
+      }
+      .status-badge {
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        color: white;
+        display: inline-block;
+        margin: 5px 0;
+      }
+      .btn {
+        padding: 5px 12px;
+        cursor: pointer;
+        border: none;
+        border-radius: 3px;
+        background: #007bff;
+        color: white;
+        margin-right: 5px;
+      }
+      .btn:hover {
+        background: #0056b3;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🚀 Socket.IO Test Client - Chat, Jobs & Applications</h1>
+
+      <!-- Connection Section -->
+      <div class="section">
+        <h3>🔌 Connection Settings</h3>
+        <label>JWT Token:</label><br />
+        <input
+          type="text"
+          id="token"
+          style="width: 500px"
+          placeholder="Paste your JWT token here"
+        /><br />
+
+        <label>Your Role:</label>
+        <select id="role" onchange="toggleSections()">
+          <option value="HR">HR / Admin</option>
+          <option value="User">User</option></select
+        ><br />
+
+        <button onclick="connectSocket()">Connect</button>
+        <button onclick="disconnectSocket()">Disconnect</button>
+      </div>
+
+      <!-- Status -->
+      <div id="status"></div>
+
+      <!-- HR Section -->
+      <div id="hrSection" class="section hr-section">
+        <h2>📊 HR Dashboard</h2>
+
+        <!-- Step 1: Get Company Jobs -->
+        <div>
+          <h3>Step 1: View Company Jobs</h3>
+          <label>Company ID:</label>
+          <input
+            type="text"
+            id="companyId"
+            placeholder="Enter your company ID"
+            style="width: 300px"
+          />
+          <button onclick="getCompanyJobs()">Get Jobs</button>
+
+          <div id="jobsList" class="list-box"></div>
+        </div>
+
+        <hr />
+
+        <!-- Step 2: Get Job Applicants -->
+        <div>
+          <h3>Step 2: View Job Applicants</h3>
+          <label>Job ID:</label>
+          <input
+            type="text"
+            id="jobId"
+            placeholder="Select a job above or enter job ID"
+            style="width: 300px"
+          />
+          <button onclick="getJobApplicants()">Get Applicants</button>
+
+          <div id="applicantsList" class="list-box"></div>
+        </div>
+      </div>
+
+      <!-- User Section -->
+      <div id="userSection" class="section user-section hidden">
+        <h2>📝 My Applications</h2>
+        <button onclick="getMyApplications()">View My Applications</button>
+
+        <div id="myApplicationsList" class="list-box"></div>
+      </div>
+
+      <!-- Chat Section -->
+      <div class="section">
+        <h3>💬 Chat</h3>
+
+        <div
+          id="activeChatInfo"
+          style="
+            background: #e7f3ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: none;
+          "
+        >
+          <strong>💬 Active Chat:</strong> <span id="activeChatName">None</span>
+          <button onclick="clearChat()" style="float: right; padding: 3px 10px">
+            Clear Chat
+          </button>
+        </div>
+
+        <label>Receiver ID:</label>
+        <input
+          type="text"
+          id="receiverId"
+          placeholder="Click on a user from above or enter manually"
+          style="width: 300px"
+          readonly
+        /><br />
+
+        <div id="chatBox" class="chat-box"></div>
+
+        <div id="typingIndicator" class="typing"></div>
+
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="Type a message..."
+          style="width: 500px"
+          onkeypress="handleEnterKey(event)"
+        />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+
+    <script>
+      let socket = null;
+      let currentReceiverId = null;
+      let currentReceiverName = null;
+
+      function toggleSections() {
+        const role = document.getElementById('role').value;
+        const hrSection = document.getElementById('hrSection');
+        const userSection = document.getElementById('userSection');
+
+        if (role === 'HR') {
+          hrSection.classList.remove('hidden');
+          userSection.classList.add('hidden');
+        } else {
+          hrSection.classList.add('hidden');
+          userSection.classList.remove('hidden');
+        }
+      }
+
+      function connectSocket() {
+        const token = document.getElementById('token').value;
+
+        if (!token) {
+          alert('Please enter your JWT token');
+          return;
+        }
+
+        // Connect to the same origin
+        socket = io({
+          auth: { token: token },
+          transports: ['websocket', 'polling'],
+        });
+
+        socket.on('connect', () => {
+          document.getElementById('status').innerHTML =
+            '<div class="success">✅ Connected to server</div>';
+          console.log('Connected:', socket.id);
+        });
+
+        socket.on('companyJobs', (data) => {
+          console.log('Company jobs received:', data);
+          displayJobs(data);
+        });
+
+        socket.on('jobApplicants', (data) => {
+          console.log('Job applicants received:', data);
+          displayApplicants(data);
+        });
+
+        socket.on('myApplications', (data) => {
+          console.log('My applications received:', data);
+          displayMyApplications(data);
+        });
+
+        socket.on('receiveMessage', (data) => {
+          console.log('New message received:', data);
+
+          // Auto-set receiver ID to sender if not currently chatting with someone
+          if (!currentReceiverId || currentReceiverId === data.senderId) {
+            setActiveChat(data.senderId, data.senderName);
+          }
+
+          addMessageToChat(`${data.senderName}: ${data.message}`, 'received');
+          document.getElementById('typingIndicator').innerHTML = '';
+
+          // Show notification if not from current chat
+          if (currentReceiverId !== data.senderId) {
+            showNotification(`New message from ${data.senderName}`);
+          }
+        });
+
+        socket.on('messageSent', (data) => {
+          console.log('Message sent successfully:', data);
+        });
+
+        socket.on('userTyping', ({ userId }) => {
+          if (currentReceiverId === userId) {
+            document.getElementById('typingIndicator').innerHTML =
+              `${currentReceiverName || 'User'} is typing...`;
+          }
+        });
+
+        socket.on('userStoppedTyping', () => {
+          document.getElementById('typingIndicator').innerHTML = '';
+        });
+
+        socket.on('error', (error) => {
+          console.error('Socket error:', error);
+          document.getElementById('status').innerHTML =
+            `<div class="error">❌ Error: ${error.message}</div>`;
+        });
+
+        socket.on('connect_error', (error) => {
+          console.error('Connection error:', error);
+          document.getElementById('status').innerHTML =
+            `<div class="error">❌ Connection Error: ${error.message}</div>`;
+        });
+
+        socket.on('disconnect', () => {
+          document.getElementById('status').innerHTML =
+            '<div class="error">❌ Disconnected from server</div>';
+        });
+      }
+
+      function disconnectSocket() {
+        if (socket) {
+          socket.disconnect();
+          socket = null;
+        }
+      }
+
+      function setActiveChat(userId, userName) {
+        currentReceiverId = userId;
+        currentReceiverName = userName;
+        document.getElementById('receiverId').value = userId;
+        document.getElementById('activeChatInfo').style.display = 'block';
+        document.getElementById('activeChatName').textContent =
+          userName || userId;
+
+        // Load chat history
+        loadChatHistory(userId);
+      }
+
+      async function loadChatHistory(userId) {
+        const token = document.getElementById('token').value;
+        const chatBox = document.getElementById('chatBox');
+        chatBox.innerHTML =
+          '<div style="text-align: center; color: #666;">Loading history...</div>';
+
+        try {
+          // Use relative path
+          const response = await fetch(`/api/v1/chat/${userId}?limit=50`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          console.log('Chat history response status:', response.status);
+
+          const result = await response.json();
+
+          if (response.ok) {
+            chatBox.innerHTML = '';
+            // Messages come newest first (desc sort), so reverse them for display
+            const messages = result.data.messages.reverse();
+
+            messages.forEach((msg) => {
+              const isMe = msg.senderId._id !== userId; // If sender is not the other user, it's me
+              const type = isMe ? 'sent' : 'received';
+              const senderName = isMe
+                ? 'You'
+                : `${msg.senderId.firstName} ${msg.senderId.lastName}`;
+              const profilePic = msg.senderId.profilePic?.secure_url || null;
+
+              addMessageToChat(
+                `${senderName}: ${msg.message}`,
+                type,
+                profilePic,
+              );
+            });
+
+            if (messages.length === 0) {
+              chatBox.innerHTML =
+                '<div style="text-align: center; color: #666; padding: 20px;">No messages yet. Start the conversation!</div>';
+            }
+          } else {
+            chatBox.innerHTML = `<div class="error">Failed to load history: ${result.message}</div>`;
+          }
+        } catch (error) {
+          console.error('Error loading history:', error);
+          chatBox.innerHTML = '<div class="error">Error loading history</div>';
+        }
+      }
+
+      function clearChat() {
+        currentReceiverId = null;
+        currentReceiverName = null;
+        document.getElementById('receiverId').value = '';
+        document.getElementById('activeChatInfo').style.display = 'none';
+        document.getElementById('chatBox').innerHTML = '';
+      }
+
+      function showNotification(message) {
+        // Simple browser notification (can be enhanced)
+        if (Notification.permission === 'granted') {
+          new Notification(message);
+        }
+      }
+
+      function handleEnterKey(event) {
+        if (event.key === 'Enter') {
+          sendMessage();
+        }
+      }
+
+      function getCompanyJobs() {
+        const companyId = document.getElementById('companyId').value;
+
+        if (!socket) {
+          alert('Please connect first');
+          return;
+        }
+
+        if (!companyId) {
+          alert('Please enter a company ID');
+          return;
+        }
+
+        socket.emit('getCompanyJobs', { companyId });
+      }
+
+      function displayJobs(data) {
+        const container = document.getElementById('jobsList');
+
+        if (data.totalJobs === 0) {
+          container.innerHTML = '<p>No jobs found for this company.</p>';
+          return;
+        }
+
+        let html = `<p><strong>Total Jobs:</strong> ${data.totalJobs}</p><hr>`;
+
+        data.jobs.forEach((job, index) => {
+          html += `
+            <div class="item-card">
+              <strong>${index + 1}. ${job.jobTitle}</strong><br>
+              <small>📍 ${job.jobLocation} | ⏰ ${job.workingTime} | 🎯 ${job.seniorityLevel}</small><br>
+              <small>Posted: ${new Date(job.createdAt).toLocaleDateString()}</small><br>
+              <button class="btn" onclick="selectJob('${job.jobId}')">View Applicants</button>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+      }
+
+      function selectJob(jobId) {
+        document.getElementById('jobId').value = jobId;
+        getJobApplicants();
+      }
+
+      function getJobApplicants() {
+        const jobId = document.getElementById('jobId').value;
+
+        if (!socket) {
+          alert('Please connect first');
+          return;
+        }
+
+        if (!jobId) {
+          alert('Please enter a job ID');
+          return;
+        }
+
+        socket.emit('getJobApplicants', { jobId });
+      }
+
+      function displayApplicants(data) {
+        const container = document.getElementById('applicantsList');
+
+        if (data.totalApplicants === 0) {
+          container.innerHTML = '<p>No applicants for this job yet.</p>';
+          return;
+        }
+
+        let html = `
+          <h4>${data.jobTitle}</h4>
+          <p><strong>Total Applicants:</strong> ${data.totalApplicants}</p>
+          <hr>
+        `;
+
+        data.applicants.forEach((app, index) => {
+          const statusColors = {
+            pending: '#ffc107',
+            accepted: '#28a745',
+            rejected: '#dc3545',
+            viewed: '#007bff',
+            'in consideration': '#17a2b8',
+          };
+          const statusColor = statusColors[app.status] || '#6c757d';
+
+          html += `
+            <div class="item-card">
+              <strong>${index + 1}. ${app.applicant.name}</strong><br>
+              <small>📧 ${app.applicant.email}</small><br>
+              <span class="status-badge" style="background: ${statusColor};">
+                ${app.status.toUpperCase()}
+              </span><br>
+              <small>Applied: ${new Date(app.appliedAt).toLocaleString()}</small><br>
+              <a href="${app.cvUrl}" target="_blank" class="btn" style="text-decoration: none;">
+                📄 View CV
+              </a>
+              <button class="btn" onclick="startChatWith('${app.applicant.id}', '${app.applicant.name}')">
+                💬 Chat
+              </button>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+      }
+
+      function getMyApplications() {
+        if (!socket) {
+          alert('Please connect first');
+          return;
+        }
+
+        socket.emit('getMyApplications');
+      }
+
+      function displayMyApplications(data) {
+        const container = document.getElementById('myApplicationsList');
+
+        if (data.totalApplications === 0) {
+          container.innerHTML = '<p>You have not applied to any jobs yet.</p>';
+          return;
+        }
+
+        let html = `<p><strong>Total Applications:</strong> ${data.totalApplications}</p><hr>`;
+
+        data.applications.forEach((app, index) => {
+          const statusColors = {
+            pending: '#ffc107',
+            accepted: '#28a745',
+            rejected: '#dc3545',
+            viewed: '#007bff',
+            'in consideration': '#17a2b8',
+          };
+          const statusColor = statusColors[app.status] || '#6c757d';
+
+          html += `
+            <div class="item-card">
+              <strong>${index + 1}. ${app.job.title}</strong><br>
+              <small>📍 ${app.job.location}</small><br>
+              <span class="status-badge" style="background: ${statusColor};">
+                ${app.status.toUpperCase()}
+              </span><br>
+              <small>Applied: ${new Date(app.appliedAt).toLocaleString()}</small><br>
+              <a href="${app.cvUrl}" target="_blank" class="btn" style="text-decoration: none;">
+                📄 View My CV
+              </a>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+      }
+
+      function startChatWith(userId, userName) {
+        setActiveChat(userId, userName);
+        document.getElementById('messageInput').focus();
+      }
+
+      function sendMessage() {
+        const receiverId =
+          currentReceiverId || document.getElementById('receiverId').value;
+        const message = document.getElementById('messageInput').value;
+
+        if (!socket) {
+          alert('Please connect first');
+          return;
+        }
+
+        if (!receiverId || !message) {
+          alert('Please select a user to chat with and enter a message');
+          return;
+        }
+
+        socket.emit('sendMessage', { receiverId, message });
+        addMessageToChat(`You: ${message}`, 'sent');
+        document.getElementById('messageInput').value = '';
+      }
+
+      function addMessageToChat(text, type, profilePic = null) {
+        const chatBox = document.getElementById('chatBox');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+
+        let content = '';
+        if (type === 'received' && profilePic) {
+          content += `<img src="${profilePic}" style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle; margin-right: 5px;">`;
+        } else if (type === 'received') {
+          // Placeholder for missing profile pic
+          content += `<div style="width: 30px; height: 30px; border-radius: 50%; background: #ccc; display: inline-block; vertical-align: middle; margin-right: 5px; text-align: center; line-height: 30px; color: white; font-size: 12px;">👤</div>`;
+        }
+        content += `<span>${text}</span>`;
+
+        messageDiv.innerHTML = content;
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+
+      // Typing indicator
+      document.getElementById('messageInput').addEventListener('input', (e) => {
+        const receiverId = document.getElementById('receiverId').value;
+        if (socket && receiverId) {
+          if (e.target.value.length > 0) {
+            socket.emit('typing', { receiverId });
+          } else {
+            socket.emit('stopTyping', { receiverId });
+          }
+        }
+      });
+
+      // Initialize sections visibility
+      toggleSections();
+    </script>
+  </body>
+</html>
