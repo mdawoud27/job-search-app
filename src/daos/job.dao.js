@@ -89,4 +89,15 @@ export class JobDao {
       ],
     });
   }
+
+  async getJobByCompany(companyId, skip = 0, limit = 100) {
+    return Job.find({
+      companyId: { $eq: companyId },
+      isVisible: true,
+      closed: false,
+    })
+      .skip(skip)
+      .limit(limit)
+      .sort('-createdAt');
+  }
 }
