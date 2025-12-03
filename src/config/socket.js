@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 
 let io;
 
+/* eslint no-console: off */
+// TODO: remove console.log statements
 export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
@@ -26,12 +28,11 @@ export const initSocket = (server) => {
       socket.userRole = decoded.role;
       next();
     } catch (err) {
-      next(new Error('Authentication error: Invalid token'));
+      next(new Error('Authentication error: Invalid token', err));
     }
   });
 
   io.on('connection', (socket) => {
-    /* eslint no-console: off */
     console.log(
       `New client connected: ${socket.id} (User: ${socket.userId}, Role: ${socket.userRole})`,
     );

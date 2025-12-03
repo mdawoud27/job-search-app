@@ -4,6 +4,8 @@ import {
   sendRejectionEmail,
 } from '../utils/email.utils.js';
 
+/* eslint no-console: off */
+// TODO: remove console.log statements
 export class ApplicationService {
   constructor(
     userRepository,
