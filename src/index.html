@@ -377,7 +377,13 @@
           socket.emit('joinCompany', companyId);
           setTimeout(() => {
             statusEl.className = 'status-box status-info';
-            statusEl.innerHTML = `<p>✅ Connected to server</p><p>📢 Joined company room: ${companyId}</p>`;
+            statusEl.innerHTML = ''; // Clear previous content
+            const connectedP = document.createElement('p');
+            connectedP.textContent = '✅ Connected to server';
+            const joinedP = document.createElement('p');
+            joinedP.textContent = `📢 Joined company room: ${companyId}`;
+            statusEl.appendChild(connectedP);
+            statusEl.appendChild(joinedP);
           }, 500);
         });
 
