@@ -24,4 +24,13 @@ router.get(
   },
 );
 
+router.patch(
+  '/applications/:applicationId/status',
+  Authorization.verifyToken,
+  Authorization.verifyHRPermission,
+  (req, res, next) => {
+    applicationController.updateApplicationStatus(req, res, next);
+  },
+);
+
 export default router;
