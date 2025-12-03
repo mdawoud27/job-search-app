@@ -31,4 +31,10 @@ export class ApplicationDAO {
       { new: true },
     );
   }
+
+  async findByUserId(userId) {
+    return Application.find({ userId })
+      .populate('jobId', 'jobTitle jobLocation companyId')
+      .sort('-createdAt');
+  }
 }
