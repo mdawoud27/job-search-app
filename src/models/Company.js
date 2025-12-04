@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import { imageSchema } from './Attachments.js';
 import { attachmentSchema } from './Attachments.js';
 import { EMPLOYEE_RANGES } from '../utils/constants.js';
+import { Job } from './Job.js';
+import { Chat } from './Chat.js';
 
 const companySchema = new mongoose.Schema(
   {
@@ -72,5 +74,46 @@ companySchema.virtual('jobs', {
 // indexs for improved query performance
 companySchema.index({ companyName: 1, industry: 1 });
 companySchema.index({ deletedAt: 1, bannedAt: 1, approvedByAdmin: 1 });
+
+// Pre-delete hooks for cascading deletes
+companySchema.pre(
+  'deleteOne',
+  { document: true, query: false },
+  async function (next) {
+    try {
+      const companyId = this._id;
+
+      // Delete all jobs (which will cascade to applications)
+      await Job.deleteMany({ companyId });
+
+      // Delete all chats related to this company
+      await Chat.deleteMany({ companyId });
+
+      next();
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+companySchema.pre('deleteMany', async function (next) {
+  try {
+    const filter = this.getFilter();
+    const companies = await this.model.find(filter).select('_id');
+    const companyIds = companies.map((company) => company._id);
+
+    if (companyIds.length > 0) {
+      // Delete all jobs (which will cascade to applications)
+      await Job.deleteMany({ companyId: { $in: companyIds } });
+
+      // Delete all chats related to these companies
+      await Chat.deleteMany({ companyId: { $in: companyIds } });
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 export const Company = mongoose.model('Company', companySchema);

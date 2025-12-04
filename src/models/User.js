@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import { imageSchema } from './Attachments.js';
 import { otpSchema } from './OtpSchema.js';
 import { encrypt } from '../utils/crypto.js';
+import { Application } from './Application.js';
+import { Chat } from './Chat.js';
 
 const userSchema = new mongoose.Schema(
   {
@@ -108,6 +110,51 @@ userSchema.pre('save', async function (next) {
     // Encrypt mobile number if modified
     if (this.isModified('mobileNumber') && this.mobileNumber) {
       this.mobileNumber = encrypt(this.mobileNumber);
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Pre-delete hooks for cascading deletes
+userSchema.pre(
+  'deleteOne',
+  { document: true, query: false },
+  async function (next) {
+    try {
+      const userId = this._id;
+
+      // Delete all applications by this user
+      await Application.deleteMany({ userId });
+
+      // Delete all chats where this user is sender or receiver
+      await Chat.deleteMany({
+        $or: [{ senderId: userId }, { receiverId: userId }],
+      });
+
+      next();
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+userSchema.pre('deleteMany', async function (next) {
+  try {
+    const filter = this.getFilter();
+    const users = await this.model.find(filter).select('_id');
+    const userIds = users.map((user) => user._id);
+
+    if (userIds.length > 0) {
+      // Delete all applications by these users
+      await Application.deleteMany({ userId: { $in: userIds } });
+
+      // Delete all chats where these users are sender or receiver
+      await Chat.deleteMany({
+        $or: [{ senderId: { $in: userIds } }, { receiverId: { $in: userIds } }],
+      });
     }
 
     next();

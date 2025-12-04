@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { Application } from './Application.js';
 
 const jobSchema = new mongoose.Schema(
   {
@@ -116,5 +117,40 @@ jobSchema.index(
     },
   },
 );
+
+// Pre-delete hooks for cascading deletes
+jobSchema.pre(
+  'deleteOne',
+  { document: true, query: false },
+  async function (next) {
+    try {
+      const jobId = this._id;
+
+      // Delete all applications for this job
+      await Application.deleteMany({ jobId });
+
+      next();
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+jobSchema.pre('deleteMany', async function (next) {
+  try {
+    const filter = this.getFilter();
+    const jobs = await this.model.find(filter).select('_id');
+    const jobIds = jobs.map((job) => job._id);
+
+    if (jobIds.length > 0) {
+      // Delete all applications for these jobs
+      await Application.deleteMany({ jobId: { $in: jobIds } });
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 export const Job = mongoose.model('Job', jobSchema);
