@@ -33,4 +33,13 @@ router.patch(
   },
 );
 
+router.get(
+  '/companies/:companyId/applications/export',
+  Authorization.verifyToken,
+  Authorization.verifyHRPermission,
+  (req, res, next) => {
+    applicationController.exportApplicationsByDate(req, res, next);
+  },
+);
+
 export default router;
