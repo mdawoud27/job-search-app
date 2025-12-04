@@ -3286,6 +3286,124 @@
         }
       }
     },
+    "/api/v1/companies/{companyId}/applications/export": {
+      "get": {
+        "tags": ["Applications"],
+        "summary": "Export company applications to Excel",
+        "description": "Export all applications for a specific company on a specific date as an Excel file (HR only)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "companyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Company ID"
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2025-12-04"
+            },
+            "description": "Date to export applications for (YYYY-MM-DD format)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Excel file downloaded successfully",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "description": "Attachment filename",
+                "schema": {
+                  "type": "string",
+                  "example": "attachment; filename=\"Company_Name_Applications_2025-12-04.xlsx\""
+                }
+              },
+              "Content-Type": {
+                "description": "File MIME type",
+                "schema": {
+                  "type": "string",
+                  "example": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Missing or invalid date parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Date query parameter is required (YYYY-MM-DD)"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token"
+          },
+          "403": {
+            "description": "Forbidden - Only HR with permission for this company can export",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "You do not have permission to export applications for this company"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Company not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Company not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error - Invalid date format or internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid date format. Please use YYYY-MM-DD"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/job/{companyId}": {
       "get": {
         "tags": ["Jobs"],

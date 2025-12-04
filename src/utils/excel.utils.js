@@ -101,6 +101,7 @@ export async function generateApplicationsExcel(
   });
 
   // Add borders to all cells
+  /* eslint no-unused-vars: off */
   worksheet.eachRow((row, rowNumber) => {
     row.eachCell((cell) => {
       cell.border = {

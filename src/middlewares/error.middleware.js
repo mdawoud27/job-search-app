@@ -5,6 +5,7 @@ export class ErrorHandler {
     next(error);
   }
 
+  /* eslint no-unused-vars: off */
   static errorHandler(err, req, res, next) {
     const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
     res.status(statusCode).json({ message: err.message });
