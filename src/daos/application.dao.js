@@ -37,4 +37,21 @@ export class ApplicationDAO {
       .populate('jobId', 'jobTitle jobLocation companyId')
       .sort('-createdAt');
   }
+
+  async findByCompanyAndDate(companyId, startDate, endDate) {
+    return Application.find({
+      createdAt: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    })
+      .populate('userId', 'firstName lastName email')
+      .populate({
+        path: 'jobId',
+        match: { companyId },
+        select: 'jobTitle companyId',
+      })
+      .sort('createdAt')
+      .then((applications) => applications.filter((app) => app.jobId !== null));
+  }
 }
