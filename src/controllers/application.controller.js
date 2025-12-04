@@ -57,4 +57,39 @@ export class ApplicationController {
       next(error);
     }
   }
+
+  async exportApplicationsByDate(req, res, next) {
+    try {
+      const { companyId } = req.params;
+      const { date } = req.query;
+
+      if (!date) {
+        return res
+          .status(400)
+          .json({ message: 'Date query parameter is required (YYYY-MM-DD)' });
+      }
+
+      const result =
+        await this.applicationService.exportCompanyApplicationsByDate(
+          companyId,
+          date,
+          req.user.id,
+        );
+
+      // Set headers for file download
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      );
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${result.filename}"`,
+      );
+      res.setHeader('Content-Length', result.buffer.length);
+
+      res.end(result.buffer);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
