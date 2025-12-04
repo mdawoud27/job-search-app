@@ -2,26 +2,13 @@
 
 A RESTful API for a job search platform built with Node.js, Express, and MongoDB. This application enables users to find jobs, companies to post positions, and administrators to manage the platform.
 
-## How to Run
+## Getting Started
 
-1. **Install Dependencies**
-
-   ```bash
-   npm install
-   ```
-
-2. **Environment Setup**
-   Copy the example environment file and configure your variables:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-3. **Start the Server**
-   ```bash
-   npm run start:dev
-   ```
-   The server will start on `http://localhost:3000`.
+1. Clone the repository
+2. Install Dependencies with `npm install`
+3. Copy `.env.example` file to your `.env` file and configure your variables
+4. Start the server with `npm run start:dev`
+5. The server will start on `http://localhost:3000`.
 
 ## API Documentation
 
