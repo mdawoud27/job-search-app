@@ -3,6 +3,7 @@ import {
   sendAcceptanceEmail,
   sendRejectionEmail,
 } from '../utils/email.utils.js';
+import { generateApplicationsExcel } from '../utils/excel.utils.js';
 
 /* eslint no-console: off */
 // TODO: remove console.log statements
@@ -182,6 +183,52 @@ export class ApplicationService {
         applicant: `${application.userId.firstName} ${application.userId.lastName}`,
         job: application.jobId.jobTitle,
       },
+    };
+  }
+
+  async exportCompanyApplicationsByDate(companyId, date, hrUserId) {
+    const canManage = await this.companyRepository.canManage(
+      companyId,
+      hrUserId,
+    );
+    if (!canManage) {
+      throw new Error(
+        'You do not have permission to export applications for this company',
+      );
+    }
+
+    const company = await this.companyRepository.findById(companyId);
+    if (!company) {
+      throw new Error('Company not found');
+    }
+
+    const targetDate = new Date(date);
+    if (isNaN(targetDate.getTime())) {
+      throw new Error('Invalid date format. Please use YYYY-MM-DD');
+    }
+
+    const startDate = new Date(targetDate);
+    startDate.setUTCHours(0, 0, 0, 0);
+
+    const endDate = new Date(targetDate);
+    endDate.setUTCHours(23, 59, 59, 999);
+
+    const applications = await this.applicationRepository.findByCompanyAndDate(
+      companyId,
+      startDate,
+      endDate,
+    );
+
+    const excelBuffer = await generateApplicationsExcel(
+      applications,
+      company.companyName,
+      date,
+    );
+
+    return {
+      buffer: excelBuffer,
+      filename: `${company.companyName.replace(/\s+/g, '_')}_Applications_${date}.xlsx`,
+      applications: applications.length,
     };
   }
 }
