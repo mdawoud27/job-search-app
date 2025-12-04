@@ -12,11 +12,11 @@ import passport from 'passport';
 import { apiLimiter } from './utils/apiLimiter.js';
 import connectToDB from './config/db.js';
 import routes from './routes/index.routes.js';
-import { errorHandler, notFound } from './middlewares/errorHandler.js';
 import { configurePassport } from './config/passport.config.js';
 import { setupSwagger } from './config/swagger.js';
 import { initSocket } from './config/socket.js';
 import compression from 'compression';
+import { ErrorHandler } from './middlewares/error.middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -58,8 +58,8 @@ app.use(routes);
 setupSwagger(app);
 
 // Global error handlers middlewares
-app.use(notFound);
-app.use(errorHandler);
+app.use(ErrorHandler.notFound);
+app.use(ErrorHandler.errorHandler);
 
 /* eslint no-undef: off */
 server.listen(process.env.PORT, () => {
