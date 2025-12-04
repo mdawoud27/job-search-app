@@ -16,6 +16,7 @@ import { errorHandler, notFound } from './middlewares/errorHandler.js';
 import { configurePassport } from './config/passport.config.js';
 import { setupSwagger } from './config/swagger.js';
 import { initSocket } from './config/socket.js';
+import compression from 'compression';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -47,7 +48,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(compression());
 // Initialize Passport
 app.use(passport.initialize());
 configurePassport();

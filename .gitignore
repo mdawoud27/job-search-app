@@ -135,3 +135,4 @@ restfunctions.js
 **/src/utils/otpCleanup.js
 **/screens
 TODO.md
+**/src/utils/send.js
