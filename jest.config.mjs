@@ -25,9 +25,6 @@ const config = {
     '^.+\\.js$': 'babel-jest',
   },
 
-  // Tell Jest to handle ES modules
-  extensionsToTreatAsEsm: ['.js'],
-
   // Module name mapper for ES modules
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
