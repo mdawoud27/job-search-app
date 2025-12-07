@@ -6,11 +6,9 @@ import { createAuthUser, createTestCompany } from './helpers.js';
 import routes from '../../src/routes/index.routes.js';
 import { ErrorHandler } from '../../src/middlewares/error.middleware.js';
 
-// Create Express app for testing
 const app = express();
 app.use(express.json());
 app.use(routes);
-// Add error handling middleware
 app.use(ErrorHandler.notFound);
 app.use(ErrorHandler.errorHandler);
 
@@ -28,7 +26,7 @@ describe('Admin Integration Tests', () => {
     await closeDatabase();
   });
 
-  describe('PATCH /api/v1/admin/ban-user/:userId', () => {
+  describe('PATCH /api/v1/admin/ban-user', () => {
     it('should ban user successfully (admin only)', async () => {
       const { user: targetUser } = await createAuthUser('User', {
         email: 'target@example.com',
@@ -41,8 +39,9 @@ describe('Admin Integration Tests', () => {
       });
 
       const response = await request(app)
-        .patch(`/api/v1/admin/ban-user/${targetUser._id}`)
+        .patch('/api/v1/admin/ban-user')
         .set('Authorization', `Bearer ${adminToken}`)
+        .send({ userId: targetUser._id.toString() })
         .expect(200);
 
       expect(response.body).toHaveProperty('message');
@@ -57,8 +56,9 @@ describe('Admin Integration Tests', () => {
       const { accessToken } = await createAuthUser();
 
       const response = await request(app)
-        .patch(`/api/v1/admin/ban-user/${targetUser._id}`)
+        .patch('/api/v1/admin/ban-user')
         .set('Authorization', `Bearer ${accessToken}`)
+        .send({ userId: targetUser._id.toString() })
         .expect(403);
 
       expect(response.body.error || response.body.message).toBeDefined();
@@ -72,8 +72,9 @@ describe('Admin Integration Tests', () => {
       });
 
       const response = await request(app)
-        .patch('/api/v1/admin/ban-user/507f1f77bcf86cd799439011')
-        .set('Authorization', `Bearer ${adminToken}`);
+        .patch('/api/v1/admin/ban-user')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ userId: '507f1f77bcf86cd799439011' });
 
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.body.error || response.body.message).toBeDefined();
@@ -92,15 +93,16 @@ describe('Admin Integration Tests', () => {
       });
 
       const response = await request(app)
-        .patch(`/api/v1/admin/ban-user/${targetUser._id}`)
-        .set('Authorization', `Bearer ${adminToken}`);
+        .patch('/api/v1/admin/ban-user')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ userId: targetUser._id.toString() });
 
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.body.error || response.body.message).toBeDefined();
     });
   });
 
-  describe('PATCH /api/v1/admin/unban-user/:userId', () => {
+  describe('PATCH /api/v1/admin/unban-user', () => {
     it('should unban user successfully (admin only)', async () => {
       const { user: targetUser } = await createAuthUser('User', {
         email: 'target@example.com',
@@ -114,8 +116,9 @@ describe('Admin Integration Tests', () => {
       });
 
       const response = await request(app)
-        .patch(`/api/v1/admin/unban-user/${targetUser._id}`)
+        .patch('/api/v1/admin/unban-user')
         .set('Authorization', `Bearer ${adminToken}`)
+        .send({ userId: targetUser._id.toString() })
         .expect(200);
 
       expect(response.body).toHaveProperty('message');
@@ -131,8 +134,9 @@ describe('Admin Integration Tests', () => {
       const { accessToken } = await createAuthUser();
 
       const response = await request(app)
-        .patch(`/api/v1/admin/unban-user/${targetUser._id}`)
+        .patch('/api/v1/admin/unban-user')
         .set('Authorization', `Bearer ${accessToken}`)
+        .send({ userId: targetUser._id.toString() })
         .expect(403);
 
       expect(response.body.error || response.body.message).toBeDefined();
@@ -150,15 +154,16 @@ describe('Admin Integration Tests', () => {
       });
 
       const response = await request(app)
-        .patch(`/api/v1/admin/unban-user/${targetUser._id}`)
-        .set('Authorization', `Bearer ${adminToken}`);
+        .patch('/api/v1/admin/unban-user')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ userId: targetUser._id.toString() });
 
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.body.error || response.body.message).toBeDefined();
     });
   });
 
-  describe('PATCH /api/v1/admin/ban-company/:companyId', () => {
+  describe('PATCH /api/v1/admin/ban-company', () => {
     it('should ban company successfully (admin only)', async () => {
       const { user: companyOwner } = await createAuthUser('HR', {
         email: 'owner@example.com',
@@ -173,8 +178,9 @@ describe('Admin Integration Tests', () => {
       });
 
       const response = await request(app)
-        .patch(`/api/v1/admin/ban-company/${company._id}`)
+        .patch('/api/v1/admin/ban-company')
         .set('Authorization', `Bearer ${adminToken}`)
+        .send({ companyId: company._id.toString() })
         .expect(200);
 
       expect(response.body).toHaveProperty('message');
@@ -191,15 +197,16 @@ describe('Admin Integration Tests', () => {
       const { accessToken } = await createAuthUser();
 
       const response = await request(app)
-        .patch(`/api/v1/admin/ban-company/${company._id}`)
+        .patch('/api/v1/admin/ban-company')
         .set('Authorization', `Bearer ${accessToken}`)
+        .send({ companyId: company._id.toString() })
         .expect(403);
 
       expect(response.body.error || response.body.message).toBeDefined();
     });
   });
 
-  describe('PATCH /api/v1/admin/unban-company/:companyId', () => {
+  describe('PATCH /api/v1/admin/unban-company', () => {
     it('should unban company successfully (admin only)', async () => {
       const { user: companyOwner } = await createAuthUser('HR', {
         email: 'owner@example.com',
@@ -216,8 +223,9 @@ describe('Admin Integration Tests', () => {
       });
 
       const response = await request(app)
-        .patch(`/api/v1/admin/unban-company/${company._id}`)
+        .patch('/api/v1/admin/unban-company')
         .set('Authorization', `Bearer ${adminToken}`)
+        .send({ companyId: company._id.toString() })
         .expect(200);
 
       expect(response.body).toHaveProperty('message');
@@ -236,15 +244,16 @@ describe('Admin Integration Tests', () => {
       const { accessToken } = await createAuthUser();
 
       const response = await request(app)
-        .patch(`/api/v1/admin/unban-company/${company._id}`)
+        .patch('/api/v1/admin/unban-company')
         .set('Authorization', `Bearer ${accessToken}`)
+        .send({ companyId: company._id.toString() })
         .expect(403);
 
       expect(response.body.error || response.body.message).toBeDefined();
     });
   });
 
-  describe('PATCH /api/v1/admin/approve-company/:companyId', () => {
+  describe('PATCH /api/v1/admin/approve-company', () => {
     it('should approve company successfully (admin only)', async () => {
       const { user: companyOwner } = await createAuthUser('HR', {
         email: 'owner@example.com',
@@ -261,8 +270,9 @@ describe('Admin Integration Tests', () => {
       });
 
       const response = await request(app)
-        .patch(`/api/v1/admin/approve-company/${company._id}`)
+        .patch('/api/v1/admin/approve-company')
         .set('Authorization', `Bearer ${adminToken}`)
+        .send({ companyId: company._id.toString() })
         .expect(200);
 
       expect(response.body).toHaveProperty('message');
@@ -281,8 +291,9 @@ describe('Admin Integration Tests', () => {
       const { accessToken } = await createAuthUser();
 
       const response = await request(app)
-        .patch(`/api/v1/admin/approve-company/${company._id}`)
+        .patch('/api/v1/admin/approve-company')
         .set('Authorization', `Bearer ${accessToken}`)
+        .send({ companyId: company._id.toString() })
         .expect(403);
 
       expect(response.body.error || response.body.message).toBeDefined();
@@ -296,8 +307,9 @@ describe('Admin Integration Tests', () => {
       });
 
       const response = await request(app)
-        .patch('/api/v1/admin/approve-company/507f1f77bcf86cd799439011')
-        .set('Authorization', `Bearer ${adminToken}`);
+        .patch('/api/v1/admin/approve-company')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ companyId: '507f1f77bcf86cd799439011' });
 
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.body.error || response.body.message).toBeDefined();

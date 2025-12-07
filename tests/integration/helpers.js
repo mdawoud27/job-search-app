@@ -85,11 +85,15 @@ export const createTestCompany = async (createdBy, overrides = {}) => {
     companyName: overrides.companyName || `Test Company ${Date.now()}`,
     companyEmail: overrides.companyEmail || `company${Date.now()}@example.com`,
     companyDescription: overrides.companyDescription || 'A test company',
+    description: overrides.description || 'Test company description',
     numberOfEmployees: overrides.numberOfEmployees || '11-20',
     companyLocation: overrides.companyLocation || 'Test City',
+    address: overrides.address || 'Test Address, Test City',
+    industry: overrides.industry || 'Technology',
     legalAttachment: overrides.legalAttachment || {
       secure_url: 'https://example.com/legal.pdf',
       public_id: 'legal_123',
+      fileType: 'pdf',
     },
     createdBy: createdBy._id || createdBy,
     approvedByAdmin:

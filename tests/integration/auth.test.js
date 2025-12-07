@@ -8,11 +8,9 @@ import { ErrorHandler } from '../../src/middlewares/error.middleware.js';
 import * as EmailUtilsModule from '../../src/utils/email.utils.js';
 import { OtpUtils } from '../../src/utils/otpUtils.js';
 
-// Create Express app for testing
 const app = express();
 app.use(express.json());
 app.use(routes);
-// Add error handling middleware
 app.use(ErrorHandler.notFound);
 app.use(ErrorHandler.errorHandler);
 
@@ -75,7 +73,6 @@ describe('Auth Integration Tests', () => {
     });
 
     it('should return error for duplicate email', async () => {
-      // Create existing user
       await createTestUser({
         email: 'existing@example.com',
         username: 'existing123',
