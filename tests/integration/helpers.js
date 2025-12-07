@@ -113,10 +113,12 @@ export const createTestCompany = async (createdBy, overrides = {}) => {
 export const createTestJob = async (companyId, addedBy, overrides = {}) => {
   const jobData = {
     jobTitle: overrides.jobTitle || 'Software Engineer',
-    jobLocation: overrides.jobLocation || 'Remote',
-    workingTime: overrides.workingTime || 'Full-time',
+    jobLocation: overrides.jobLocation || 'remotely', // Valid: onsite, remotely, hybrid
+    workingTime: overrides.workingTime || 'full-time', // Valid: part-time, full-time
     seniorityLevel: overrides.seniorityLevel || 'Mid-Level',
-    jobDescription: overrides.jobDescription || 'Test job description',
+    jobDescription:
+      overrides.jobDescription ||
+      'Looking for a talented software engineer to join our growing team. The ideal candidate will have strong technical skills and excellent communication abilities. This is a great opportunity to work on exciting projects.',
     technicalSkills: overrides.technicalSkills || ['JavaScript', 'Node.js'],
     softSkills: overrides.softSkills || ['Communication', 'Teamwork'],
     companyId: companyId._id || companyId,
