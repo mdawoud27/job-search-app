@@ -5,12 +5,14 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./src/index.js",
     "start:dev": "nodemon ./src/index.js",
     "prepare": "husky install",
     "format": "prettier --write \"**/*.js\"",
-    "lint": "eslint \"**/*.js\" --fix"
+    "lint": "eslint \"**/*.js\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watchAll",
+    "test:coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -24,15 +26,21 @@
   },
   "homepage": "https://github.com/mdawoud27/job-search-app#readme",
   "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/preset-env": "^7.28.5",
     "@commitlint/cli": "^19.7.1",
     "@commitlint/config-conventional": "^19.7.1",
     "@eslint/js": "^9.21.0",
+    "babel-jest": "^30.2.0",
     "eslint": "^9.21.0",
     "globals": "^16.0.0",
     "husky": "^8.0.0",
+    "jest": "^30.2.0",
     "lint-staged": "^15.4.3",
+    "mongodb-memory-server": "^10.4.1",
     "nodemon": "^3.1.9",
-    "prettier": "3.5.2"
+    "prettier": "3.5.2",
+    "supertest": "^7.1.4"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
