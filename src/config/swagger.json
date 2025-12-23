@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://jobsearchapp.up.railway.app/",
+      "url": "https://jobsearchapp.up.railway.app",
       "description": "Production server"
     },
     {
