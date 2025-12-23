@@ -53,13 +53,9 @@ app.use(compression());
 app.use(passport.initialize());
 configurePassport();
 
+// Root endpoint - serve landing page
 app.get('/', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Job Search API is running successfully!',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-  });
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Routes
