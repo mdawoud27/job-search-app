@@ -12,6 +12,11 @@ export class UserService {
   // Update account
   async updateAccount(userId, updateDto) {
     const updated = await this.userRepository.updateById(userId, updateDto);
+
+    if (!updated.refreshToken) {
+      throw new Error('User is not logged in');
+    }
+
     if (!updated) {
       throw new Error('User not found or update failed');
     }
@@ -30,6 +35,10 @@ export class UserService {
       throw new Error('User not found');
     }
 
+    if (!user.refreshToken) {
+      throw new Error('User is not logged in');
+    }
+
     return {
       message: 'User profile retrived successfully',
       data: {
@@ -44,6 +53,10 @@ export class UserService {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error('User not found');
+    }
+
+    if (!user.refreshToken) {
+      throw new Error('User is not logged in');
     }
 
     return {
@@ -62,6 +75,10 @@ export class UserService {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error('User not found');
+    }
+
+    if (!user.refreshToken) {
+      throw new Error('User is not logged in');
     }
 
     const isActive = await this.userRepository.isActive(userId);
@@ -100,6 +117,10 @@ export class UserService {
   async uploadProfilePic(userId, imageData) {
     const user = await this.userRepository.findByIdAndActive(userId);
 
+    if (!user.refreshToken) {
+      throw new Error('User is not logged in');
+    }
+
     // Delete old image
     if (user.profilePic?.public_id) {
       await CloudinaryUtils.deleteCloudinaryFile(user.profilePic.public_id);
@@ -124,6 +145,10 @@ export class UserService {
   async uploadCoverPic(userId, imageData) {
     const user = await this.userRepository.findByIdAndActive(userId);
 
+    if (!user.refreshToken) {
+      throw new Error('User is not logged in');
+    }
+
     if (user.coverPic?.public_id) {
       await CloudinaryUtils.deleteCloudinaryFile(user.coverPic.public_id);
     }
@@ -147,6 +172,10 @@ export class UserService {
   async deleteProfilePic(userId) {
     const user = await this.userRepository.findByIdAndActive(userId);
 
+    if (!user.refreshToken) {
+      throw new Error('User is not logged in');
+    }
+
     if (user.profilePic?.public_id) {
       // Delete from Cloudinary
       await CloudinaryUtils.deleteCloudinaryFile(user.profilePic.public_id);
@@ -166,6 +195,10 @@ export class UserService {
   // Delete cover pic
   async deleteCoverPic(userId) {
     const user = await this.userRepository.findByIdAndActive(userId);
+
+    if (!user.refreshToken) {
+      throw new Error('User is not logged in');
+    }
 
     if (user.coverPic?.public_id) {
       // Delete from Cloudinary
@@ -188,6 +221,10 @@ export class UserService {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error('User not found');
+    }
+
+    if (!user.refreshToken) {
+      throw new Error('User is not logged in');
     }
 
     if (user.deletedAt) {
