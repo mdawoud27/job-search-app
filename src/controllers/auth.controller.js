@@ -184,4 +184,13 @@ export class AuthController {
       },
     )(req, res, next);
   }
+
+  async logout(req, res, next) {
+    try {
+      const result = await this.authService.logout(req.user.id);
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
