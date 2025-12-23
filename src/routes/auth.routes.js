@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { apiLimiter } from '../utils/apiLimiter.js';
 import { authController } from '../container.js';
+import { Authorization } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
@@ -30,6 +31,13 @@ router.post('/auth/reset-password', apiLimiter, (req, res, next) =>
 
 router.post('/auth/refresh-token', apiLimiter, (req, res, next) =>
   authController.refreshToken(req, res, next),
+);
+
+router.post(
+  '/auth/logout',
+  apiLimiter,
+  Authorization.verifyToken,
+  (req, res, next) => authController.logout(req, res, next),
 );
 
 // Google OAuth routes
