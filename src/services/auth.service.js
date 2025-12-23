@@ -267,4 +267,17 @@ export class AuthService {
       message: 'Successfully signed in with Google',
     };
   }
+
+  // logout
+  async logout(userId) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    user.refreshToken = null;
+    user.changeCredentialTime = new Date();
+    await user.save();
+    return { message: 'Logged out successfully' };
+  }
 }
