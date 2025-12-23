@@ -1,4 +1,5 @@
 import { User } from '../models/User.js';
+import mongoose from 'mongoose';
 
 export class UserDAO {
   async findByEmail(email) {
@@ -75,8 +76,15 @@ export class UserDAO {
   }
 
   async isActive(userId) {
-    const user =
-      (await this.findById(userId)) || (await this.findByEmail(userId));
+    let user;
+    if (mongoose.isValidObjectId(userId)) {
+      user = await this.findById(userId);
+    }
+
+    if (!user) {
+      user = await this.findByEmail(userId);
+    }
+
     if (!user) {
       throw new Error('User not found');
     }
