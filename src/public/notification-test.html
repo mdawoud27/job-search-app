@@ -1,182 +1,259 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <title>Socket.IO Test</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket.IO Notifications - HR Dashboard</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      * {
+      /* CSS Reset */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
         margin: 0;
         padding: 0;
-        box-sizing: border-box;
       }
 
+      /* Base Styles */
       body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family:
+          'Inter',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        background: oklch(0.14 0.01 264);
         min-height: 100vh;
         padding: 20px;
+        line-height: 1.6;
+        color: oklch(0.98 0 0);
       }
 
       .container {
-        max-width: 900px;
+        max-width: 1000px;
         margin: 0 auto;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        background: oklch(0.18 0.01 264);
+        border-radius: 16px;
+        box-shadow:
+          0 20px 25px -5px rgb(0 0 0 / 0.4),
+          0 8px 10px -6px rgb(0 0 0 / 0.3);
         overflow: hidden;
+        border: 1px solid oklch(0.25 0.01 264);
       }
 
+      /* Header */
       .header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px;
+        background: oklch(0.45 0.15 264);
+        color: oklch(0.98 0 0);
+        padding: 48px 32px;
         text-align: center;
+        border-bottom: 1px solid oklch(0.25 0.01 264);
+      }
+
+      .header-icon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 16px;
+        stroke: oklch(0.98 0 0);
+        stroke-width: 2;
+        fill: none;
       }
 
       .header h1 {
         font-size: 28px;
-        font-weight: 600;
-        margin-bottom: 10px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        letter-spacing: -0.5px;
       }
 
       .header p {
-        opacity: 0.9;
         font-size: 14px;
+        opacity: 0.9;
       }
 
+      /* Setup Section */
       .setup-section {
-        padding: 30px;
-        background: #f8f9fa;
-        border-bottom: 2px solid #e9ecef;
+        padding: 32px;
+        background: oklch(0.18 0.01 264);
+        border-bottom: 1px solid oklch(0.25 0.01 264);
       }
 
-      .setup-section h3 {
-        color: #495057;
-        margin-bottom: 20px;
-        font-size: 20px;
+      .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: oklch(0.98 0 0);
+        margin-bottom: 16px;
       }
 
       .instructions {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 25px;
-        border-left: 4px solid #667eea;
+        background: oklch(0.25 0.01 264);
+        border-left: 4px solid oklch(0.45 0.15 264);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
       }
 
       .instructions ol {
         margin-left: 20px;
-        color: #6c757d;
-        line-height: 1.8;
+        color: oklch(0.65 0.01 264);
+        font-size: 14px;
       }
 
       .instructions li {
-        margin: 8px 0;
+        margin: 6px 0;
       }
 
+      /* Form Elements */
       .form-group {
         margin-bottom: 20px;
       }
 
-      .form-group label {
+      .form-label {
         display: block;
-        color: #495057;
-        font-weight: 600;
-        margin-bottom: 8px;
         font-size: 14px;
+        font-weight: 600;
+        color: oklch(0.98 0 0);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
       }
 
-      .form-group input {
+      .label-icon {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+      }
+
+      .form-input {
         width: 100%;
-        padding: 12px 15px;
-        border: 2px solid #e9ecef;
+        padding: 12px 16px;
+        border: 1px solid oklch(0.25 0.01 264);
         border-radius: 8px;
         font-size: 14px;
-        transition: all 0.3s ease;
+        transition: all 0.2s;
+        font-family: inherit;
+        background: oklch(0.25 0.01 264);
+        color: oklch(0.98 0 0);
       }
 
-      .form-group input:focus {
+      .form-input:focus {
         outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: oklch(0.45 0.15 264);
+        box-shadow: 0 0 0 3px rgba(70, 90, 234, 0.2);
       }
 
+      /* Buttons */
       .button-group {
         display: flex;
-        gap: 15px;
-        margin-top: 25px;
+        gap: 12px;
+        flex-wrap: wrap;
       }
 
-      button {
+      .btn {
         flex: 1;
         padding: 12px 24px;
-        border: none;
         border-radius: 8px;
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        transition: all 0.2s;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
       }
 
-      .btn-connect {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+      .btn-primary {
+        background: oklch(0.45 0.15 264);
+        color: oklch(0.98 0 0);
+        border: 1px solid oklch(0.25 0.01 264);
       }
 
-      .btn-connect:hover {
+      .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 4px 12px rgba(70, 90, 234, 0.4);
+        background: oklch(0.5 0.15 264);
       }
 
-      .btn-disconnect {
-        background: #e9ecef;
-        color: #495057;
+      .btn-secondary {
+        background: oklch(0.25 0.01 264);
+        color: oklch(0.98 0 0);
+        border: 1px solid oklch(0.25 0.01 264);
       }
 
-      .btn-disconnect:hover {
-        background: #dc3545;
-        color: white;
-        transform: translateY(-2px);
+      .btn-secondary:hover {
+        background: oklch(0.55 0.22 25);
+        border-color: oklch(0.55 0.22 25);
       }
 
+      .btn-icon {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+      }
+
+      /* Status Section */
       .status-section {
-        padding: 20px 30px;
-        background: white;
+        padding: 20px 32px;
+        background: oklch(0.18 0.01 264);
       }
 
       .status-box {
-        padding: 15px 20px;
-        border-radius: 10px;
-        border: 2px solid #e9ecef;
-        background: #f8f9fa;
+        padding: 16px 20px;
+        border-radius: 8px;
         font-size: 14px;
-        min-height: 50px;
+        border: 1px solid oklch(0.25 0.01 264);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .status-waiting {
+        background: oklch(0.25 0.02 264);
+        border-color: #f59e0b;
+        color: #f59e0b;
       }
 
       .status-connected {
-        background: #d4edda;
-        border-color: #28a745;
-        color: #155724;
+        background: oklch(0.25 0.02 264);
+        border-color: oklch(0.55 0.15 145);
+        color: oklch(0.55 0.15 145);
       }
 
-      .status-disconnected {
-        background: #f8d7da;
-        border-color: #dc3545;
-        color: #721c24;
+      .status-error {
+        background: oklch(0.25 0.02 264);
+        border-color: oklch(0.55 0.22 25);
+        color: oklch(0.55 0.22 25);
       }
 
-      .status-info {
-        background: #d1ecf1;
-        border-color: #17a2b8;
-        color: #0c5460;
+      .status-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
       }
 
+      /* Notifications Section */
       .notifications-section {
-        padding: 30px;
+        padding: 32px;
         max-height: 600px;
         overflow-y: auto;
+        background: oklch(0.25 0.01 264);
       }
 
       .notifications-section::-webkit-scrollbar {
@@ -184,28 +261,28 @@
       }
 
       .notifications-section::-webkit-scrollbar-track {
-        background: #f1f1f1;
+        background: oklch(0.18 0.01 264);
       }
 
       .notifications-section::-webkit-scrollbar-thumb {
-        background: #667eea;
+        background: oklch(0.45 0.15 264);
         border-radius: 4px;
       }
 
       .notification-card {
-        background: white;
-        border: 2px solid #28a745;
+        background: oklch(0.18 0.01 264);
+        border: 2px solid oklch(0.55 0.15 145);
         border-radius: 12px;
         padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.1);
+        margin-bottom: 16px;
+        box-shadow: 0 4px 12px rgba(0, 255, 100, 0.15);
         animation: slideIn 0.3s ease;
       }
 
       @keyframes slideIn {
         from {
           opacity: 0;
-          transform: translateY(-20px);
+          transform: translateY(-10px);
         }
         to {
           opacity: 1;
@@ -217,68 +294,154 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 15px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #e9ecef;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid oklch(0.25 0.01 264);
+      }
+
+      .notification-icon {
+        width: 24px;
+        height: 24px;
+        stroke: oklch(0.55 0.15 145);
+        stroke-width: 2;
+        fill: none;
+        flex-shrink: 0;
       }
 
       .notification-header h3 {
-        color: #28a745;
-        font-size: 18px;
+        color: oklch(0.55 0.15 145);
+        font-size: 16px;
         margin: 0;
       }
 
       .notification-body {
         display: grid;
-        gap: 12px;
+        gap: 10px;
       }
 
       .notification-field {
         display: flex;
         gap: 8px;
+        font-size: 14px;
       }
 
       .notification-field strong {
-        color: #495057;
-        min-width: 100px;
+        color: oklch(0.98 0 0);
+        min-width: 110px;
       }
 
       .notification-field span {
-        color: #6c757d;
+        color: oklch(0.65 0.01 264);
+        word-break: break-all;
       }
 
       .notification-footer {
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px solid #e9ecef;
-        color: #999;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid oklch(0.25 0.01 264);
+        color: oklch(0.65 0.01 264);
         font-size: 12px;
-        text-align: right;
+        display: flex;
+        align-items: center;
+        gap: 6px;
       }
 
+      .footer-icon {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+      }
+
+      /* Empty State */
       .empty-state {
         text-align: center;
         padding: 60px 20px;
-        color: #6c757d;
+        color: oklch(0.65 0.01 264);
       }
 
-      .empty-state svg {
+      .empty-icon {
         width: 80px;
         height: 80px;
-        margin-bottom: 20px;
-        opacity: 0.3;
+        margin: 0 auto 20px;
+        stroke: oklch(0.25 0.01 264);
+        stroke-width: 1.5;
+        fill: none;
+      }
+
+      .empty-state h3 {
+        font-size: 16px;
+        color: oklch(0.98 0 0);
+        margin-bottom: 8px;
+      }
+
+      .empty-state p {
+        font-size: 14px;
+        color: oklch(0.65 0.01 264);
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        body {
+          padding: 12px;
+        }
+
+        .header {
+          padding: 32px 20px;
+        }
+
+        .header h1 {
+          font-size: 22px;
+        }
+
+        .setup-section,
+        .notifications-section {
+          padding: 20px;
+        }
+
+        .status-section {
+          padding: 16px 20px;
+        }
+
+        .button-group {
+          flex-direction: column;
+        }
+
+        .btn {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header h1 {
+          font-size: 20px;
+        }
+
+        .notification-field {
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .notification-field strong {
+          min-width: auto;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <h1>🔔 Socket.IO Application Notifications</h1>
+        <svg class="header-icon" viewBox="0 0 24 24">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <h1>Socket.IO Application Notifications</h1>
         <p>Real-time HR Dashboard</p>
       </div>
 
       <div class="setup-section">
-        <h3>⚙️ Setup & Connection</h3>
+        <h2 class="section-title">Setup & Connection</h2>
 
         <div class="instructions">
           <ol>
@@ -290,48 +453,68 @@
         </div>
 
         <div class="form-group">
-          <label>🔑 JWT Token:</label>
+          <label class="form-label">
+            <svg class="label-icon" viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            JWT Token
+          </label>
           <input
             type="text"
             id="token"
+            class="form-input"
             placeholder="Paste your JWT token here"
           />
         </div>
 
         <div class="form-group">
-          <label>🏢 Company ID:</label>
+          <label class="form-label">
+            <svg class="label-icon" viewBox="0 0 24 24">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            Company ID
+          </label>
           <input
             type="text"
             id="companyId"
+            class="form-input"
             placeholder="Enter your company ID"
           />
         </div>
 
         <div class="button-group">
-          <button class="btn-connect" onclick="connectSocket()">
+          <button class="btn btn-primary" onclick="connectSocket()">
+            <svg class="btn-icon" viewBox="0 0 24 24">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+            </svg>
             Connect to Socket.IO
           </button>
-          <button class="btn-disconnect" onclick="disconnectSocket()">
+          <button class="btn btn-secondary" onclick="disconnectSocket()">
+            <svg class="btn-icon" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
             Disconnect
           </button>
         </div>
       </div>
 
       <div class="status-section">
-        <div id="status" class="status-box">
-          <p>⏳ Waiting for connection...</p>
+        <div id="status" class="status-box status-waiting">
+          <svg class="status-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <p>Waiting for connection...</p>
         </div>
       </div>
 
       <div class="notifications-section">
         <div id="notifications">
           <div class="empty-state">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
+            <svg class="empty-icon" viewBox="0 0 24 24">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
@@ -362,34 +545,22 @@
         }
 
         socket = io({
-          auth: {
-            token: token,
-          },
+          auth: { token: token },
           transports: ['websocket', 'polling'],
         });
 
         socket.on('connect', () => {
-          console.log('Connected to Socket.IO server');
-          const statusEl = document.getElementById('status');
-          statusEl.className = 'status-box status-connected';
-          statusEl.innerHTML = '<p>✅ Connected to server</p>';
-
+          updateStatus('Connected to server', 'connected');
           socket.emit('joinCompany', companyId);
           setTimeout(() => {
-            statusEl.className = 'status-box status-info';
-            statusEl.innerHTML = ''; // Clear previous content
-            const connectedP = document.createElement('p');
-            connectedP.textContent = '✅ Connected to server';
-            const joinedP = document.createElement('p');
-            joinedP.textContent = `📢 Joined company room: ${companyId}`;
-            statusEl.appendChild(connectedP);
-            statusEl.appendChild(joinedP);
+            updateStatus(
+              `Connected to server | Joined company room: ${companyId}`,
+              'connected',
+            );
           }, 500);
         });
 
         socket.on('newApplication', (data) => {
-          console.log('New application received:', data);
-
           // Clear empty state if it exists
           const notificationsEl = document.getElementById('notifications');
           const emptyState = notificationsEl.querySelector('.empty-state');
@@ -398,56 +569,60 @@
           }
 
           const notification = `
-            <div class="notification-card">
-              <div class="notification-header">
-                <h3>🎉 New Application Received!</h3>
+          <div class="notification-card">
+            <div class="notification-header">
+              <svg class="notification-icon" viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <h3>New Application Received!</h3>
+            </div>
+            <div class="notification-body">
+              <div class="notification-field">
+                <strong>Job Title:</strong>
+                <span>${data.jobTitle}</span>
               </div>
-              <div class="notification-body">
-                <div class="notification-field">
-                  <strong>Job Title:</strong>
-                  <span>${data.jobTitle}</span>
-                </div>
-                <div class="notification-field">
-                  <strong>Applicant:</strong>
-                  <span>${data.userName}</span>
-                </div>
-                <div class="notification-field">
-                  <strong>Email:</strong>
-                  <span>${data.userEmail}</span>
-                </div>
-                <div class="notification-field">
-                  <strong>Status:</strong>
-                  <span>${data.status}</span>
-                </div>
-                <div class="notification-field">
-                  <strong>Application ID:</strong>
-                  <span>${data.applicationId}</span>
-                </div>
-                <div class="notification-field">
-                  <strong>Job ID:</strong>
-                  <span>${data.jobId}</span>
-                </div>
+              <div class="notification-field">
+                <strong>Applicant:</strong>
+                <span>${data.userName}</span>
               </div>
-              <div class="notification-footer">
-                📅 ${new Date().toLocaleString()}
+              <div class="notification-field">
+                <strong>Email:</strong>
+                <span>${data.userEmail}</span>
+              </div>
+              <div class="notification-field">
+                <strong>Status:</strong>
+                <span>${data.status}</span>
+              </div>
+              <div class="notification-field">
+                <strong>Application ID:</strong>
+                <span>${data.applicationId}</span>
+              </div>
+              <div class="notification-field">
+                <strong>Job ID:</strong>
+                <span>${data.jobId}</span>
               </div>
             </div>
-          `;
+            <div class="notification-footer">
+              <svg class="footer-icon" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              ${new Date().toLocaleString()}
+            </div>
+          </div>
+        `;
           notificationsEl.innerHTML = notification + notificationsEl.innerHTML;
         });
 
         socket.on('disconnect', () => {
-          console.log('Disconnected from Socket.IO server');
-          const statusEl = document.getElementById('status');
-          statusEl.className = 'status-box status-disconnected';
-          statusEl.innerHTML = '<p>❌ Disconnected from server</p>';
+          updateStatus('Disconnected from server', 'error');
         });
 
         socket.on('connect_error', (error) => {
-          console.error('Connection error:', error);
-          const statusEl = document.getElementById('status');
-          statusEl.className = 'status-box status-disconnected';
-          statusEl.innerHTML = `<p>❌ Connection Error: ${error.message}</p>`;
+          updateStatus(`Connection Error: ${error.message}`, 'error');
         });
       }
 
@@ -456,6 +631,25 @@
           socket.disconnect();
           socket = null;
         }
+      }
+
+      function updateStatus(message, type) {
+        const statusEl = document.getElementById('status');
+        statusEl.className = `status-box status-${type}`;
+
+        let icon = '';
+        if (type === 'connected') {
+          icon =
+            '<svg class="status-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        } else if (type === 'error') {
+          icon =
+            '<svg class="status-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+        } else {
+          icon =
+            '<svg class="status-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>';
+        }
+
+        statusEl.innerHTML = `${icon}<p>${message}</p>`;
       }
     </script>
   </body>

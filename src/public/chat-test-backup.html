@@ -1,229 +1,662 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <title>Enhanced Chat & Jobs Test Client</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket.IO Test Client - Chat & Jobs</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-        background: #f5f5f5;
+      /* CSS Reset */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
+
+      /* Base Styles */
+      body {
+        font-family:
+          'Inter',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        background: oklch(0.14 0.01 264);
+        min-height: 100vh;
+        padding: 20px;
+        line-height: 1.6;
+        color: oklch(0.98 0 0);
+      }
+
       .container {
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 0 auto;
       }
+
+      /* Header */
+      .page-header {
+        background: oklch(0.45 0.15 264);
+        color: oklch(0.98 0 0);
+        padding: 32px;
+        border-radius: 16px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 20px rgba(70, 90, 234, 0.3);
+        border: 1px solid oklch(0.25 0.01 264);
+      }
+
+      .page-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        letter-spacing: -0.5px;
+      }
+
+      .page-header p {
+        font-size: 14px;
+        opacity: 0.9;
+      }
+
+      /* Section */
       .section {
-        background: white;
-        border: 1px solid #ccc;
-        padding: 15px;
-        border-radius: 5px;
+        background: oklch(0.18 0.01 264);
+        border-radius: 12px;
+        padding: 24px;
         margin-bottom: 20px;
+        border: 1px solid oklch(0.25 0.01 264);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
       }
-      .hr-section {
-        background: #fff3cd;
+
+      .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: oklch(0.98 0 0);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
-      .user-section {
-        background: #d1ecf1;
+
+      .section-icon {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
       }
-      .chat-box {
-        border: 1px solid #ccc;
-        padding: 10px;
-        margin: 10px 0;
-        height: 300px;
-        overflow-y: auto;
-        background: #f9f9f9;
+
+      /* Form Elements */
+      .form-group {
+        margin-bottom: 16px;
       }
-      .list-box {
-        max-height: 300px;
-        overflow-y: auto;
-        border: 1px solid #ddd;
-        padding: 10px;
-        background: white;
-        margin-top: 10px;
+
+      .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: oklch(0.98 0 0);
+        margin-bottom: 6px;
       }
-      .message {
-        padding: 5px;
-        margin: 5px 0;
-        border-radius: 5px;
+
+      .form-input,
+      .form-select {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid oklch(0.25 0.01 264);
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+        font-family: inherit;
+        background: oklch(0.25 0.01 264);
+        color: oklch(0.98 0 0);
       }
-      .sent {
-        background: #d4edda;
-        text-align: right;
+
+      .form-input:focus,
+      .form-select:focus {
+        outline: none;
+        border-color: oklch(0.45 0.15 264);
+        box-shadow: 0 0 0 3px rgba(70, 90, 234, 0.2);
       }
-      .received {
-        background: #d1ecf1;
-      }
-      .typing {
-        color: #666;
-        font-style: italic;
-        font-size: 12px;
-      }
-      input,
-      button {
-        margin: 5px;
-        padding: 8px;
-      }
-      .error {
-        color: red;
-        padding: 10px;
-        background: #f8d7da;
-        border-radius: 5px;
-        margin: 10px 0;
-      }
-      .success {
-        color: green;
-        padding: 10px;
-        background: #d4edda;
-        border-radius: 5px;
-        margin: 10px 0;
-      }
-      .item-card {
-        border: 1px solid #ddd;
-        padding: 10px;
-        margin: 10px 0;
-        border-radius: 5px;
-        background: #fafafa;
-      }
-      .status-badge {
-        padding: 3px 8px;
-        border-radius: 3px;
-        font-size: 12px;
-        color: white;
-        display: inline-block;
-        margin: 5px 0;
-      }
+
+      /* Buttons */
       .btn {
-        padding: 5px 12px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
         cursor: pointer;
+        transition: all 0.2s;
         border: none;
-        border-radius: 3px;
-        background: #007bff;
-        color: white;
-        margin-right: 5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
       }
-      .btn:hover {
-        background: #0056b3;
+
+      .btn-primary {
+        background: oklch(0.45 0.15 264);
+        color: oklch(0.98 0 0);
+        border: 1px solid oklch(0.25 0.01 264);
       }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(70, 90, 234, 0.4);
+        background: oklch(0.5 0.15 264);
+      }
+
+      .btn-secondary {
+        background: oklch(0.25 0.01 264);
+        color: oklch(0.98 0 0);
+        border: 1px solid oklch(0.25 0.01 264);
+      }
+
+      .btn-secondary:hover {
+        background: oklch(0.55 0.22 25);
+        border-color: oklch(0.55 0.22 25);
+      }
+
+      .btn-success {
+        background: oklch(0.55 0.15 145);
+        color: oklch(0.98 0 0);
+      }
+
+      .btn-success:hover {
+        background: oklch(0.5 0.15 145);
+      }
+
+      .btn-small {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+
+      .btn-icon {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+      }
+
+      /* Status */
+      .status-box {
+        padding: 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .status-success {
+        background: oklch(0.25 0.01 264);
+        color: oklch(0.55 0.15 145);
+        border: 1px solid oklch(0.55 0.15 145);
+      }
+
+      .status-error {
+        background: oklch(0.25 0.01 264);
+        color: oklch(0.55 0.22 25);
+        border: 1px solid oklch(0.55 0.22 25);
+      }
+
+      .status-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+      }
+
       .hidden {
-        display: none;
+        display: none !important;
+      }
+
+      /* Lists and Cards */
+      .list-box {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid oklch(0.25 0.01 264);
+        border-radius: 8px;
+        padding: 16px;
+        background: oklch(0.25 0.01 264);
+        margin-top: 16px;
+      }
+
+      .list-box::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .list-box::-webkit-scrollbar-track {
+        background: oklch(0.18 0.01 264);
+        border-radius: 4px;
+      }
+
+      .list-box::-webkit-scrollbar-thumb {
+        background: oklch(0.45 0.15 264);
+        border-radius: 4px;
+      }
+
+      .item-card {
+        background: oklch(0.18 0.01 264);
+        border: 1px solid oklch(0.25 0.01 264);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 12px;
+      }
+
+      .item-card:last-child {
+        margin-bottom: 0;
+      }
+
+      .item-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: oklch(0.98 0 0);
+        margin-bottom: 8px;
+      }
+
+      .item-meta {
+        font-size: 13px;
+        color: oklch(0.65 0.01 264);
+        margin-bottom: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .meta-icon {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .badge-pending {
+        background: oklch(0.25 0.02 264);
+        color: #f59e0b;
+        border: 1px solid #f59e0b;
+      }
+
+      .badge-accepted {
+        background: oklch(0.25 0.02 264);
+        color: oklch(0.55 0.15 145);
+        border: 1px solid oklch(0.55 0.15 145);
+      }
+
+      .badge-rejected {
+        background: oklch(0.25 0.02 264);
+        color: oklch(0.55 0.22 25);
+        border: 1px solid oklch(0.55 0.22 25);
+      }
+
+      .badge-viewed {
+        background: oklch(0.25 0.02 264);
+        color: oklch(0.55 0.12 220);
+        border: 1px solid oklch(0.55 0.12 220);
+      }
+
+      /* Chat */
+      .chat-box {
+        height: 400px;
+        overflow-y: auto;
+        border: 1px solid oklch(0.25 0.01 264);
+        border-radius: 8px;
+        padding: 16px;
+        background: oklch(0.25 0.01 264);
+        margin: 16px 0;
+      }
+
+      .chat-box::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .chat-box::-webkit-scrollbar-track {
+        background: oklch(0.18 0.01 264);
+        border-radius: 4px;
+      }
+
+      .chat-box::-webkit-scrollbar-thumb {
+        background: oklch(0.45 0.15 264);
+        border-radius: 4px;
+      }
+
+      .message {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        word-wrap: break-word;
+        font-size: 14px;
+      }
+
+      .message-sent {
+        background: oklch(0.45 0.15 264);
+        color: oklch(0.98 0 0);
+        margin-left: auto;
+        border-bottom-right-radius: 4px;
+      }
+
+      .message-received {
+        background: oklch(0.18 0.01 264);
+        color: oklch(0.98 0 0);
+        border: 1px solid oklch(0.25 0.01 264);
+        margin-right: auto;
+        border-bottom-left-radius: 4px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .avatar-placeholder {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: oklch(0.25 0.01 264);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .avatar-icon {
+        width: 18px;
+        height: 18px;
+        stroke: oklch(0.65 0.01 264);
+        stroke-width: 2;
+        fill: none;
+      }
+
+      .typing-indicator {
+        font-size: 13px;
+        color: oklch(0.65 0.01 264);
+        font-style: italic;
+        padding: 8px 0;
+        min-height: 30px;
+      }
+
+      .active-chat-info {
+        background: oklch(0.25 0.02 264);
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid oklch(0.25 0.01 264);
+      }
+
+      .active-chat-name {
+        font-weight: 600;
+        color: oklch(0.55 0.12 220);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      /* Grid Layout */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        body {
+          padding: 12px;
+        }
+
+        .page-header {
+          padding: 20px;
+        }
+
+        .page-header h1 {
+          font-size: 22px;
+        }
+
+        .section {
+          padding: 16px;
+        }
+
+        .chat-box {
+          height: 300px;
+        }
+
+        .message {
+          max-width: 85%;
+        }
+
+        .grid-2 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .page-header h1 {
+          font-size: 20px;
+        }
+
+        .item-meta {
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .btn {
+          width: 100%;
+          justify-content: center;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>🚀 Socket.IO Test Client - Chat, Jobs & Applications</h1>
+      <div class="page-header">
+        <h1>Socket.IO Test Client</h1>
+        <p>Chat, Jobs & Applications Management</p>
+      </div>
 
       <!-- Connection Section -->
       <div class="section">
-        <h3>🔌 Connection Settings</h3>
-        <label>JWT Token:</label><br />
-        <input
-          type="text"
-          id="token"
-          style="width: 500px"
-          placeholder="Paste your JWT token here"
-        /><br />
+        <h2 class="section-title">
+          <svg class="section-icon" viewBox="0 0 24 24">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+          </svg>
+          Connection Settings
+        </h2>
 
-        <label>Your Role:</label>
-        <select id="role" onchange="toggleSections()">
-          <option value="HR">HR / Admin</option>
-          <option value="User">User</option></select
-        ><br />
+        <div class="form-group">
+          <label class="form-label">JWT Token</label>
+          <input
+            type="text"
+            id="token"
+            class="form-input"
+            placeholder="Paste your JWT token here"
+          />
+        </div>
 
-        <button onclick="connectSocket()">Connect</button>
-        <button onclick="disconnectSocket()">Disconnect</button>
+        <div class="form-group">
+          <label class="form-label">Your Role</label>
+          <select id="role" class="form-select" onchange="toggleSections()">
+            <option value="HR">HR / Admin</option>
+            <option value="User">User</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap">
+          <button class="btn btn-primary" onclick="connectSocket()">
+            <svg class="btn-icon" viewBox="0 0 24 24">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+            </svg>
+            Connect
+          </button>
+          <button class="btn btn-secondary" onclick="disconnectSocket()">
+            <svg class="btn-icon" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            Disconnect
+          </button>
+        </div>
       </div>
 
       <!-- Status -->
       <div id="status"></div>
 
       <!-- HR Section -->
-      <div id="hrSection" class="section hr-section">
-        <h2>📊 HR Dashboard</h2>
+      <div id="hrSection" class="section">
+        <h2 class="section-title">
+          <svg class="section-icon" viewBox="0 0 24 24">
+            <line x1="12" y1="20" x2="12" y2="10"></line>
+            <line x1="18" y1="20" x2="18" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="16"></line>
+          </svg>
+          HR Dashboard
+        </h2>
 
-        <!-- Step 1: Get Company Jobs -->
-        <div>
-          <h3>Step 1: View Company Jobs</h3>
-          <label>Company ID:</label>
-          <input
-            type="text"
-            id="companyId"
-            placeholder="Enter your company ID"
-            style="width: 300px"
-          />
-          <button onclick="getCompanyJobs()">Get Jobs</button>
-
+        <div style="margin-bottom: 24px">
+          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px">
+            Step 1: View Company Jobs
+          </h3>
+          <div class="form-group">
+            <label class="form-label">Company ID</label>
+            <input
+              type="text"
+              id="companyId"
+              class="form-input"
+              placeholder="Enter your company ID"
+            />
+          </div>
+          <button class="btn btn-success" onclick="getCompanyJobs()">
+            Get Jobs
+          </button>
           <div id="jobsList" class="list-box"></div>
         </div>
 
-        <hr />
-
-        <!-- Step 2: Get Job Applicants -->
         <div>
-          <h3>Step 2: View Job Applicants</h3>
-          <label>Job ID:</label>
-          <input
-            type="text"
-            id="jobId"
-            placeholder="Select a job above or enter job ID"
-            style="width: 300px"
-          />
-          <button onclick="getJobApplicants()">Get Applicants</button>
-
+          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px">
+            Step 2: View Job Applicants
+          </h3>
+          <div class="form-group">
+            <label class="form-label">Job ID</label>
+            <input
+              type="text"
+              id="jobId"
+              class="form-input"
+              placeholder="Select a job above or enter job ID"
+            />
+          </div>
+          <button class="btn btn-success" onclick="getJobApplicants()">
+            Get Applicants
+          </button>
           <div id="applicantsList" class="list-box"></div>
         </div>
       </div>
 
       <!-- User Section -->
-      <div id="userSection" class="section user-section hidden">
-        <h2>📝 My Applications</h2>
-        <button onclick="getMyApplications()">View My Applications</button>
-
+      <div id="userSection" class="section hidden">
+        <h2 class="section-title">
+          <svg class="section-icon" viewBox="0 0 24 24">
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            ></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          My Applications
+        </h2>
+        <button class="btn btn-success" onclick="getMyApplications()">
+          View My Applications
+        </button>
         <div id="myApplicationsList" class="list-box"></div>
       </div>
 
       <!-- Chat Section -->
       <div class="section">
-        <h3>💬 Chat</h3>
+        <h2 class="section-title">
+          <svg class="section-icon" viewBox="0 0 24 24">
+            <path
+              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+            ></path>
+          </svg>
+          Chat
+        </h2>
 
-        <div
-          id="activeChatInfo"
-          style="
-            background: #e7f3ff;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            display: none;
-          "
-        >
-          <strong>💬 Active Chat:</strong> <span id="activeChatName">None</span>
-          <button onclick="clearChat()" style="float: right; padding: 3px 10px">
-            Clear Chat
+        <div id="activeChatInfo" class="active-chat-info" style="display: none">
+          <div class="active-chat-name">
+            <svg class="btn-icon" viewBox="0 0 24 24">
+              <path
+                d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+              ></path>
+            </svg>
+            <span id="activeChatName">None</span>
+          </div>
+          <button class="btn btn-secondary btn-small" onclick="clearChat()">
+            Clear
           </button>
         </div>
 
-        <label>Receiver ID:</label>
-        <input
-          type="text"
-          id="receiverId"
-          placeholder="Click on a user from above or enter manually"
-          style="width: 300px"
-          readonly
-        /><br />
+        <div class="form-group">
+          <label class="form-label">Receiver ID</label>
+          <input
+            type="text"
+            id="receiverId"
+            class="form-input"
+            placeholder="Click on a user from above or enter manually"
+            readonly
+          />
+        </div>
 
         <div id="chatBox" class="chat-box"></div>
+        <div id="typingIndicator" class="typing-indicator"></div>
 
-        <div id="typingIndicator" class="typing"></div>
-
-        <input
-          type="text"
-          id="messageInput"
-          placeholder="Type a message..."
-          style="width: 500px"
-          onkeypress="handleEnterKey(event)"
-        />
-        <button onclick="sendMessage()">Send</button>
+        <div style="display: flex; gap: 12px">
+          <input
+            type="text"
+            id="messageInput"
+            class="form-input"
+            placeholder="Type a message..."
+            onkeypress="handleEnterKey(event)"
+            style="flex: 1"
+          />
+          <button class="btn btn-primary" onclick="sendMessage()">
+            <svg class="btn-icon" viewBox="0 0 24 24">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            Send
+          </button>
+        </div>
       </div>
     </div>
 
@@ -248,58 +681,42 @@
 
       function connectSocket() {
         const token = document.getElementById('token').value;
-
         if (!token) {
           alert('Please enter your JWT token');
           return;
         }
 
-        // Connect to the same origin
         socket = io({
           auth: { token: token },
           transports: ['websocket', 'polling'],
         });
 
         socket.on('connect', () => {
-          document.getElementById('status').innerHTML =
-            '<div class="success">✅ Connected to server</div>';
-          console.log('Connected:', socket.id);
+          showStatus('Connected to server', 'success');
         });
 
         socket.on('companyJobs', (data) => {
-          console.log('Company jobs received:', data);
           displayJobs(data);
         });
 
         socket.on('jobApplicants', (data) => {
-          console.log('Job applicants received:', data);
           displayApplicants(data);
         });
 
         socket.on('myApplications', (data) => {
-          console.log('My applications received:', data);
           displayMyApplications(data);
         });
 
         socket.on('receiveMessage', (data) => {
-          console.log('New message received:', data);
-
-          // Auto-set receiver ID to sender if not currently chatting with someone
           if (!currentReceiverId || currentReceiverId === data.senderId) {
             setActiveChat(data.senderId, data.senderName);
           }
-
-          addMessageToChat(`${data.senderName}: ${data.message}`, 'received');
+          addMessageToChat(
+            `${data.senderName}: ${data.message}`,
+            'received',
+            data.senderProfilePic,
+          );
           document.getElementById('typingIndicator').innerHTML = '';
-
-          // Show notification if not from current chat
-          if (currentReceiverId !== data.senderId) {
-            showNotification(`New message from ${data.senderName}`);
-          }
-        });
-
-        socket.on('messageSent', (data) => {
-          console.log('Message sent successfully:', data);
         });
 
         socket.on('userTyping', ({ userId }) => {
@@ -314,20 +731,15 @@
         });
 
         socket.on('error', (error) => {
-          console.error('Socket error:', error);
-          document.getElementById('status').innerHTML =
-            `<div class="error">❌ Error: ${error.message}</div>`;
+          showStatus(`Error: ${error.message}`, 'error');
         });
 
         socket.on('connect_error', (error) => {
-          console.error('Connection error:', error);
-          document.getElementById('status').innerHTML =
-            `<div class="error">❌ Connection Error: ${error.message}</div>`;
+          showStatus(`Connection Error: ${error.message}`, 'error');
         });
 
         socket.on('disconnect', () => {
-          document.getElementById('status').innerHTML =
-            '<div class="error">❌ Disconnected from server</div>';
+          showStatus('Disconnected from server', 'error');
         });
       }
 
@@ -338,15 +750,23 @@
         }
       }
 
+      function showStatus(message, type) {
+        const statusEl = document.getElementById('status');
+        const icon =
+          type === 'success'
+            ? '<svg class="status-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+            : '<svg class="status-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+
+        statusEl.innerHTML = `<div class="status-box status-${type}">${icon}${message}</div>`;
+      }
+
       function setActiveChat(userId, userName) {
         currentReceiverId = userId;
         currentReceiverName = userName;
         document.getElementById('receiverId').value = userId;
-        document.getElementById('activeChatInfo').style.display = 'block';
+        document.getElementById('activeChatInfo').style.display = 'flex';
         document.getElementById('activeChatName').textContent =
           userName || userId;
-
-        // Load chat history
         loadChatHistory(userId);
       }
 
@@ -354,27 +774,21 @@
         const token = document.getElementById('token').value;
         const chatBox = document.getElementById('chatBox');
         chatBox.innerHTML =
-          '<div style="text-align: center; color: #666;">Loading history...</div>';
+          '<p style="text-align: center; color: oklch(0.98 0 0);">Loading history...</p>';
 
         try {
-          // Use relative path
           const response = await fetch(`/api/v1/chat/${userId}?limit=50`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           });
-
-          console.log('Chat history response status:', response.status);
 
           const result = await response.json();
 
           if (response.ok) {
             chatBox.innerHTML = '';
-            // Messages come newest first (desc sort), so reverse them for display
             const messages = result.data.messages.reverse();
 
             messages.forEach((msg) => {
-              const isMe = msg.senderId._id !== userId; // If sender is not the other user, it's me
+              const isMe = msg.senderId._id !== userId;
               const type = isMe ? 'sent' : 'received';
               const senderName = isMe
                 ? 'You'
@@ -390,14 +804,14 @@
 
             if (messages.length === 0) {
               chatBox.innerHTML =
-                '<div style="text-align: center; color: #666; padding: 20px;">No messages yet. Start the conversation!</div>';
+                '<p style="text-align: center; color: oklch(0.98 0 0); padding: 20px;">No messages yet. Start the conversation!</p>';
             }
           } else {
-            chatBox.innerHTML = `<div class="error">Failed to load history: ${result.message}</div>`;
+            chatBox.innerHTML = `<p style="color: oklch(0.55 0.22 25);">Failed to load history</p>`;
           }
         } catch (error) {
-          console.error('Error loading history:', error);
-          chatBox.innerHTML = '<div class="error">Error loading history</div>';
+          chatBox.innerHTML =
+            '<p style="color: oklch(0.55 0.22 25);">Error loading history</p>';
         }
       }
 
@@ -409,13 +823,6 @@
         document.getElementById('chatBox').innerHTML = '';
       }
 
-      function showNotification(message) {
-        // Simple browser notification (can be enhanced)
-        if (Notification.permission === 'granted') {
-          new Notification(message);
-        }
-      }
-
       function handleEnterKey(event) {
         if (event.key === 'Enter') {
           sendMessage();
@@ -424,39 +831,44 @@
 
       function getCompanyJobs() {
         const companyId = document.getElementById('companyId').value;
-
-        if (!socket) {
-          alert('Please connect first');
+        if (!socket || !companyId) {
+          alert('Please connect and enter a company ID');
           return;
         }
-
-        if (!companyId) {
-          alert('Please enter a company ID');
-          return;
-        }
-
         socket.emit('getCompanyJobs', { companyId });
       }
 
       function displayJobs(data) {
         const container = document.getElementById('jobsList');
-
         if (data.totalJobs === 0) {
           container.innerHTML = '<p>No jobs found for this company.</p>';
           return;
         }
 
-        let html = `<p><strong>Total Jobs:</strong> ${data.totalJobs}</p><hr>`;
+        let html = `<p style="margin-bottom: 16px; font-weight: 600; color: oklch(0.98 0 0);">Total Jobs: ${data.totalJobs}</p>`;
 
         data.jobs.forEach((job, index) => {
           html += `
-            <div class="item-card">
-              <strong>${index + 1}. ${job.jobTitle}</strong><br>
-              <small>📍 ${job.jobLocation} | ⏰ ${job.workingTime} | 🎯 ${job.seniorityLevel}</small><br>
-              <small>Posted: ${new Date(job.createdAt).toLocaleDateString()}</small><br>
-              <button class="btn" onclick="selectJob('${job.jobId}')">View Applicants</button>
+          <div class="item-card">
+            <div class="item-title">${index + 1}. ${job.jobTitle}</div>
+            <div class="item-meta">
+              <span class="meta-item">
+                <svg class="meta-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                ${job.jobLocation}
+              </span>
+              <span class="meta-item">
+                <svg class="meta-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                ${job.workingTime}
+              </span>
+              <span class="meta-item">
+                <svg class="meta-icon" viewBox="0 0 24 24"><path d="M12 20v-6M6 20V10M18 20V4"></path></svg>
+                ${job.seniorityLevel}
+              </span>
             </div>
-          `;
+            <div style="margin-top: 8px; font-size: 13px; color: oklch(0.65 0.01 264);">Posted: ${new Date(job.createdAt).toLocaleDateString()}</div>
+            <button class="btn btn-secondary btn-small" style="margin-top: 8px;" onclick="selectJob('${job.jobId}')">View Applicants</button>
+          </div>
+        `;
         });
 
         container.innerHTML = html;
@@ -469,60 +881,57 @@
 
       function getJobApplicants() {
         const jobId = document.getElementById('jobId').value;
-
-        if (!socket) {
-          alert('Please connect first');
+        if (!socket || !jobId) {
+          alert('Please connect and enter a job ID');
           return;
         }
-
-        if (!jobId) {
-          alert('Please enter a job ID');
-          return;
-        }
-
         socket.emit('getJobApplicants', { jobId });
       }
 
       function displayApplicants(data) {
         const container = document.getElementById('applicantsList');
-
         if (data.totalApplicants === 0) {
           container.innerHTML = '<p>No applicants for this job yet.</p>';
           return;
         }
 
         let html = `
-          <h4>${data.jobTitle}</h4>
-          <p><strong>Total Applicants:</strong> ${data.totalApplicants}</p>
-          <hr>
-        `;
+        <h4 style="margin-bottom: 8px; color: oklch(0.98 0 0);">${data.jobTitle}</h4>
+        <p style="margin-bottom: 16px; font-weight: 600; color: oklch(0.98 0 0);">Total Applicants: ${data.totalApplicants}</p>
+      `;
 
         data.applicants.forEach((app, index) => {
-          const statusColors = {
-            pending: '#ffc107',
-            accepted: '#28a745',
-            rejected: '#dc3545',
-            viewed: '#007bff',
-            'in consideration': '#17a2b8',
-          };
-          const statusColor = statusColors[app.status] || '#6c757d';
+          const statusClass =
+            {
+              pending: 'badge-pending',
+              accepted: 'badge-accepted',
+              rejected: 'badge-rejected',
+              viewed: 'badge-viewed',
+            }[app.status] || 'badge-pending';
 
           html += `
-            <div class="item-card">
-              <strong>${index + 1}. ${app.applicant.name}</strong><br>
-              <small>📧 ${app.applicant.email}</small><br>
-              <span class="status-badge" style="background: ${statusColor};">
-                ${app.status.toUpperCase()}
-              </span><br>
-              <small>Applied: ${new Date(app.appliedAt).toLocaleString()}</small><br>
-              <a href="${app.cvUrl}" target="_blank" class="btn" style="text-decoration: none;">
-                📄 View CV
+          <div class="item-card">
+            <div class="item-title">${index + 1}. ${app.applicant.name}</div>
+            <div class="item-meta">
+              <span class="meta-item">
+                <svg class="meta-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                ${app.applicant.email}
+              </span>
+            </div>
+            <span class="status-badge ${statusClass}">${app.status}</span>
+            <div style="margin-top: 8px; font-size: 13px; color: oklch(0.65 0.01 264);">Applied: ${new Date(app.appliedAt).toLocaleString()}</div>
+            <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+              <a href="${app.cvUrl}" target="_blank" class="btn btn-secondary btn-small">
+                <svg class="btn-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                View CV
               </a>
-              <button class="btn" onclick="startChatWith('${app.applicant.id}', '${app.applicant.name}')">
-                💬 Chat
+              <button class="btn btn-primary btn-small" onclick="startChatWith('${app.applicant.id}', '${app.applicant.name}')">
+                <svg class="btn-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                Chat
               </button>
             </div>
-          `;
+          </div>
+        `;
         });
 
         container.innerHTML = html;
@@ -533,43 +942,44 @@
           alert('Please connect first');
           return;
         }
-
         socket.emit('getMyApplications');
       }
 
       function displayMyApplications(data) {
         const container = document.getElementById('myApplicationsList');
-
         if (data.totalApplications === 0) {
           container.innerHTML = '<p>You have not applied to any jobs yet.</p>';
           return;
         }
 
-        let html = `<p><strong>Total Applications:</strong> ${data.totalApplications}</p><hr>`;
+        let html = `<p style="margin-bottom: 16px; font-weight: 600; color: oklch(0.98 0 0);">Total Applications: ${data.totalApplications}</p>`;
 
         data.applications.forEach((app, index) => {
-          const statusColors = {
-            pending: '#ffc107',
-            accepted: '#28a745',
-            rejected: '#dc3545',
-            viewed: '#007bff',
-            'in consideration': '#17a2b8',
-          };
-          const statusColor = statusColors[app.status] || '#6c757d';
+          const statusClass =
+            {
+              pending: 'badge-pending',
+              accepted: 'badge-accepted',
+              rejected: 'badge-rejected',
+              viewed: 'badge-viewed',
+            }[app.status] || 'badge-pending';
 
           html += `
-            <div class="item-card">
-              <strong>${index + 1}. ${app.job.title}</strong><br>
-              <small>📍 ${app.job.location}</small><br>
-              <span class="status-badge" style="background: ${statusColor};">
-                ${app.status.toUpperCase()}
-              </span><br>
-              <small>Applied: ${new Date(app.appliedAt).toLocaleString()}</small><br>
-              <a href="${app.cvUrl}" target="_blank" class="btn" style="text-decoration: none;">
-                📄 View My CV
-              </a>
+          <div class="item-card">
+            <div class="item-title">${index + 1}. ${app.job.title}</div>
+            <div class="item-meta">
+              <span class="meta-item">
+                <svg class="meta-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                ${app.job.location}
+              </span>
             </div>
-          `;
+            <span class="status-badge ${statusClass}">${app.status}</span>
+            <div style="margin-top: 8px; font-size: 13px; color: oklch(0.65 0.01 264);">Applied: ${new Date(app.appliedAt).toLocaleString()}</div>
+            <a href="${app.cvUrl}" target="_blank" class="btn btn-secondary btn-small" style="margin-top: 12px;">
+              <svg class="btn-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              View My CV
+            </a>
+          </div>
+        `;
         });
 
         container.innerHTML = html;
@@ -585,13 +995,8 @@
           currentReceiverId || document.getElementById('receiverId').value;
         const message = document.getElementById('messageInput').value;
 
-        if (!socket) {
-          alert('Please connect first');
-          return;
-        }
-
-        if (!receiverId || !message) {
-          alert('Please select a user to chat with and enter a message');
+        if (!socket || !receiverId || !message) {
+          alert('Please connect, select a user, and enter a message');
           return;
         }
 
@@ -600,9 +1005,7 @@
         document.getElementById('messageInput').value = '';
       }
 
-      // Simple HTML escaper for user input
       function escapeHtml(str) {
-        // Converts &, <, >, ", and ' to HTML-safe equivalents.
         return String(str)
           .replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
@@ -614,18 +1017,26 @@
       function addMessageToChat(text, type, profilePic = null) {
         const chatBox = document.getElementById('chatBox');
         const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${type}`;
+        messageDiv.className = `message message-${type}`;
 
-        let content = '';
-        if (type === 'received' && profilePic) {
-          content += `<img src="${profilePic}" style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle; margin-right: 5px;">`;
-        } else if (type === 'received') {
-          // Placeholder for missing profile pic
-          content += `<div style="width: 30px; height: 30px; border-radius: 50%; background: #ccc; display: inline-block; vertical-align: middle; margin-right: 5px; text-align: center; line-height: 30px; color: white; font-size: 12px;">👤</div>`;
+        if (type === 'received') {
+          if (profilePic) {
+            messageDiv.innerHTML = `<img src="${profilePic}" class="avatar" alt="Avatar">${escapeHtml(text)}`;
+          } else {
+            messageDiv.innerHTML = `
+            <div class="avatar-placeholder">
+              <svg class="avatar-icon" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            ${escapeHtml(text)}
+          `;
+          }
+        } else {
+          messageDiv.textContent = text;
         }
-        content += `<span>${escapeHtml(text)}</span>`;
 
-        messageDiv.innerHTML = content;
         chatBox.appendChild(messageDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
       }
