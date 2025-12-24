@@ -649,7 +649,10 @@
             '<svg class="status-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>';
         }
 
-        statusEl.innerHTML = `${icon}<p>${message}</p>`;
+        statusEl.innerHTML = icon;
+        const messageEl = document.createElement('p');
+        messageEl.textContent = message;
+        statusEl.appendChild(messageEl);
       }
     </script>
   </body>
