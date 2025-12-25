@@ -151,11 +151,27 @@ export class AuthController {
       if (typeof rawRedirect !== 'string') {
         return '/';
       }
-      // Allow only local paths, and reject protocol-relative or absolute URLs.
-      if (rawRedirect.startsWith('/') && !rawRedirect.startsWith('//')) {
-        return rawRedirect;
+      const trimmed = rawRedirect.trim();
+      if (!trimmed) {
+        return '/';
       }
-      return '/';
+      try {
+        // Parse relative to a known safe origin; replace example.com with your real domain if needed.
+        const base = new URL('https://example.com');
+        const url = new URL(trimmed, base);
+        // Disallow protocol-relative or absolute URLs that change origin.
+        if (url.origin !== base.origin) {
+          return '/';
+        }
+        // Only allow paths that start with a single '/' (no '//').
+        if (!url.pathname.startsWith('/') || url.pathname.startsWith('//')) {
+          return '/';
+        }
+        // Preserve any query string on the safe, same-origin path.
+        return url.pathname + (url.search || '');
+      } catch {
+        return '/';
+      }
     };
 
     passport.authenticate(
@@ -199,7 +215,14 @@ export class AuthController {
           const redirectUrl = `${redirectTo}${separator}accessToken=${result.accessToken}&refreshToken=${result.refreshToken}&uName=${encodeURIComponent(result.user.name)}`;
           return res.redirect(redirectUrl);
         } catch (error) {
-          const state = req.query.state ? JSON.parse(req.query.state) : {};
+          let state = {};
+          if (req.query.state) {
+            try {
+              state = JSON.parse(req.query.state);
+            } catch {
+              state = {};
+            }
+          }
           const finalRedirect = getSafeRedirectTarget(state.redirect_to || '/');
           const separator = finalRedirect.includes('?') ? '&' : '?';
           return res.redirect(
