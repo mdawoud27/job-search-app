@@ -161,8 +161,8 @@ export class AuthController {
               if (state.redirect_to) {
                 redirectTo = state.redirect_to;
               }
-            } catch (e) {
-              console.error('Error parsing OAuth state:', e);
+            } catch {
+              // Silently ignore state parsing errors
             }
           }
 

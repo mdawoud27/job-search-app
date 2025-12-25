@@ -1736,6 +1736,18 @@
         "tags": ["Authentication"],
         "summary": "Google OAuth login",
         "description": "Initiate Google OAuth authentication flow.\n\n**Note:** This endpoint will fail in Swagger UI's 'Try it out' due to browser CORS policies preventing AJAX redirects to Google's auth pages.\n\n[Click here to test directly in your browser](/api/auth/google)",
+        "parameters": [
+          {
+            "name": "redirect_to",
+            "in": "query",
+            "description": "Optional custom redirect URI (e.g., mobile deep link like 'myapp://auth'). Tokens will be appended to this URI.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "myapp://auth"
+            }
+          }
+        ],
         "responses": {
           "302": {
             "description": "Redirect to Google OAuth"
