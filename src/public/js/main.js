@@ -39,7 +39,7 @@ if (versionElement) {
     .then((data) => {
       versionElement.textContent = `v${data.version}`;
     })
-    .catch((err) => {
-      versionElement.textContent = 'v1.3.0 (fallback)';
+    .catch(() => {
+      versionElement.textContent = 'v1.3.2 (fallback)';
     });
 }
