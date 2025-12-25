@@ -9,6 +9,15 @@ import chatRouter from './chat.routes.js';
 
 const router = Router();
 
+import { readFileSync } from 'fs';
+const packageJson = JSON.parse(
+  readFileSync(new URL('../../package.json', import.meta.url)),
+);
+
+router.get('/api/version', (req, res) => {
+  res.json({ version: packageJson.version });
+});
+
 router.use('/api', authRouter);
 router.use('/api/v1', userRouter);
 router.use('/api/v1', adminRouter);
