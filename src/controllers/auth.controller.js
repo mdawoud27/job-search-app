@@ -152,34 +152,22 @@ export class AuthController {
       async (err, user, info) => {
         try {
           if (err) {
-            return res.status(500).json({
-              message: 'Authentication failed',
-              error: err.message,
-            });
+            return res.redirect(`/?error=${encodeURIComponent(err.message)}`);
           }
 
           if (!user) {
-            return res.status(401).json({
-              message: 'Authentication failed: No user returned',
-            });
+            return res.redirect('/?error=Authentication failed');
           }
 
           // Generate tokens and app user data
           const result = await this.authService.googleCallback(user);
 
-          return res.status(200).json({
-            message: 'Google login successful',
-            data: {
-              accessToken: result.accessToken,
-              refreshToken: result.refreshToken,
-              user: result.user,
-            },
-          });
+          // Redirect to home with tokens
+          // In a real app, you might want to set a cookie or use a safer transfer method
+          const redirectUrl = `/?accessToken=${result.accessToken}&refreshToken=${result.refreshToken}&uName=${encodeURIComponent(result.user.name)}`;
+          return res.redirect(redirectUrl);
         } catch (error) {
-          return res.status(500).json({
-            message: 'Internal server error',
-            error: error.message,
-          });
+          return res.redirect(`/?error=${encodeURIComponent(error.message)}`);
         }
       },
     )(req, res, next);
