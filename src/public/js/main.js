@@ -1,6 +1,8 @@
 // Update timestamp
-document.getElementById('timestamp').textContent =
-  `Last updated: ${new Date().toLocaleString()}`;
+const timestampElement = document.getElementById('timestamp');
+if (timestampElement) {
+  timestampElement.textContent = `Last updated: ${new Date().toLocaleString()}`;
+}
 
 // Check for tokens in URL params (Redirect flow)
 const urlParams = new URLSearchParams(window.location.search);
@@ -29,5 +31,15 @@ if (accessToken) {
   window.history.replaceState({}, document.title, window.location.pathname);
 }
 
-// Version Display Logic (Static)
-// data is now hardcoded in index.html
+// Version Display Logic (Dynamic)
+const versionElement = document.getElementById('app-version');
+if (versionElement) {
+  fetch('/api/version')
+    .then((res) => res.json())
+    .then((data) => {
+      versionElement.textContent = `v${data.version}`;
+    })
+    .catch((err) => {
+      versionElement.textContent = 'v1.3.0 (fallback)';
+    });
+}
