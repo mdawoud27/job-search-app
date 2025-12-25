@@ -10,6 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <style>
       /* CSS Reset */
       *,
@@ -462,32 +463,6 @@
           window.location.pathname,
         );
       }
-
-      // Version Display Logic (Hybrid approach)
-      // If {{VERSION}} is not replaced (Dev env), fetch it from API.
-      const versionElement = document.getElementById('app-version');
-      if (
-        versionElement &&
-        versionElement.textContent.includes('{{VERSION}}')
-      ) {
-        fetch('/api/version')
-          .then((res) => res.json())
-          .then((data) => {
-            versionElement.textContent = data.version;
-          })
-          .catch(console.error);
-      }
-
-      // Fetch and display version
-      fetch('/api/version')
-        .then((res) => res.json())
-        .then((data) => {
-          const versionElement = document.getElementById('app-version');
-          if (versionElement) {
-            versionElement.textContent = data.version;
-          }
-        })
-        .catch((err) => console.error('Failed to fetch version:', err));
     </script>
   </body>
 </html>
