@@ -77,3 +77,20 @@ jobs:
 
       - name: Check commit messages
         run: npx commitlint --from=HEAD --to=HEAD
+
+  version-injection:
+    runs-on: ubuntu-latest
+    needs: [eslint, prettier, commit]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Inject Version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Injecting version $VERSION into src/public/index.html"
+          sed -i "s/{{VERSION}}/$VERSION/g" src/public/index.html
+
+      - name: Verify Injection
+        run: |
+          grep -C 3 "id=\"app-version\"" src/public/index.html
