@@ -138,8 +138,10 @@ export class AuthController {
 
   // Initiate Google OAuth
   googleAuth(req, res, next) {
+    const { redirect_to } = req.query;
     passport.authenticate('google', {
       scope: ['profile', 'email'],
+      state: redirect_to ? JSON.stringify({ redirect_to }) : undefined,
     })(req, res, next);
   }
 
@@ -151,23 +153,47 @@ export class AuthController {
       // eslint-disable-next-line
       async (err, user, info) => {
         try {
+          // Extract state for redirection
+          let redirectTo = '/';
+          if (req.query.state) {
+            try {
+              const state = JSON.parse(req.query.state);
+              if (state.redirect_to) {
+                redirectTo = state.redirect_to;
+              }
+            } catch (e) {
+              console.error('Error parsing OAuth state:', e);
+            }
+          }
+
           if (err) {
-            return res.redirect(`/?error=${encodeURIComponent(err.message)}`);
+            const separator = redirectTo.includes('?') ? '&' : '?';
+            return res.redirect(
+              `${redirectTo}${separator}error=${encodeURIComponent(err.message)}`,
+            );
           }
 
           if (!user) {
-            return res.redirect('/?error=Authentication failed');
+            const separator = redirectTo.includes('?') ? '&' : '?';
+            return res.redirect(
+              `${redirectTo}${separator}error=Authentication%20failed`,
+            );
           }
 
           // Generate tokens and app user data
           const result = await this.authService.googleCallback(user);
 
-          // Redirect to home with tokens
-          // In a real app, you might want to set a cookie or use a safer transfer method
-          const redirectUrl = `/?accessToken=${result.accessToken}&refreshToken=${result.refreshToken}&uName=${encodeURIComponent(result.user.name)}`;
+          // Redirect to target with tokens
+          const separator = redirectTo.includes('?') ? '&' : '?';
+          const redirectUrl = `${redirectTo}${separator}accessToken=${result.accessToken}&refreshToken=${result.refreshToken}&uName=${encodeURIComponent(result.user.name)}`;
           return res.redirect(redirectUrl);
         } catch (error) {
-          return res.redirect(`/?error=${encodeURIComponent(error.message)}`);
+          const state = req.query.state ? JSON.parse(req.query.state) : {};
+          const finalRedirect = state.redirect_to || '/';
+          const separator = finalRedirect.includes('?') ? '&' : '?';
+          return res.redirect(
+            `${finalRedirect}${separator}error=${encodeURIComponent(error.message)}`,
+          );
         }
       },
     )(req, res, next);
