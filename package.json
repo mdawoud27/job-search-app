@@ -1,9 +1,9 @@
 {
   "name": "job-search-app",
-  "version": "1.0.2",
+  "version": "1.3.0",
   "description": "This is a job search app",
   "type": "module",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "start": "node ./src/index.js",
     "start:dev": "nodemon ./src/index.js",

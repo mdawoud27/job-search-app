@@ -342,7 +342,7 @@
         <div class="info-grid">
           <div class="info-card">
             <h3>Version</h3>
-            <p id="app-version">{{VERSION}}</p>
+            <p>v1.2.2</p>
           </div>
           <div class="info-card">
             <h3>Environment</h3>
@@ -401,10 +401,7 @@
             </svg>
             Test Notification
           </a>
-          <button
-            class="btn btn-secondary btn-disabled"
-            onclick="alert('Chat testing is coming soon!');"
-          >
+          <button class="btn btn-secondary btn-disabled">
             <svg class="btn-icon" viewBox="0 0 24 24">
               <path
                 d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
@@ -421,42 +418,6 @@
       </div>
     </div>
 
-    <script>
-      // Update timestamp
-      document.getElementById('timestamp').textContent =
-        `Last updated: ${new Date().toLocaleString()}`;
-
-      // Check for tokens in URL params (Redirect flow)
-      const urlParams = new URLSearchParams(window.location.search);
-      const accessToken = urlParams.get('accessToken');
-      const error = urlParams.get('error');
-      const userName = urlParams.get('uName');
-
-      if (accessToken) {
-        // Visual feedback
-        const statusBadge = document.querySelector('.status-badge');
-        statusBadge.style.background = 'oklch(0.6 0.15 145)'; // Greener
-        statusBadge.innerHTML = `
-              <span class="status-indicator"></span>
-              <span>Signed in as ${userName || 'User'}</span>
-            `;
-
-        // Optional: Store token
-        localStorage.setItem('accessToken', accessToken);
-
-        // Clean URL
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname,
-        );
-      } else if (error) {
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname,
-        );
-      }
-    </script>
+    <script src="./js/main.js"></script>
   </body>
 </html>

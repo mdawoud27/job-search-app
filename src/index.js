@@ -36,7 +36,19 @@ connectToDB();
 app.use(apiLimiter);
 
 // Helmet
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"], // Removed 'unsafe-inline'
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'], // Styles often need unsafe-inline for dynamic frameworks, but better to check
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:', 'https://www.w3.org'],
+      },
+    },
+  }),
+);
 
 // Cors Policy
 app.use(
