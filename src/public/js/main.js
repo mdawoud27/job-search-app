@@ -15,10 +15,14 @@ if (accessToken) {
   const statusBadge = document.querySelector('.status-badge');
   if (statusBadge) {
     statusBadge.style.background = 'oklch(0.6 0.15 145)'; // Greener
-    statusBadge.innerHTML = `
-      <span class="status-indicator"></span>
-      <span>Signed in as ${userName || 'User'}</span>
-    `;
+    // Build DOM elements safely to avoid XSS from userName
+    statusBadge.innerHTML = '';
+    const indicatorSpan = document.createElement('span');
+    indicatorSpan.className = 'status-indicator';
+    const textSpan = document.createElement('span');
+    textSpan.textContent = 'Signed in as ' + (userName || 'User');
+    statusBadge.appendChild(indicatorSpan);
+    statusBadge.appendChild(textSpan);
   }
 
   // Optional: Store token
