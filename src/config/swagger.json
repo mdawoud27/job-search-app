@@ -1735,7 +1735,7 @@
       "get": {
         "tags": ["Authentication"],
         "summary": "Google OAuth login",
-        "description": "Initiate Google OAuth authentication flow",
+        "description": "Initiate Google OAuth authentication flow.\n\n**Note:** This endpoint will fail in Swagger UI's 'Try it out' due to browser CORS policies preventing AJAX redirects to Google's auth pages.\n\n[Click here to test directly in your browser](/api/auth/google)",
         "responses": {
           "302": {
             "description": "Redirect to Google OAuth"
