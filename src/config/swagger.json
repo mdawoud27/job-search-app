@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Job Search API",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "API documentation for the Job Search application"
   },
   "servers": [
@@ -1747,20 +1747,19 @@
       "get": {
         "tags": ["Authentication"],
         "summary": "Google OAuth callback",
-        "description": "Handle Google OAuth callback",
+        "description": "Handle Google OAuth callback. Redirects to the frontend home page with tokens and user info in query parameters upon success, or an error message upon failure.",
         "responses": {
-          "200": {
-            "description": "Authentication successful",
-            "content": {
-              "application/json": {
+          "302": {
+            "description": "Redirects to frontend home page",
+            "headers": {
+              "Location": {
+                "description": "The URL to redirect to, containing tokens or errors in query params",
                 "schema": {
-                  "$ref": "#/components/schemas/GoogleAuthResponse"
+                  "type": "string",
+                  "example": "/?accessToken=...&refreshToken=...&uName=..."
                 }
               }
             }
-          },
-          "401": {
-            "description": "Authentication failed"
           }
         }
       }
