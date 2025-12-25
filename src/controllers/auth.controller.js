@@ -147,6 +147,17 @@ export class AuthController {
 
   // Google OAuth callback
   googleCallback(req, res, next) {
+    const getSafeRedirectTarget = (rawRedirect) => {
+      if (typeof rawRedirect !== 'string') {
+        return '/';
+      }
+      // Allow only local paths, and reject protocol-relative or absolute URLs.
+      if (rawRedirect.startsWith('/') && !rawRedirect.startsWith('//')) {
+        return rawRedirect;
+      }
+      return '/';
+    };
+
     passport.authenticate(
       'google',
       { session: false },
@@ -159,7 +170,7 @@ export class AuthController {
             try {
               const state = JSON.parse(req.query.state);
               if (state.redirect_to) {
-                redirectTo = state.redirect_to;
+                redirectTo = getSafeRedirectTarget(state.redirect_to);
               }
             } catch {
               // Silently ignore state parsing errors
@@ -189,7 +200,7 @@ export class AuthController {
           return res.redirect(redirectUrl);
         } catch (error) {
           const state = req.query.state ? JSON.parse(req.query.state) : {};
-          const finalRedirect = state.redirect_to || '/';
+          const finalRedirect = getSafeRedirectTarget(state.redirect_to || '/');
           const separator = finalRedirect.includes('?') ? '&' : '?';
           return res.redirect(
             `${finalRedirect}${separator}error=${encodeURIComponent(error.message)}`,
