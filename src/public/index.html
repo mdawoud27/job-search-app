@@ -433,7 +433,6 @@
       const userName = urlParams.get('uName');
 
       if (accessToken) {
-        console.log('Google Auth Success. Token:', accessToken);
         // Visual feedback
         const statusBadge = document.querySelector('.status-badge');
         statusBadge.style.background = 'oklch(0.6 0.15 145)'; // Greener
@@ -451,12 +450,7 @@
           document.title,
           window.location.pathname,
         );
-
-        alert(`Welcome ${userName || ''}! Login successful.`);
       } else if (error) {
-        console.error('Google Auth Error:', error);
-        alert('Google Sign-In failed: ' + error);
-        // Clean URL
         window.history.replaceState(
           {},
           document.title,
