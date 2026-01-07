@@ -1,6 +1,6 @@
 {
   "name": "job-search-app",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "This is a job search app",
   "type": "module",
   "main": "src/index.js",
@@ -49,7 +49,6 @@
     ]
   },
   "dependencies": {
-    "@apollo/server": "^5.2.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
     "clicksend": "^5.0.79",
@@ -60,6 +59,7 @@
     "dotenv": "^16.4.7",
     "exceljs": "^4.4.0",
     "express": "^4.22.1",
+    "express-graphql": "^0.12.0",
     "express-rate-limit": "^7.5.0",
     "google-auth-library": "^9.15.1",
     "graphql": "^16.12.0",

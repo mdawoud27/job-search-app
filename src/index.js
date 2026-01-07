@@ -17,6 +17,8 @@ import { setupSwagger } from './config/swagger.js';
 import { initSocket } from './config/socket.js';
 import compression from 'compression';
 import { ErrorHandler } from './middlewares/error.middleware.js';
+import { graphqlHTTP } from 'express-graphql';
+import { schema, rootValue } from './graphql/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -35,16 +37,28 @@ connectToDB();
 // Apply rate limiter to all requests
 app.use(apiLimiter);
 
-// Helmet
+// Helmet - relaxed CSP for GraphiQL
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"], // Removed 'unsafe-inline'
-        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'], // Styles often need unsafe-inline for dynamic frameworks, but better to check
-        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          'https://unpkg.com',
+          'https://cdn.jsdelivr.net',
+          "'unsafe-eval'",
+        ],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          'https://fonts.googleapis.com',
+          'https://unpkg.com',
+          'https://cdn.jsdelivr.net',
+        ],
         imgSrc: ["'self'", 'data:', 'https://www.w3.org'],
+        connectSrc: ["'self'", 'https://unpkg.com', 'https://cdn.jsdelivr.net'],
       },
     },
   }),
@@ -95,6 +109,15 @@ app.get('/', (req, res) => {
 // Routes
 app.use(routes);
 setupSwagger(app);
+
+app.use(
+  '/graphql',
+  graphqlHTTP({
+    schema: schema,
+    rootValue: rootValue,
+    graphiql: true,
+  }),
+);
 
 // Global error handlers middlewares
 app.use(ErrorHandler.notFound);
