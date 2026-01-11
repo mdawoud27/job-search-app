@@ -1,13 +1,13 @@
 {
   "name": "job-search-app",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "description": "This is a job search app",
   "type": "module",
   "main": "src/index.js",
   "scripts": {
     "start": "node ./src/index.js",
     "start:dev": "nodemon ./src/index.js",
-    "prepare": "husky install",
+    "prepare": "node -e \"try { require('husky').install() } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }\"",
     "format": "prettier --write \"**/*.js\"",
     "lint": "eslint \"**/*.js\" --fix",
     "test": "jest",
