@@ -13,12 +13,12 @@ export class UserService {
   async updateAccount(userId, updateDto) {
     const updated = await this.userRepository.updateById(userId, updateDto);
 
-    if (!updated.refreshToken) {
-      throw new Error('User is not logged in');
-    }
-
     if (!updated) {
       throw new Error('User not found or update failed');
+    }
+
+    if (!updated.refreshToken) {
+      throw new Error('User is not logged in');
     }
     return {
       message: 'Your account is updated successfully',
@@ -116,6 +116,9 @@ export class UserService {
   // Upload profile pic
   async uploadProfilePic(userId, imageData) {
     const user = await this.userRepository.findByIdAndActive(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
 
     if (!user.refreshToken) {
       throw new Error('User is not logged in');
@@ -144,6 +147,9 @@ export class UserService {
   // Upload cover pic
   async uploadCoverPic(userId, imageData) {
     const user = await this.userRepository.findByIdAndActive(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
 
     if (!user.refreshToken) {
       throw new Error('User is not logged in');
@@ -171,6 +177,9 @@ export class UserService {
   // Delete profile pic
   async deleteProfilePic(userId) {
     const user = await this.userRepository.findByIdAndActive(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
 
     if (!user.refreshToken) {
       throw new Error('User is not logged in');
@@ -195,6 +204,9 @@ export class UserService {
   // Delete cover pic
   async deleteCoverPic(userId) {
     const user = await this.userRepository.findByIdAndActive(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
 
     if (!user.refreshToken) {
       throw new Error('User is not logged in');
