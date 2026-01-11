@@ -1,0 +1,25 @@
+services:
+  mongodb:
+    ports:
+      - '27018:27017'
+    volumes:
+      - mongodb_data_dev:/data/db
+
+  app:
+    build:
+      target: development
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - PORT=3000
+      - NODE_ENV=development
+      - MONGO_URL=mongodb://mongodb:27017
+      - DB_NAME=jobSearchApp_dev
+
+volumes:
+  mongodb_data_dev:
