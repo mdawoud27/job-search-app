@@ -49,7 +49,7 @@
 
 The project uses GitHub Actions with parallel job execution:
 
-![GitHub Actions Workflow](../assets/github-actions-workflow.png)
+<img src="../assets/github-actions-workflow.png" width="300" />
 
 ### Pipeline Jobs
 
@@ -62,7 +62,7 @@ The project uses GitHub Actions with parallel job execution:
 
 ### Server Initialization Flow
 
-![Server Initialization Flow](../assets/server_flow.png)
+<img src="../assets/server_flow.png" width="400" />
 
 ### Dependency Injection Pattern
 

@@ -2,6 +2,36 @@
 
 A RESTful API for a job search platform built with Node.js, Express, and MongoDB. This application enables users to find jobs, companies to post positions, and administrators to manage the platform.
 
+## Features
+
+### User Features
+
+- Browse and search available job listings
+- Apply for jobs
+- View job details and company information
+- Manage application status and history
+- Update personal profile and resume
+- Save favorite job listings
+
+### HR Features
+
+- Post and manage job listings
+- Review and manage applications
+- Track applicant status throughout the hiring process
+- Communicate with candidates
+- Generate hiring reports
+- Manage company profile and information
+
+### Admin Features
+
+- Manage users and their accounts
+- Moderate job postings and applications
+- View platform analytics and statistics
+- Manage system configurations
+- Monitor and maintain platform integrity
+- Handle user disputes and support tickets
+
+
 ## Getting Started
 
 1. Clone the repository
