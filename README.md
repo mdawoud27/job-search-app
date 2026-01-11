@@ -10,6 +10,14 @@ A RESTful API for a job search platform built with Node.js, Express, and MongoDB
 4. Start the server with `npm run start:dev`
 5. The server will start on `http://localhost:3000`.
 
+## Project Documentation
+
+For more technical details, please refer to the following documentation:
+
+- [Entity Relationship Diagram (ERD)](docs/ERD.md)
+- [Project Architecture](docs/PROJECT_ARCH.md)
+- [GitHub Flow](docs/GITHUB_FLOW.md)
+
 ## API Documentation
 
 The API documentation is available via Swagger UI:
