@@ -73,6 +73,7 @@ const createMockUser = (overrides = {}) => ({
   coverPic: null,
   deletedAt: null,
   bannedAt: null,
+  refreshToken: 'mock-refresh-token',
   save: jest.fn().mockResolvedValue(true),
   ...overrides,
 });

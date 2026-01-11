@@ -10,12 +10,17 @@ export class JobService {
 
   async createJob(dto, userId, companyId) {
     const user = await this.userDao.findByIdAndActive(userId);
-    const company = await this.companyDao.isActive(companyId);
-    const canManage = await this.companyDao.canManage(companyId, userId);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
 
     if (!user.refreshToken) {
       throw new Error('User is not logged in');
     }
+
+    const company = await this.companyDao.isActive(companyId);
+    const canManage = await this.companyDao.canManage(companyId, userId);
 
     if (!canManage) {
       throw new Error(
@@ -35,12 +40,17 @@ export class JobService {
 
   async updateJob(dto, userId, companyId, jobId) {
     const user = await this.userDao.findByIdAndActive(userId);
-    const company = await this.companyDao.isActive(companyId);
-    const canManage = await this.companyDao.canManage(companyId, userId);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
 
     if (!user.refreshToken) {
       throw new Error('User is not logged in');
     }
+
+    const company = await this.companyDao.isActive(companyId);
+    const canManage = await this.companyDao.canManage(companyId, userId);
 
     if (!canManage) {
       throw new Error(
@@ -65,12 +75,17 @@ export class JobService {
 
   async deleteJob(userId, companyId, jobId) {
     const user = await this.userDao.findByIdAndActive(userId);
-    const company = await this.companyDao.isActive(companyId);
-    const canManage = await this.companyDao.canManage(companyId, userId);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
 
     if (!user.refreshToken) {
       throw new Error('User is not logged in');
     }
+
+    const company = await this.companyDao.isActive(companyId);
+    const canManage = await this.companyDao.canManage(companyId, userId);
 
     if (!canManage) {
       throw new Error(

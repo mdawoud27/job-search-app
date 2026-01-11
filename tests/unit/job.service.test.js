@@ -50,6 +50,7 @@ const createMockUser = (overrides = {}) => ({
   _id: 'user_123',
   email: 'user@example.com',
   role: 'HR',
+  refreshToken: 'mock-refresh-token',
   ...overrides,
 });
 
