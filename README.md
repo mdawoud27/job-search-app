@@ -17,3 +17,23 @@ The API documentation is available via Swagger UI:
 [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
 You can explore all endpoints, schemas, and test the API directly from there.
+
+## Docker
+
+```bash
+# Start dev
+docker compose -p job-search-dev -f docker-compose.yml -f docker-compose.dev.yml up --build -d
+
+# Start prod
+docker compose -p job-search-prod -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+
+# Stop dev
+docker compose -p job-search-dev down
+
+# Stop prod
+docker compose -p job-search-prod down
+
+# View logs
+docker compose -p job-search-dev logs -f
+docker compose -p job-search-prod logs -f
+```
