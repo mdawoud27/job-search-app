@@ -127,6 +127,6 @@ app.use(ErrorHandler.errorHandler);
 server.listen(process.env.PORT, () => {
   /* eslint no-console:off */
   console.log(
-    `Server is running in ${process.env.NODE_ENV} enviroment on port ${process.env.PORT}`,
+    `Server is running in ${process.env.NODE_ENV || 'development'} enviroment on port ${process.env.PORT || 3000}`,
   );
 });
