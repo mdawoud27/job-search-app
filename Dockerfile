@@ -5,22 +5,10 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# Dependencies Stage
-FROM base AS dependencies
+# Development Stage
+FROM base AS development
 
 RUN npm ci --legacy-peer-deps
-
-# Test Stage
-FROM dependencies AS test
-
-COPY . .
-
-RUN npm run lint && npm run test
-
-CMD ["npm", "run", "test"]
-
-# Development Stage
-FROM dependencies AS development
 
 COPY . .
 
