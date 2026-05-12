@@ -6,6 +6,7 @@ export class JobController {
     this.jobService = jobService;
   }
 
+  // create job
   async createJob(req, res, next) {
     try {
       const { error, value } = CreateJobDto.validate(req.body);
@@ -23,6 +24,7 @@ export class JobController {
     }
   }
 
+  // update job
   async updateJob(req, res, next) {
     try {
       const { error, value } = UpdateJobDto.validate(req.body);
@@ -41,6 +43,7 @@ export class JobController {
     }
   }
 
+  // delete job
   async deleteJob(req, res, next) {
     try {
       const job = await this.jobService.deleteJob(
@@ -54,6 +57,7 @@ export class JobController {
     }
   }
 
+  // get jobs
   async getJobs(req, res, next) {
     try {
       const query = { ...req.query, ...req.params };
@@ -64,6 +68,7 @@ export class JobController {
     }
   }
 
+  // get job
   async getJob(req, res, next) {
     try {
       const job = await this.jobService.getJob(req.params.jobId);

@@ -12,6 +12,7 @@ export class AuthController {
     this.authService = authService;
   }
 
+  // sign up
   async signup(req, res, next) {
     try {
       const dto = CreateUserDto.fromRequest(req.body);
@@ -28,6 +29,7 @@ export class AuthController {
     }
   }
 
+  // confirm OTP
   async confirm(req, res, next) {
     try {
       const { error } = ConfirmOtpDto.validate(req.body);
@@ -43,6 +45,7 @@ export class AuthController {
     }
   }
 
+  // resend OTP
   async resentOTP(req, res, next) {
     try {
       const { error } = ResendOtpDto.validate(req.body);
@@ -59,6 +62,7 @@ export class AuthController {
     }
   }
 
+  // login
   async login(req, res, next) {
     try {
       const { error } = LoginDto.validate(req.body);
@@ -75,6 +79,7 @@ export class AuthController {
     }
   }
 
+  // forgot password
   async forgotPassword(req, res, next) {
     try {
       const { error } = ForgotPasswordDto.validate(req.body);
@@ -90,6 +95,7 @@ export class AuthController {
     }
   }
 
+  // reset password
   async resetPassword(req, res, next) {
     try {
       const { error } = ResetPasswordDto.validate(req.body);
@@ -106,6 +112,7 @@ export class AuthController {
     }
   }
 
+  // refresh token
   async refreshToken(req, res, next) {
     try {
       const { error } = TokenDto.validate(req.body);
@@ -233,6 +240,7 @@ export class AuthController {
     )(req, res, next);
   }
 
+  // logout
   async logout(req, res, next) {
     try {
       const result = await this.authService.logout(req.user.id);

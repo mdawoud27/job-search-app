@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 
-export const Authorization = {
-  verifyToken: (req, res, next) => {
+export class Authorization {
+  // verify token
+  static verifyToken(req, res, next) {
     try {
       const authorization = req.headers.authorization;
       if (!authorization) {
@@ -36,57 +37,65 @@ export const Authorization = {
         message: 'Authentication error',
       });
     }
-  },
+  }
 
-  // ensure user is updating his own account or he is an admin
-  verifyUserPermission: (req, res, next) => {
-    if (req.user.role === 'User' || req.user.role === 'Admin') {
-      return next();
-    }
-    // Otherwise deny access
-    return res
-      .status(403)
-      .json({ message: 'You do not have permission to perform this action' });
-  },
-
-  // ensure admin
-  verifyAdminPermission: (req, res, next) => {
-    if (req.user.role === 'Admin') {
-      return next();
-    }
-    // Otherwise deny access
-    return res.status(403).json({
-      message:
-        'You do not have permission to perform this action [only admins]',
-    });
-  },
-  // ensure hr
-  verifyHRPermission: (req, res, next) => {
-    if (req.user.role === 'HR' || req.user.role === 'Admin') {
-      return next();
-    }
-    // Otherwise deny access
-    return res.status(403).json({
-      message: 'You do not have permission to perform this action',
-    });
-  },
-  onlySelf: (req, res, next) => {
-    if (!req.user.id) {
-      return res.status(403).json({
-        message: "You are not allowed to modify another user's account",
-      });
-    }
-
-    next();
-  },
   // ensure user role only
-  verifyUserRole: (req, res, next) => {
+  static verifyUserRole(req, res, next) {
     if (req.user.role === 'User') {
       return next();
     }
     // Otherwise deny access
     return res.status(403).json({
+      success: false,
       message: 'Only users can apply for jobs',
     });
-  },
-};
+  }
+
+  // ensure user is updating his own account
+  static onlySelf(req, res, next) {
+    if (!req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not allowed to modify another user's account",
+      });
+    }
+    next();
+  }
+
+  // ensure user is updating his own account or he is an admin
+  static verifyUserPermission(req, res, next) {
+    if (req.user.role === 'User' || req.user.role === 'Admin') {
+      return next();
+    }
+    // Otherwise deny access
+    return res.status(403).json({
+      success: false,
+      message: 'You do not have permission to perform this action',
+    });
+  }
+
+  // ensure admin
+  static verifyAdminPermission(req, res, next) {
+    if (req.user.role === 'Admin') {
+      return next();
+    }
+    // Otherwise deny access
+    return res.status(403).json({
+      success: false,
+      message:
+        'You do not have permission to perform this action [only admins]',
+    });
+  }
+
+  // ensure hr
+  static verifyHRPermission(req, res, next) {
+    if (req.user.role === 'HR' || req.user.role === 'Admin') {
+      return next();
+    }
+    // Otherwise deny access
+    return res.status(403).json({
+      success: false,
+      message: 'You do not have permission to perform this action',
+    });
+  }
+}

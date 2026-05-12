@@ -43,7 +43,7 @@ export class UserService {
       message: 'User profile retrived successfully',
       data: {
         ...UserResponseDto.toResponse(user),
-        mobileNumber: decrypt(user.mobileNumber),
+        mobileNumber: user.mobileNumber,
       },
     };
   }
@@ -55,15 +55,11 @@ export class UserService {
       throw new Error('User not found');
     }
 
-    if (!user.refreshToken) {
-      throw new Error('User is not logged in');
-    }
-
     return {
       message: 'User profile retrived successfully',
       data: {
         username: user.username,
-        mobileNumber: decrypt(user.mobileNumber),
+        mobileNumber: user.mobileNumber,
         profilePic: user.profilePic,
         coverPic: user.coverPic,
       },
@@ -78,12 +74,16 @@ export class UserService {
     }
 
     if (!user.refreshToken) {
-      throw new Error('User is not logged in');
+      throw new Error('You are not logged in');
     }
 
     const isActive = await this.userRepository.isActive(userId);
     if (!isActive) {
-      throw new Error('User is deleted or banned');
+      throw new Error('You are deleted or banned');
+    }
+
+    if (user.provider === 'google') {
+      throw new Error('You cannot change the password of a Google account.');
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -94,6 +94,10 @@ export class UserService {
       throw new Error(
         'Current password is incorrect, reset it if you forgot it',
       );
+    }
+
+    if (dto.newPassword === dto.oldPassword) {
+      throw new Error('New password cannot be same as old password');
     }
 
     // Hash new password

@@ -5,6 +5,7 @@ export class AdminService {
     this.companyDao = companyDao;
   }
 
+  // ban user
   async banUser(userId, admin) {
     const user = await this.userDao.findById(userId);
     if (!user) {
@@ -25,6 +26,7 @@ export class AdminService {
     };
   }
 
+  // unban user
   async unbanUser(userId, admin) {
     const user = await this.userDao.findById(userId);
     if (!user) {
@@ -45,6 +47,7 @@ export class AdminService {
     };
   }
 
+  // ban company
   async banCompany(companyId, admin) {
     const company = await this.companyDao.findById(companyId);
 
@@ -72,6 +75,7 @@ export class AdminService {
     };
   }
 
+  // unban company
   async unbanCompany(companyId, admin) {
     const company = await this.companyDao.findById(companyId);
     if (!company) {
@@ -93,6 +97,7 @@ export class AdminService {
     };
   }
 
+  // approve company
   async approveCompany(companyId, admin) {
     const company = await this.companyDao.findById(companyId);
     if (!company) {

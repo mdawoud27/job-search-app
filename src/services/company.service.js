@@ -7,6 +7,7 @@ export class CompanyService {
     this.companyDao = companyDao;
   }
 
+  // create company
   async createCompany(dto, userId) {
     try {
       const user = await this.userDao.findByIdAndActive(userId);
@@ -27,6 +28,7 @@ export class CompanyService {
     }
   }
 
+  // update company
   async updateCompany(companyId, dto, userId) {
     try {
       if (dto.legalAttachment) {
@@ -58,6 +60,7 @@ export class CompanyService {
     }
   }
 
+  // soft delete company
   async softDeleteCompany(companyId, owner) {
     const user = await this.userDao.findByIdAndActive(owner.id);
     const company = await this.companyDao.softDelete(companyId, owner);
@@ -69,6 +72,7 @@ export class CompanyService {
     };
   }
 
+  // get specific company with jobs
   async getSpecificCompanyWithJobs(companyId) {
     const company = await this.companyDao.findByIdWithJobs(companyId);
     if (!company) {
@@ -85,6 +89,7 @@ export class CompanyService {
     };
   }
 
+  // search company with name
   async searchCompanywithName(companyName) {
     const companies = await this.companyDao.findByCompanyName(companyName);
 
@@ -106,6 +111,7 @@ export class CompanyService {
     };
   }
 
+  // upload company logo
   async uploadCompanyLogo(companyId, logo) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
@@ -132,6 +138,7 @@ export class CompanyService {
     };
   }
 
+  // delete company logo
   async deleteCompanyLogo(companyId) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
@@ -157,6 +164,7 @@ export class CompanyService {
     };
   }
 
+  // upload company cover
   async uploadCompanyCover(companyId, cover) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
@@ -179,6 +187,7 @@ export class CompanyService {
     };
   }
 
+  // delete company cover
   async deleteCompanyCover(companyId) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
@@ -204,6 +213,7 @@ export class CompanyService {
     };
   }
 
+  // add HR
   async addHR(companyId, userId) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
@@ -224,6 +234,7 @@ export class CompanyService {
     };
   }
 
+  // remove HR
   async removeHR(companyId, userId) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {

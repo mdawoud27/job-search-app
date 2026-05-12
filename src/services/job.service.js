@@ -8,6 +8,7 @@ export class JobService {
     this.companyDao = companyDao;
   }
 
+  // create job
   async createJob(dto, userId, companyId) {
     const user = await this.userDao.findByIdAndActive(userId);
 
@@ -38,6 +39,7 @@ export class JobService {
     };
   }
 
+  // update job
   async updateJob(dto, userId, companyId, jobId) {
     const user = await this.userDao.findByIdAndActive(userId);
 
@@ -73,6 +75,7 @@ export class JobService {
     };
   }
 
+  // delete job
   async deleteJob(userId, companyId, jobId) {
     const user = await this.userDao.findByIdAndActive(userId);
 
@@ -109,6 +112,7 @@ export class JobService {
     };
   }
 
+  // get all jobs
   async getJobs(query) {
     const {
       page = 1,
@@ -183,6 +187,7 @@ export class JobService {
     };
   }
 
+  // get specific job
   async getJob(jobId) {
     const job = await this.jobDao.findById(jobId);
     if (!job) {

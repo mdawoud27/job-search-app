@@ -20,6 +20,7 @@ export class ApplicationService {
     this.companyRepository = companyRepository;
   }
 
+  // create application
   async createApplication(userId, jobId, cv) {
     const user = await this.userRepository.findByIdAndActive(userId);
     const job = await this.jobRepository.findById(jobId);
@@ -66,6 +67,7 @@ export class ApplicationService {
     };
   }
 
+  // get all applications for specific job
   async getAllApplicationsForSpecificJob(jobId, userId, query = {}) {
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 10;
@@ -114,6 +116,7 @@ export class ApplicationService {
     };
   }
 
+  // update application status
   async updateApplicationStatus(applicationId, status, hrUserId) {
     // Fetch application with user and job data
     const application =
@@ -190,6 +193,7 @@ export class ApplicationService {
     };
   }
 
+  // export applications by date
   async exportCompanyApplicationsByDate(companyId, date, hrUserId) {
     const canManage = await this.companyRepository.canManage(
       companyId,

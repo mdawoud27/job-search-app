@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { imageSchema } from './Attachments.js';
 import { otpSchema } from './OtpSchema.js';
-import { encrypt } from '../utils/crypto.js';
+import { decrypt, encrypt } from '../utils/crypto.js';
 import { Application } from './Application.js';
 import { Chat } from './Chat.js';
 
@@ -157,6 +157,39 @@ userSchema.pre('deleteMany', async function (next) {
       });
     }
 
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Encrypt mobileNumber before findOneAndUpdate
+userSchema.pre('findOneAndUpdate', async function (next) {
+  const update = this.getUpdate();
+  if (update?.mobileNumber) {
+    update.mobileNumber = encrypt(update.mobileNumber);
+  }
+  next();
+});
+
+// Decrypt after any findOne / findById call
+userSchema.post('findOne', function (doc, next) {
+  try {
+    if (doc?.mobileNumber) {
+      doc.mobileNumber = decrypt(doc.mobileNumber);
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Decrypt mobileNumber after findOneAndUpdate
+userSchema.post('findOneAndUpdate', function (doc, next) {
+  try {
+    if (doc?.mobileNumber) {
+      doc.mobileNumber = decrypt(doc.mobileNumber);
+    }
     next();
   } catch (error) {
     next(error);

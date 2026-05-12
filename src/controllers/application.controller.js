@@ -6,6 +6,7 @@ export class ApplicationController {
     this.applicationService = applicationService;
   }
 
+  // create application
   async createApplication(req, res, next) {
     try {
       if (!req.file) {
@@ -24,6 +25,7 @@ export class ApplicationController {
     }
   }
 
+  // get all applications for specific job
   async getAllApplicationsForSpecificJob(req, res, next) {
     try {
       const applications =
@@ -38,6 +40,7 @@ export class ApplicationController {
     }
   }
 
+  // update application status
   async updateApplicationStatus(req, res, next) {
     try {
       const { error, value } = UpdateAppStatusDto.validate(req.body);
@@ -58,6 +61,7 @@ export class ApplicationController {
     }
   }
 
+  // export applications by date
   async exportApplicationsByDate(req, res, next) {
     try {
       const { companyId } = req.params;
