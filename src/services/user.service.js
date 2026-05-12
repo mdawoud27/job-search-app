@@ -43,7 +43,7 @@ export class UserService {
       message: 'User profile retrived successfully',
       data: {
         ...UserResponseDto.toResponse(user),
-        mobileNumber: user.mobileNumber, // auto-decrypted by post('findOne') hook
+        mobileNumber: user.mobileNumber,
       },
     };
   }
@@ -59,7 +59,7 @@ export class UserService {
       message: 'User profile retrived successfully',
       data: {
         username: user.username,
-        mobileNumber: user.mobileNumber, // auto-decrypted by post('findOne') hook
+        mobileNumber: user.mobileNumber,
         profilePic: user.profilePic,
         coverPic: user.coverPic,
       },
