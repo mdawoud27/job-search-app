@@ -6,6 +6,11 @@ import { uploadImage } from '../utils/multer.js';
 
 const router = Router();
 
+/**
+ * @route POST /api/v1/company/create
+ * @desc Create company
+ * @access Private
+ */
 router.post(
   '/company/create',
   apiLimiter,
@@ -16,6 +21,11 @@ router.post(
   },
 );
 
+/**
+ * @route PUT /api/v1/company/:id
+ * @desc Update company
+ * @access Private
+ */
 router.put(
   '/company/:id',
   apiLimiter,
@@ -26,6 +36,11 @@ router.put(
   },
 );
 
+/**
+ * @route DELETE /api/v1/company/:id
+ * @desc Delete company
+ * @access Private
+ */
 router.delete(
   '/company/:id',
   apiLimiter,
@@ -36,6 +51,11 @@ router.delete(
   },
 );
 
+/**
+ * @route GET /api/v1/company/search/:name
+ * @desc Search company by name
+ * @access Private
+ */
 router.get(
   '/company/search/:name',
   apiLimiter,
@@ -45,6 +65,11 @@ router.get(
   },
 );
 
+/**
+ * @route GET /api/v1/company/:id
+ * @desc Get company with jobs
+ * @access Private
+ */
 router.get(
   '/company/:id',
   apiLimiter,
@@ -54,6 +79,11 @@ router.get(
   },
 );
 
+/**
+ * @route PATCH /api/v1/company/:id/logo
+ * @desc Upload company logo
+ * @access Private
+ */
 router.patch(
   '/company/:id/logo',
   apiLimiter,
@@ -65,6 +95,11 @@ router.patch(
   },
 );
 
+/**
+ * @route DELETE /api/v1/company/:id/logo
+ * @desc Delete company logo
+ * @access Private
+ */
 router.delete(
   '/company/:id/logo',
   apiLimiter,
@@ -75,6 +110,11 @@ router.delete(
   },
 );
 
+/**
+ * @route PATCH /api/v1/company/:id/cover
+ * @desc Upload company cover
+ * @access Private
+ */
 router.patch(
   '/company/:id/cover',
   apiLimiter,
@@ -86,6 +126,11 @@ router.patch(
   },
 );
 
+/**
+ * @route DELETE /api/v1/company/:id/cover
+ * @desc Delete company cover
+ * @access Private
+ */
 router.delete(
   '/company/:id/cover',
   apiLimiter,
@@ -96,6 +141,11 @@ router.delete(
   },
 );
 
+/**
+ * @route POST /api/v1/company/:id/hr
+ * @desc Add HR to company
+ * @access Private
+ */
 router.post(
   '/company/:id/hr',
   apiLimiter,
@@ -106,6 +156,11 @@ router.post(
   },
 );
 
+/**
+ * @route DELETE /api/v1/company/:id/hr
+ * @desc Remove HR from company
+ * @access Private
+ */
 router.delete(
   '/company/:id/hr',
   apiLimiter,

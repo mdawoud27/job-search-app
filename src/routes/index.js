@@ -10,20 +10,26 @@ import chatRouter from './chat.routes.js';
 const router = Router();
 
 import { readFileSync } from 'fs';
+import { apiLimiter } from '../utils/apiLimiter.js';
 const packageJson = JSON.parse(
   readFileSync(new URL('../../package.json', import.meta.url)),
 );
 
+/**
+ * @route GET /api/version
+ * @desc Get API version
+ * @access Public
+ */
 router.get('/api/version', (req, res) => {
   res.json({ version: packageJson.version });
 });
 
-router.use('/api', authRouter);
-router.use('/api/v1', userRouter);
-router.use('/api/v1', adminRouter);
-router.use('/api/v1', companyRouter);
-router.use('/api/v1', jobRouter);
-router.use('/api/v1', applicationRouter);
-router.use('/api/v1', chatRouter);
+router.use('/api', apiLimiter, authRouter);
+router.use('/api/v1', apiLimiter, userRouter);
+router.use('/api/v1', apiLimiter, adminRouter);
+router.use('/api/v1', apiLimiter, companyRouter);
+router.use('/api/v1', apiLimiter, jobRouter);
+router.use('/api/v1', apiLimiter, applicationRouter);
+router.use('/api/v1', apiLimiter, chatRouter);
 
 export default router;

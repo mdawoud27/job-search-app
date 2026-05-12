@@ -5,6 +5,11 @@ import { uploadCV } from '../utils/multer.js';
 
 const router = Router();
 
+/**
+ * @route POST /api/v1/jobs/:jobId/application
+ * @desc Create application
+ * @access Private
+ */
 router.post(
   '/jobs/:jobId/application',
   Authorization.verifyToken,
@@ -15,6 +20,11 @@ router.post(
   },
 );
 
+/**
+ * @route GET /api/v1/jobs/:jobId/applications
+ * @desc Get all applications for a specific job
+ * @access Private
+ */
 router.get(
   '/jobs/:jobId/applications',
   Authorization.verifyToken,
@@ -24,6 +34,11 @@ router.get(
   },
 );
 
+/**
+ * @route PATCH /api/v1/applications/:applicationId/status
+ * @desc Update application status
+ * @access Private
+ */
 router.patch(
   '/applications/:applicationId/status',
   Authorization.verifyToken,
@@ -33,6 +48,11 @@ router.patch(
   },
 );
 
+/**
+ * @route GET /api/v1/companies/:companyId/applications/export
+ * @desc Export applications by date
+ * @access Private
+ */
 router.get(
   '/companies/:companyId/applications/export',
   Authorization.verifyToken,
