@@ -13,7 +13,7 @@ import { graphqlHTTP } from 'express-graphql';
 import { apiLimiter } from './utils/apiLimiter.js';
 import routes from './routes/index.js';
 import { configurePassport } from './config/passport.config.js';
-// import { setupSwagger } from './config/swagger.js';
+import { setupSwagger } from './config/swagger.js';
 import { ErrorHandler } from './middlewares/error.middleware.js';
 import { schema, rootValue } from './graphql/index.js';
 
@@ -98,7 +98,7 @@ app.get('/', (req, res) => {
 app.use(routes);
 
 // Swagger
-// setupSwagger(app);
+setupSwagger(app);
 
 // GraphQL
 app.use(
