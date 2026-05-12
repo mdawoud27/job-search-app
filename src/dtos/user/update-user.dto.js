@@ -1,5 +1,4 @@
 import Joi from 'joi';
-import { encrypt } from '../../utils/crypto.js';
 
 export class UpdateUserDto {
   static validate(body) {
@@ -31,7 +30,7 @@ export class UpdateUserDto {
       out.DOB = new Date(body.DOB);
     }
     if (body.mobileNumber) {
-      out.mobileNumber = encrypt(body.mobileNumber);
+      out.mobileNumber = body.mobileNumber;
     }
     return out;
   }
@@ -47,6 +46,7 @@ export class UpdateUserDto {
       username: user.username,
       profilePic: user.profilePic,
       coverPic: user.coverPic,
+      mobileNumber: user.mobileNumber,
     };
   }
 }
