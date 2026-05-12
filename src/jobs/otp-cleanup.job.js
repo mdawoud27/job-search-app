@@ -1,5 +1,3 @@
-// src/jobs/otp-cleanup.job.js
-
 import cron from 'node-cron';
 import { User } from '../models/User.js';
 
