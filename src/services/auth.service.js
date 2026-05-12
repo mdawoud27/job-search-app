@@ -54,13 +54,13 @@ export class AuthService {
       throw new Error('No OTP found');
     }
 
+    if (lastOtp.expiresIn < new Date()) {
+      throw new Error('OTP expired');
+    }
+
     const isValid = await OtpUtils.validate(dto.OTP, lastOtp.code);
     if (!isValid) {
       throw new Error('Invalid OTP');
-    }
-
-    if (lastOtp.expiresIn < new Date()) {
-      throw new Error('OTP expired');
     }
 
     user.isConfirmed = true;
@@ -119,6 +119,10 @@ export class AuthService {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
       throw new Error('Invalid credentials');
+    }
+
+    if (user.provider === 'google') {
+      throw new Error('Please use Google to sign in using this email.');
     }
 
     const match = await OtpUtils.validate(dto.password, user.password);
@@ -185,13 +189,13 @@ export class AuthService {
       throw new Error('No OTP found');
     }
 
+    if (lastOtp.expiresIn < new Date()) {
+      throw new Error('OTP expired');
+    }
+
     const isValid = await OtpUtils.validate(dto.OTP, lastOtp.code);
     if (!isValid) {
       throw new Error('Invalid OTP');
-    }
-
-    if (lastOtp.expiresIn < new Date()) {
-      throw new Error('OTP expired');
     }
 
     const salt = await bcrypt.genSalt(10);
