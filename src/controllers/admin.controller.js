@@ -7,6 +7,7 @@ export class AdminController {
     this.adminService = adminService;
   }
 
+  // ban user
   async banUser(req, res, next) {
     try {
       const { error } = BanUserDto.validate(req.body);
@@ -21,6 +22,7 @@ export class AdminController {
     }
   }
 
+  // unban user
   async unbanUser(req, res, next) {
     try {
       const { error } = BanUserDto.validate(req.body);
@@ -35,6 +37,7 @@ export class AdminController {
     }
   }
 
+  // ban company
   async banCompany(req, res, next) {
     try {
       const { error } = BanCompanyDto.validate(req.body);
@@ -52,6 +55,7 @@ export class AdminController {
     }
   }
 
+  // unban company
   async unbanCompany(req, res, next) {
     try {
       const { error } = BanCompanyDto.validate(req.body);
@@ -69,6 +73,7 @@ export class AdminController {
     }
   }
 
+  // approve company
   async approveCompany(req, res, next) {
     try {
       const { error } = ApproveCompanyDto.validate(req.body);

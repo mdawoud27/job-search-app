@@ -3,6 +3,7 @@ export class ChatController {
     this.chatService = chatService;
   }
 
+  // get chat history
   async getChatHistory(req, res, next) {
     try {
       const result = await this.chatService.getChatHistory(

@@ -7,6 +7,7 @@ export class CompanyController {
     this.companyService = companyService;
   }
 
+  // create company
   async createCompany(req, res, next) {
     try {
       const { error, value } = CreateCompanyDto.validate(req.body);
@@ -23,6 +24,7 @@ export class CompanyController {
     }
   }
 
+  // update company
   async updateCompany(req, res, next) {
     try {
       const { error, value } = UpdateCompanyDto.validate(req.body);
@@ -40,6 +42,7 @@ export class CompanyController {
     }
   }
 
+  // soft delete company
   async softDeleteCompany(req, res, next) {
     try {
       const company = await this.companyService.softDeleteCompany(
@@ -52,6 +55,7 @@ export class CompanyController {
     }
   }
 
+  // get company with jobs
   async getSpecificCompanyWithJobs(req, res, next) {
     try {
       const company = await this.companyService.getSpecificCompanyWithJobs(
@@ -63,6 +67,7 @@ export class CompanyController {
     }
   }
 
+  // search company with name
   async searchCompanywithName(req, res, next) {
     try {
       const company = await this.companyService.searchCompanywithName(
@@ -74,6 +79,7 @@ export class CompanyController {
     }
   }
 
+  // upload company logo
   async uploadCompanyLogo(req, res, next) {
     try {
       if (!req.file) {
@@ -90,6 +96,7 @@ export class CompanyController {
     }
   }
 
+  // delete company logo
   async deleteCompanyLogo(req, res, next) {
     try {
       const company = await this.companyService.deleteCompanyLogo(
@@ -101,6 +108,7 @@ export class CompanyController {
     }
   }
 
+  // upload company cover
   async uploadCompanyCover(req, res, next) {
     try {
       if (!req.file) {
@@ -117,6 +125,7 @@ export class CompanyController {
     }
   }
 
+  // delete company cover
   async deleteCompanyCover(req, res, next) {
     try {
       const company = await this.companyService.deleteCompanyCover(
@@ -128,6 +137,7 @@ export class CompanyController {
     }
   }
 
+  // add HR
   async addHR(req, res, next) {
     try {
       const company = await this.companyService.addHR(
@@ -140,6 +150,7 @@ export class CompanyController {
     }
   }
 
+  // remove HR
   async removeHR(req, res, next) {
     try {
       const company = await this.companyService.removeHR(
