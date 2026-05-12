@@ -8,7 +8,7 @@ export class TokenUtils {
     return jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       process.env.JWT_ACCESS_SECRET,
-      { expiresIn: '6h' },
+      { expiresIn: '1h' },
     );
   }
 
