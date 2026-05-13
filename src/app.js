@@ -16,6 +16,7 @@ import { configurePassport } from './config/passport.config.js';
 import { setupSwagger } from './config/swagger.js';
 import { ErrorHandler } from './middlewares/error.middleware.js';
 import { schema, rootValue } from './graphql/index.js';
+import { MSG } from './utils/messages.js';
 
 dotenv.config();
 
@@ -72,7 +73,7 @@ app.use(
       if (allowedOrigins.includes(origin) || origin.includes('localhost')) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error(MSG.MIDDLEWARE.CORS_ERROR));
       }
     },
     credentials: true,

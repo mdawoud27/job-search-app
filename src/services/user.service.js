@@ -3,6 +3,7 @@ import { UserResponseDto } from '../dtos/user/user-response.dto.js';
 import { CloudinaryUtils } from '../utils/cloudinary.util.js';
 import { UpdateUserDto } from '../dtos/user/update-user.dto.js';
 import { decrypt } from '../utils/crypto.js';
+import { MSG } from '../utils/messages.js';
 
 export class UserService {
   constructor(userRepository) {
@@ -14,14 +15,14 @@ export class UserService {
     const updated = await this.userRepository.updateById(userId, updateDto);
 
     if (!updated) {
-      throw new Error('User not found or update failed');
+      throw new Error(MSG.USER.NOT_FOUND_OR_UPDATE_FAILED);
     }
 
     if (!updated.refreshToken) {
-      throw new Error('User is not logged in');
+      throw new Error(MSG.USER.NOT_LOGGED_IN);
     }
     return {
-      message: 'Your account is updated successfully',
+      message: MSG.USER.ACCOUNT_UPDATED,
       data: {
         ...UpdateUserDto.toResponse(updated),
       },
@@ -32,15 +33,15 @@ export class UserService {
   async getLoggedUser(userId) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     if (!user.refreshToken) {
-      throw new Error('User is not logged in');
+      throw new Error(MSG.USER.NOT_LOGGED_IN);
     }
 
     return {
-      message: 'User profile retrived successfully',
+      message: MSG.USER.PROFILE_RETRIEVED,
       data: {
         ...UserResponseDto.toResponse(user),
         mobileNumber: user.mobileNumber,
@@ -52,11 +53,11 @@ export class UserService {
   async getPublicProfile(userId) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     return {
-      message: 'User profile retrived successfully',
+      message: MSG.USER.PROFILE_RETRIEVED,
       data: {
         username: user.username,
         mobileNumber: user.mobileNumber,
@@ -70,20 +71,20 @@ export class UserService {
   async changePassword(userId, dto) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     if (!user.refreshToken) {
-      throw new Error('You are not logged in');
+      throw new Error(MSG.USER.NOT_LOGGED_IN_ALT);
     }
 
     const isActive = await this.userRepository.isActive(userId);
     if (!isActive) {
-      throw new Error('You are deleted or banned');
+      throw new Error(MSG.USER.DELETED_OR_BANNED);
     }
 
     if (user.provider === 'google') {
-      throw new Error('You cannot change the password of a Google account.');
+      throw new Error(MSG.USER.CANNOT_CHANGE_GOOGLE_PASSWORD);
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -97,7 +98,7 @@ export class UserService {
     }
 
     if (dto.newPassword === dto.oldPassword) {
-      throw new Error('New password cannot be same as old password');
+      throw new Error(MSG.USER.SAME_PASSWORD);
     }
 
     // Hash new password
@@ -110,7 +111,7 @@ export class UserService {
 
     await user.save();
     return {
-      message: 'Password changed successfully. Please login again',
+      message: MSG.USER.PASSWORD_CHANGED,
       data: {
         email: user.email,
       },
@@ -121,11 +122,11 @@ export class UserService {
   async uploadProfilePic(userId, imageData) {
     const user = await this.userRepository.findByIdAndActive(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     if (!user.refreshToken) {
-      throw new Error('User is not logged in');
+      throw new Error(MSG.USER.NOT_LOGGED_IN);
     }
 
     // Delete old image
@@ -140,7 +141,7 @@ export class UserService {
 
     await user.save();
     return {
-      message: 'Profile picture uploaded successfully',
+      message: MSG.USER.PROFILE_PIC_UPLOADED,
       data: {
         email: user.email,
         profilePic: user.profilePic,
@@ -152,11 +153,11 @@ export class UserService {
   async uploadCoverPic(userId, imageData) {
     const user = await this.userRepository.findByIdAndActive(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     if (!user.refreshToken) {
-      throw new Error('User is not logged in');
+      throw new Error(MSG.USER.NOT_LOGGED_IN);
     }
 
     if (user.coverPic?.public_id) {
@@ -170,7 +171,7 @@ export class UserService {
 
     await user.save();
     return {
-      message: 'Cover picture uploaded successfully',
+      message: MSG.USER.COVER_PIC_UPLOADED,
       data: {
         email: user.email,
         coverPic: user.coverPic,
@@ -182,11 +183,11 @@ export class UserService {
   async deleteProfilePic(userId) {
     const user = await this.userRepository.findByIdAndActive(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     if (!user.refreshToken) {
-      throw new Error('User is not logged in');
+      throw new Error(MSG.USER.NOT_LOGGED_IN);
     }
 
     if (user.profilePic?.public_id) {
@@ -195,25 +196,25 @@ export class UserService {
       user.profilePic = null; // Remove from DB
       await user.save();
       return {
-        message: 'Profile picture deleted',
+        message: MSG.USER.PROFILE_PIC_DELETED,
         data: {
           email: user.email,
         },
       };
     }
 
-    return { message: 'No profile picture to delete' };
+    return { message: MSG.USER.NO_PROFILE_PIC };
   }
 
   // Delete cover pic
   async deleteCoverPic(userId) {
     const user = await this.userRepository.findByIdAndActive(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     if (!user.refreshToken) {
-      throw new Error('User is not logged in');
+      throw new Error(MSG.USER.NOT_LOGGED_IN);
     }
 
     if (user.coverPic?.public_id) {
@@ -222,36 +223,36 @@ export class UserService {
       user.coverPic = null; // Remove from DB
       await user.save();
       return {
-        message: 'Cover picture deleted',
+        message: MSG.USER.COVER_PIC_DELETED,
         data: {
           email: user.email,
         },
       };
     }
 
-    return { message: 'No cover picture to delete' };
+    return { message: MSG.USER.NO_COVER_PIC };
   }
 
   // Soft Delete
   async softDelete(userId) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     if (!user.refreshToken) {
-      throw new Error('User is not logged in');
+      throw new Error(MSG.USER.NOT_LOGGED_IN);
     }
 
     if (user.deletedAt) {
-      throw new Error('User is already deleted');
+      throw new Error(MSG.USER.ALREADY_DELETED);
     }
 
     user.deletedAt = new Date();
     await user.save();
 
     return {
-      message: 'Account is deleted',
+      message: MSG.USER.ACCOUNT_DELETED,
       data: {
         email: user.email,
       },
@@ -262,18 +263,18 @@ export class UserService {
   async restoreAccount(userId, admin) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     if (!user.deletedAt) {
-      throw new Error('User is already active not deleted');
+      throw new Error(MSG.USER.ALREADY_ACTIVE);
     }
 
     user.deletedAt = null;
     await user.save();
 
     return {
-      message: 'Account is restored',
+      message: MSG.USER.ACCOUNT_RESTORED,
       data: {
         email: user.email,
         restoredBy: {

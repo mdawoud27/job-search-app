@@ -1,5 +1,6 @@
 import { CompanyResponseDto } from '../dtos/company/company-response.dto.js';
 import { CloudinaryUtils } from '../utils/cloudinary.util.js';
+import { MSG } from '../utils/messages.js';
 
 export class CompanyService {
   constructor(userDao, companyDao) {
@@ -13,7 +14,7 @@ export class CompanyService {
       const user = await this.userDao.findByIdAndActive(userId);
       const company = await this.companyDao.create(dto, userId);
       return {
-        message: 'Company created successfully',
+        message: MSG.COMPANY.CREATED,
         createdBy: user.email,
         role: user.role,
         data: CompanyResponseDto.toResponse(company),
@@ -32,20 +33,20 @@ export class CompanyService {
   async updateCompany(companyId, dto, userId) {
     try {
       if (dto.legalAttachment) {
-        throw new Error('Legal attachment is not allowed');
+        throw new Error(MSG.COMPANY.LEGAL_ATTACHMENT_NOT_ALLOWED);
       }
 
       const user = await this.userDao.findByIdAndActive(userId);
       const company = await this.companyDao.update(companyId, dto, userId);
 
       if (!company) {
-        throw new Error('Company not found');
+        throw new Error(MSG.COMPANY.NOT_FOUND);
       }
       if (company.deletedAt || company.bannedAt) {
-        throw new Error('Company is deleted or banned');
+        throw new Error(MSG.COMPANY.DELETED_OR_BANNED);
       }
       return {
-        message: 'Company updated successfully',
+        message: MSG.COMPANY.UPDATED,
         createdBy: user.email,
         role: user.role,
         data: CompanyResponseDto.toResponse(company),
@@ -65,7 +66,7 @@ export class CompanyService {
     const user = await this.userDao.findByIdAndActive(owner.id);
     const company = await this.companyDao.softDelete(companyId, owner);
     return {
-      message: 'Company deleted successfully',
+      message: MSG.COMPANY.DELETED,
       createdBy: user.email,
       role: user.role,
       data: CompanyResponseDto.toResponse(company),
@@ -76,10 +77,10 @@ export class CompanyService {
   async getSpecificCompanyWithJobs(companyId) {
     const company = await this.companyDao.findByIdWithJobs(companyId);
     if (!company) {
-      throw new Error('Company not found or deleted or banned');
+      throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
     }
     return {
-      message: 'Company found successfully',
+      message: MSG.COMPANY.FOUND,
       createdBy: company.createdBy.email,
       role: company.createdBy.role,
       data: {
@@ -94,13 +95,13 @@ export class CompanyService {
     const companies = await this.companyDao.findByCompanyName(companyName);
 
     if (!companies || companies.length === 0) {
-      const error = new Error('No companies found');
+      const error = new Error(MSG.COMPANY.NO_COMPANIES_FOUND);
       error.statusCode = 404;
       throw error;
     }
 
     return {
-      message: 'Companies found successfully',
+      message: MSG.COMPANY.ALL_FOUND,
       count: companies.length,
       data: companies.map((company) => {
         return {
@@ -115,7 +116,7 @@ export class CompanyService {
   async uploadCompanyLogo(companyId, logo) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
-      const error = new Error('Company not found or deleted or banned');
+      const error = new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
       error.statusCode = 404;
       throw error;
     }
@@ -131,7 +132,7 @@ export class CompanyService {
     });
 
     return {
-      message: 'Logo uploaded successfully',
+      message: MSG.COMPANY.LOGO_UPLOADED,
       data: {
         logo: updatedCompany.logo,
       },
@@ -142,7 +143,7 @@ export class CompanyService {
   async deleteCompanyLogo(companyId) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
-      throw new Error('Company not found or deleted or banned');
+      throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
     }
 
     if (company.logo?.public_id) {
@@ -150,14 +151,14 @@ export class CompanyService {
       company.logo = null;
       await company.save();
       return {
-        message: 'Logo deleted successfully',
+        message: MSG.COMPANY.LOGO_DELETED,
         data: {
           logo: company.logo,
         },
       };
     }
     return {
-      message: 'No logo to delete',
+      message: MSG.COMPANY.NO_LOGO,
       data: {
         logo: company.logo,
       },
@@ -168,7 +169,7 @@ export class CompanyService {
   async uploadCompanyCover(companyId, cover) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
-      throw new Error('Company not found or deleted or banned');
+      throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
     }
 
     // Delete old image
@@ -180,7 +181,7 @@ export class CompanyService {
       public_id: cover.public_id,
     });
     return {
-      message: 'Cover uploaded successfully',
+      message: MSG.COMPANY.COVER_UPLOADED,
       data: {
         coverPic: updatedCompany.coverPic,
       },
@@ -191,7 +192,7 @@ export class CompanyService {
   async deleteCompanyCover(companyId) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
-      throw new Error('Company not found or deleted or banned');
+      throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
     }
 
     if (company.coverPic?.public_id) {
@@ -199,14 +200,14 @@ export class CompanyService {
       company.coverPic = null;
       await company.save();
       return {
-        message: 'Cover deleted successfully',
+        message: MSG.COMPANY.COVER_DELETED,
         data: {
           coverPic: company.coverPic,
         },
       };
     }
     return {
-      message: 'No cover to delete',
+      message: MSG.COMPANY.NO_COVER,
       data: {
         coverPic: company.coverPic,
       },
@@ -217,17 +218,17 @@ export class CompanyService {
   async addHR(companyId, userId) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
-      throw new Error('Company not found or deleted or banned');
+      throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
     }
     const user = await this.userDao.findByIdAndActive(userId);
     if (!user) {
-      throw new Error('User not found or deleted or banned');
+      throw new Error(MSG.USER.NOT_FOUND_OR_BANNED);
     }
     const updatedCompany = await this.companyDao.addHR(companyId, userId);
     user.role = 'HR';
     await user.save();
     return {
-      message: 'HR added successfully',
+      message: MSG.COMPANY.HR_ADDED,
       data: {
         company: updatedCompany,
       },
@@ -238,15 +239,15 @@ export class CompanyService {
   async removeHR(companyId, userId) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
-      throw new Error('Company not found or deleted or banned');
+      throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
     }
     const user = await this.userDao.findByIdAndActive(userId);
     if (!user) {
-      throw new Error('User not found or deleted or banned');
+      throw new Error(MSG.USER.NOT_FOUND_OR_BANNED);
     }
     const updatedCompany = await this.companyDao.removeHR(companyId, userId);
     return {
-      message: 'HR removed successfully',
+      message: MSG.COMPANY.HR_REMOVED,
       data: {
         company: updatedCompany,
       },

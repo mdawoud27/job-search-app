@@ -1,3 +1,5 @@
+import { MSG } from '../utils/messages.js';
+
 export class ChatService {
   constructor(chatRepository, userRepository) {
     this.chatRepository = chatRepository;
@@ -15,7 +17,7 @@ export class ChatService {
     const otherUser = await this.userRepository.findById(otherUserId);
 
     if (!currentUser || !otherUser) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     // Get chat history
@@ -28,7 +30,7 @@ export class ChatService {
     );
 
     return {
-      message: 'Chat history retrieved successfully',
+      message: MSG.CHAT.HISTORY_RETRIEVED,
       data: {
         messages,
         otherUser: {
@@ -53,7 +55,7 @@ export class ChatService {
     const receiver = await this.userRepository.findById(receiverId);
 
     if (!sender || !receiver) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     // Check if chat already exists
@@ -66,7 +68,7 @@ export class ChatService {
     if (existingChat.messages.length === 0) {
       if (sender.role !== 'HR' && sender.role !== 'Admin') {
         throw new Error(
-          'Only HR or Company Owner can initiate conversations with users',
+          MSG.CHAT.ONLY_HR_CAN_INITIATE,
         );
       }
     }

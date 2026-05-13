@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { MSG } from './messages.js';
 import * as config from 'dotenv';
 config.config();
 
@@ -22,7 +23,7 @@ export class TokenUtils {
     try {
       return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
     } catch (error) {
-      throw new Error('Invalid or expired refresh token', error);
+      throw new Error(MSG.AUTH.EXPIRED_REFRESH_TOKEN, error);
     }
   }
 }

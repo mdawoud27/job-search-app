@@ -5,6 +5,7 @@ import { UserDAO } from '../daos/user.dao.js';
 import { ApplicationDAO } from '../daos/application.dao.js';
 import { JobDao } from '../daos/job.dao.js';
 import { CompanyDAO } from '../daos/company.dao.js';
+import { MSG } from '../utils/messages.js';
 
 let io;
 const chatDAO = new ChatDAO();
@@ -28,7 +29,7 @@ export const initSocket = (server) => {
     const token = socket.handshake.auth.token;
 
     if (!token) {
-      return next(new Error('Authentication error: No token provided'));
+      return next(new Error(`${MSG.MIDDLEWARE.AUTH_ERROR}: ${MSG.MIDDLEWARE.NO_TOKEN}`));
     }
 
     try {
@@ -38,7 +39,7 @@ export const initSocket = (server) => {
       socket.userRole = decoded.role;
       next();
     } catch (err) {
-      next(new Error('Authentication error: Invalid token', err));
+      next(new Error(`${MSG.MIDDLEWARE.AUTH_ERROR}: ${MSG.MIDDLEWARE.INVALID_TOKEN}`, err));
     }
   });
 
@@ -63,7 +64,7 @@ export const initSocket = (server) => {
       try {
         if (!receiverId || !message) {
           socket.emit('error', {
-            message: 'Receiver ID and message are required',
+            message: MSG.CHAT.RECEIVER_AND_MESSAGE_REQUIRED,
           });
           return;
         }
@@ -71,7 +72,7 @@ export const initSocket = (server) => {
         // Verify receiver exists
         const receiver = await userDAO.findById(receiverId);
         if (!receiver) {
-          socket.emit('error', { message: 'Receiver not found' });
+          socket.emit('error', { message: MSG.CHAT.RECEIVER_NOT_FOUND });
           return;
         }
 
@@ -86,7 +87,7 @@ export const initSocket = (server) => {
         if (existingChat.messages.length === 0) {
           if (sender.role !== 'HR' && sender.role !== 'Admin') {
             socket.emit('error', {
-              message: 'Only HR or Company Owner can initiate conversations',
+              message: MSG.CHAT.ONLY_HR_CAN_INITIATE,
             });
             return;
           }
@@ -119,7 +120,7 @@ export const initSocket = (server) => {
         console.log(`Message from ${socket.userId} to ${receiverId}`);
       } catch (error) {
         console.error('Error sending message:', error.message);
-        socket.emit('error', { message: 'Failed to send message' });
+        socket.emit('error', { message: MSG.CHAT.FAILED_SEND_MESSAGE });
       }
     });
 
@@ -147,20 +148,20 @@ export const initSocket = (server) => {
         // Check if user is HR or Admin
         if (socket.userRole !== 'HR' && socket.userRole !== 'Admin') {
           socket.emit('error', {
-            message: 'Only HR or Admin can view job applicants',
+            message: MSG.CHAT.ONLY_HR_CAN_VIEW_APPLICANTS,
           });
           return;
         }
 
         if (!jobId) {
-          socket.emit('error', { message: 'Job ID is required' });
+          socket.emit('error', { message: MSG.CHAT.JOB_ID_REQUIRED });
           return;
         }
 
         // Fetch job to get company
         const job = await jobDAO.findById(jobId);
         if (!job) {
-          socket.emit('error', { message: 'Job not found' });
+          socket.emit('error', { message: MSG.JOB.NOT_FOUND });
           return;
         }
 
@@ -173,7 +174,7 @@ export const initSocket = (server) => {
         if (!canManage) {
           socket.emit('error', {
             message:
-              'You do not have permission to view applicants for this job',
+              MSG.JOB.NOT_AUTHORIZED('view applicants for'),
           });
           return;
         }
@@ -212,7 +213,7 @@ export const initSocket = (server) => {
         );
       } catch (error) {
         console.error('Error fetching job applicants:', error.message);
-        socket.emit('error', { message: 'Failed to fetch job applicants' });
+        socket.emit('error', { message: MSG.CHAT.FAILED_FETCH_APPLICANTS });
       }
     });
 
@@ -221,13 +222,13 @@ export const initSocket = (server) => {
       try {
         if (socket.userRole !== 'HR' && socket.userRole !== 'Admin') {
           socket.emit('error', {
-            message: 'Only HR or Admin can view company jobs',
+            message: MSG.CHAT.ONLY_HR_CAN_VIEW_COMPANY_JOBS,
           });
           return;
         }
 
         if (!companyId) {
-          socket.emit('error', { message: 'Company ID is required' });
+          socket.emit('error', { message: MSG.CHAT.COMPANY_ID_REQUIRED });
           return;
         }
 
@@ -236,7 +237,7 @@ export const initSocket = (server) => {
 
         if (!canManage) {
           socket.emit('error', {
-            message: 'You do not have permission to view jobs for this company',
+            message: MSG.CHAT.NO_PERMISSION_VIEW_JOBS,
           });
           return;
         }
@@ -266,7 +267,7 @@ export const initSocket = (server) => {
         );
       } catch (error) {
         console.error('Error fetching company jobs:', error.message);
-        socket.emit('error', { message: 'Failed to fetch company jobs' });
+        socket.emit('error', { message: MSG.CHAT.FAILED_FETCH_COMPANY_JOBS });
       }
     });
 
@@ -301,7 +302,7 @@ export const initSocket = (server) => {
         );
       } catch (error) {
         console.error('Error fetching user applications:', error.message);
-        socket.emit('error', { message: 'Failed to fetch your applications' });
+        socket.emit('error', { message: MSG.CHAT.FAILED_FETCH_APPLICATIONS });
       }
     });
 
@@ -315,7 +316,7 @@ export const initSocket = (server) => {
 
 export const getIO = () => {
   if (!io) {
-    throw new Error('Socket.io not initialized');
+    throw new Error(MSG.CHAT.SOCKET_NOT_INITIALIZED);
   }
   return io;
 };

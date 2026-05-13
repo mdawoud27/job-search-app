@@ -1,5 +1,7 @@
 import Joi from 'joi';
 
+import { MSG } from '../../utils/messages.js';
+
 export class ConfirmOtpDto {
   static fromRequest(body) {
     return {
@@ -10,7 +12,7 @@ export class ConfirmOtpDto {
 
   static toResponse(user) {
     return {
-      message: 'You confirm your account',
+      message: MSG.AUTH.OTP_CONFIRMED,
       data: {
         email: user.email,
         isConfirmed: user.isConfirmed,

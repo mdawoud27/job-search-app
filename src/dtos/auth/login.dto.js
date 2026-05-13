@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { MSG } from '../../utils/messages.js';
 
 export class LoginDto {
   static validate(body) {
@@ -25,7 +26,7 @@ export class LoginDto {
 
   static toResponse(user) {
     return {
-      message: 'User login successfully',
+      message: MSG.AUTH.LOGIN_SUCCESS,
       data: {
         email: user.email,
         accessToken: user.accessToken,
