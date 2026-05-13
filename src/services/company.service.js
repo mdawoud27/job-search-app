@@ -113,7 +113,11 @@ export class CompanyService {
   }
 
   // upload company logo
-  async uploadCompanyLogo(companyId, logo) {
+  async uploadCompanyLogo(companyId, logo, user) {
+    const isOwner = await this.companyDao.isOwner(companyId, user.id);
+    if (!isOwner && user.role !== 'Admin') {
+      throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
+    }
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
       const error = new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
@@ -140,7 +144,11 @@ export class CompanyService {
   }
 
   // delete company logo
-  async deleteCompanyLogo(companyId) {
+  async deleteCompanyLogo(companyId, user) {
+    const isOwner = await this.companyDao.isOwner(companyId, user.id);
+    if (!isOwner && user.role !== 'Admin') {
+      throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
+    }
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
       throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
@@ -166,7 +174,11 @@ export class CompanyService {
   }
 
   // upload company cover
-  async uploadCompanyCover(companyId, cover) {
+  async uploadCompanyCover(companyId, cover, user) {
+    const isOwner = await this.companyDao.isOwner(companyId, user.id);
+    if (!isOwner && user.role !== 'Admin') {
+      throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
+    }
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
       throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
@@ -189,7 +201,11 @@ export class CompanyService {
   }
 
   // delete company cover
-  async deleteCompanyCover(companyId) {
+  async deleteCompanyCover(companyId, user) {
+    const isOwner = await this.companyDao.isOwner(companyId, user.id);
+    if (!isOwner && user.role !== 'Admin') {
+      throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
+    }
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
       throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
