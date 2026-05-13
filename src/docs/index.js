@@ -1,9 +1,9 @@
 import { authDocs } from './auth.docs.js';
 import { userDocs } from './user.docs.js';
+import { adminDocs } from './admin.docs.js';
 import { companyDocs } from './company.docs.js';
 import { jobDocs } from './job.docs.js';
 import { applicationDocs } from './application.docs.js';
-import { adminDocs } from './admin.docs.js';
 import { chatDocs } from './chat.docs.js';
 
 import { userSchemas } from './schemas/user.schema.js';
@@ -17,24 +17,22 @@ export const swaggerSpec = {
   info: {
     title: 'Job Search API',
     version: '2.0.0',
-    description: 'API documentation for the Job Search application',
+    description: 'REST API for the Job Search application',
   },
   servers: [
     {
       url: process.env.BASE_URL || 'http://localhost:3000',
-      description: process.env.BASE_URL
-        ? 'Production server'
-        : 'Development server',
+      description: process.env.BASE_URL ? 'Production server' : 'Development server',
     },
   ],
   tags: [
-    { name: 'Authentication' },
-    { name: 'Users' },
-    { name: 'Companies' },
-    { name: 'Jobs' },
-    { name: 'Applications' },
-    { name: 'Admin' },
-    { name: 'Chat' },
+    { name: 'Authentication', description: 'Signup, login, OTP, Google OAuth, token management' },
+    { name: 'Users', description: 'Profile management, pictures, password, account lifecycle' },
+    { name: 'Companies', description: 'Company CRUD, logo/cover upload, HR management' },
+    { name: 'Jobs', description: 'Job postings CRUD with filtering' },
+    { name: 'Applications', description: 'Job applications, status updates, Excel export' },
+    { name: 'Admin', description: 'Admin-only actions: ban/unban users and companies, approve companies' },
+    { name: 'Chat', description: 'Chat history between users' },
   ],
   components: {
     securitySchemes: {
@@ -42,6 +40,7 @@ export const swaggerSpec = {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
+        description: 'Enter your JWT access token',
       },
     },
     schemas: {
@@ -55,10 +54,10 @@ export const swaggerSpec = {
   paths: {
     ...authDocs,
     ...userDocs,
+    ...adminDocs,
     ...companyDocs,
     ...jobDocs,
     ...applicationDocs,
-    ...adminDocs,
     ...chatDocs,
   },
 };
