@@ -3,7 +3,7 @@
 branch_name=$(git rev-parse --abbrev-ref HEAD)
 
 # Allowed format: type/issue_number/feature_name (snake_case)
-branch_regex="^(feat|fix|build|chore|refactor|docs|perf|test|ci)/[0-9]+/[a-z0-9]+(_[a-z0-9]+)*$"
+branch_regex="^(feat|fix|build|chore|refactor|docs|perf|test|ci)(/[0-9]+)?/[a-z0-9]+(_[a-z0-9]+)*$"
 
 if ! echo "$branch_name" | grep -Eq "$branch_regex"; then
   echo "Invalid branch name. Expected format: type/issue_number/feature_name"
