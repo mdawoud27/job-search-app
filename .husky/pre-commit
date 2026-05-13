@@ -1,0 +1,15 @@
+#!/bin/sh
+
+echo "Running ESLint..."
+npm run lint || exit 1
+
+echo "Checking Prettier formatting..."
+npm run format:check || {
+  echo "❌ Formatting issues found."
+  echo "Run: npm run format"
+  exit 1
+}
+
+echo "✅ All checks passed."
+
+exit 0
