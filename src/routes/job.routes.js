@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { jobController } from '../container.js';
 import { Authorization } from '../middlewares/auth.middleware.js';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 /**
  * @route POST /api/v1/job/create/:companyId

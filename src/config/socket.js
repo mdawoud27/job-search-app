@@ -59,10 +59,25 @@ export const initSocket = (server) => {
     socket.join(`user:${socket.userId}`);
 
     // Listen for joining company rooms (for HRs)
-    socket.on('joinCompany', (companyId) => {
-      if (socket.userRole === 'HR' || socket.userRole === 'Admin') {
-        socket.join(`company:${companyId}`);
-        console.log(`User ${socket.userId} joined company room: ${companyId}`);
+    socket.on('joinCompany', async (companyId) => {
+      try {
+        if (socket.userRole === 'HR' || socket.userRole === 'Admin') {
+          // Verify user belongs to this company
+          const canManage = await companyDAO.canManage(companyId, socket.userId);
+
+          if (canManage) {
+            socket.join(`company:${companyId}`);
+            console.log(
+              `User ${socket.userId} joined company room: ${companyId}`,
+            );
+          } else {
+            socket.emit('error', {
+              message: MSG.JOB.NOT_AUTHORIZED('join company room for'),
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error joining company room:', error.message);
       }
     });
 

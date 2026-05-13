@@ -51,9 +51,9 @@ export class JobService {
     }
 
     const company = await this.companyDao.isActive(companyId);
-    const canManage = await this.companyDao.canManage(companyId, userId);
+    const isOwner = await this.companyDao.isOwner(companyId, userId);
 
-    if (!canManage) {
+    if (!isOwner) {
       throw new Error(MSG.JOB.NOT_AUTHORIZED('update'));
     }
 
@@ -85,9 +85,9 @@ export class JobService {
     }
 
     const company = await this.companyDao.isActive(companyId);
-    const canManage = await this.companyDao.canManage(companyId, userId);
+    const isHR = await this.companyDao.isHR(companyId, userId);
 
-    if (!canManage) {
+    if (!isHR) {
       throw new Error(MSG.JOB.NOT_AUTHORIZED('delete'));
     }
 
