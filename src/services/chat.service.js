@@ -1,9 +1,10 @@
 import { MSG } from '../utils/messages.js';
 
 export class ChatService {
-  constructor(chatRepository, userRepository) {
+  constructor(chatRepository, userRepository, companyRepository) {
     this.chatRepository = chatRepository;
     this.userRepository = userRepository;
+    this.companyRepository = companyRepository;
   }
 
   async getChatHistory(currentUserId, otherUserId, query = {}) {
@@ -64,10 +65,11 @@ export class ChatService {
       receiverId,
     );
 
-    // If chat has no messages, only HR/Admin can initiate
+    // If chat has no messages, only HR/Admin/Owner can initiate
     if (existingChat.messages.length === 0) {
-      if (sender.role !== 'HR' && sender.role !== 'Admin') {
-        throw new Error(MSG.CHAT.ONLY_HR_CAN_INITIATE);
+      const isOwner = await this.companyRepository.isAnyCompanyOwner(senderId);
+      if (sender.role !== 'HR' && sender.role !== 'Admin' && !isOwner) {
+        throw new Error(MSG.JOB.NOT_AUTHORIZED('initiate chat'));
       }
     }
 

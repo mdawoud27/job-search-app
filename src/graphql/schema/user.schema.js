@@ -9,5 +9,6 @@ export const userSchema = `
     role: String
     profilePic: Image
     coverPic: Image
+    bannedAt: String
   }
 `;

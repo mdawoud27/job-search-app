@@ -169,4 +169,15 @@ export class CompanyDAO {
 
     return !!company;
   }
+
+  async isAnyCompanyOwner(userId) {
+    const exists = await Company.exists({
+      createdBy: userId,
+      deletedAt: null,
+      bannedAt: null,
+      approvedByAdmin: true,
+    });
+
+    return !!exists;
+  }
 }

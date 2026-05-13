@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { jobController } from '../container.js';
 import { Authorization } from '../middlewares/auth.middleware.js';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 /**
  * @route POST /api/v1/job/create/:companyId
@@ -12,7 +12,6 @@ const router = Router();
 router.post(
   '/job/create/:companyId',
   Authorization.verifyToken,
-  Authorization.verifyHRPermission,
   (req, res, next) => jobController.createJob(req, res, next),
 );
 
@@ -24,7 +23,6 @@ router.post(
 router.put(
   '/job/:companyId/:jobId',
   Authorization.verifyToken,
-  Authorization.verifyHRPermission,
   (req, res, next) => jobController.updateJob(req, res, next),
 );
 

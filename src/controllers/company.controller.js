@@ -89,6 +89,7 @@ export class CompanyController {
       const company = await this.companyService.uploadCompanyLogo(
         req.params.id,
         cloudResult,
+        req.user,
       );
       res.status(200).json(company);
     } catch (error) {
@@ -101,6 +102,7 @@ export class CompanyController {
     try {
       const company = await this.companyService.deleteCompanyLogo(
         req.params.id,
+        req.user,
       );
       res.status(200).json(company);
     } catch (error) {
@@ -118,6 +120,7 @@ export class CompanyController {
       const company = await this.companyService.uploadCompanyCover(
         req.params.id,
         cloudResult,
+        req.user,
       );
       res.status(200).json(company);
     } catch (error) {
@@ -130,6 +133,7 @@ export class CompanyController {
     try {
       const company = await this.companyService.deleteCompanyCover(
         req.params.id,
+        req.user,
       );
       res.status(200).json(company);
     } catch (error) {

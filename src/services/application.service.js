@@ -104,7 +104,11 @@ export class ApplicationService {
     return {
       message: MSG.APPLICATION.ALL_RETRIEVED,
       data: {
-        applications: jobWithApplications.jobApplications || [],
+        applications: (jobWithApplications.jobApplications || []).map((app) => {
+          const appObj = app.toObject ? app.toObject() : app;
+          const { userId, ...rest } = appObj;
+          return { ...rest, userId, user: userId };
+        }),
         pagination: {
           total: totalCount,
           page,
@@ -125,12 +129,12 @@ export class ApplicationService {
       throw new Error(MSG.APPLICATION.NOT_FOUND);
     }
 
-    const canManage = await this.companyRepository.canManage(
+    const isHR = await this.companyRepository.isHR(
       application.jobId.companyId,
       hrUserId,
     );
 
-    if (!canManage) {
+    if (!isHR) {
       throw new Error(MSG.APPLICATION.NO_PERMISSION_UPDATE);
     }
 
