@@ -109,7 +109,6 @@ setupSwagger(app);
 app.use(
   '/graphql',
   Authorization.verifyToken,
-  Authorization.verifyAdminPermission,
   graphqlHTTP({
     schema,
     rootValue,

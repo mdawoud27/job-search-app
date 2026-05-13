@@ -107,7 +107,7 @@ export class ApplicationService {
         applications: (jobWithApplications.jobApplications || []).map((app) => {
           const appObj = app.toObject ? app.toObject() : app;
           const { userId, ...rest } = appObj;
-          return { ...rest, user: userId };
+          return { ...rest, userId, user: userId };
         }),
         pagination: {
           total: totalCount,

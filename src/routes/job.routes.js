@@ -12,7 +12,6 @@ const router = Router({ mergeParams: true });
 router.post(
   '/job/create/:companyId',
   Authorization.verifyToken,
-  Authorization.verifyHRPermission,
   (req, res, next) => jobController.createJob(req, res, next),
 );
 
@@ -24,7 +23,6 @@ router.post(
 router.put(
   '/job/:companyId/:jobId',
   Authorization.verifyToken,
-  Authorization.verifyHRPermission,
   (req, res, next) => jobController.updateJob(req, res, next),
 );
 

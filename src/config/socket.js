@@ -61,6 +61,10 @@ export const initSocket = (server) => {
     // Listen for joining company rooms (for HRs)
     socket.on('joinCompany', async (companyId) => {
       try {
+        if (!companyId) {
+          socket.emit('error', { message: MSG.CHAT.COMPANY_ID_REQUIRED });
+          return;
+        }
         if (socket.userRole === 'HR' || socket.userRole === 'Admin') {
           // Verify user belongs to this company
           const canManage = await companyDAO.canManage(companyId, socket.userId);
@@ -75,9 +79,17 @@ export const initSocket = (server) => {
               message: MSG.JOB.NOT_AUTHORIZED('join company room for'),
             });
           }
+        } else {
+          socket.emit('error', {
+            message: MSG.JOB.NOT_AUTHORIZED('join company rooms'),
+          });
         }
       } catch (error) {
         console.error('Error joining company room:', error.message);
+        socket.emit('error', {
+          message: MSG.JOB.NOT_AUTHORIZED('join company room for'),
+          error: error.message,
+        });
       }
     });
 
@@ -105,11 +117,12 @@ export const initSocket = (server) => {
           receiverId,
         );
 
-        // If no messages exist, only HR/Admin can initiate
+        // If no messages exist, only HR/Admin/Owner can initiate
         if (existingChat.messages.length === 0) {
-          if (sender.role !== 'HR' && sender.role !== 'Admin') {
+          const isOwner = await companyDAO.isAnyCompanyOwner(socket.userId);
+          if (sender.role !== 'HR' && sender.role !== 'Admin' && !isOwner) {
             socket.emit('error', {
-              message: MSG.CHAT.ONLY_HR_CAN_INITIATE,
+              message: MSG.JOB.NOT_AUTHORIZED('initiate chat'),
             });
             return;
           }
@@ -288,7 +301,7 @@ export const initSocket = (server) => {
         );
       } catch (error) {
         console.error('Error fetching company jobs:', error.message);
-        socket.emit('error', { message: MSG.CHAT.FAILED_FETCH_COMPANY_JOBS });
+        socket.emit("error", { message: MSG.CHAT.FAILED_FETCH_COMPANY_JOBS });
       }
     });
 

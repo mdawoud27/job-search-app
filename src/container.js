@@ -62,7 +62,11 @@ const applicationService = new ApplicationService(
   applicationRepository,
   companyRepository,
 );
-const chatService = new ChatService(chatRepository, userRepository);
+const chatService = new ChatService(
+  chatRepository,
+  userRepository,
+  companyRepository,
+);
 
 // Controllers
 const authController = new AuthController(authService);
