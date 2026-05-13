@@ -12,6 +12,7 @@ import { jobSchemas } from './schemas/job.schema.js';
 import { applicationSchemas } from './schemas/application.schema.js';
 import { chatSchemas } from './schemas/chat.schema.js';
 
+/* eslint no-undef: off */
 export const swaggerSpec = {
   openapi: '3.0.0',
   info: {
@@ -22,16 +23,34 @@ export const swaggerSpec = {
   servers: [
     {
       url: process.env.BASE_URL || 'http://localhost:3000',
-      description: process.env.BASE_URL ? 'Production server' : 'Development server',
+      description: process.env.BASE_URL
+        ? 'Production server'
+        : 'Development server',
     },
   ],
   tags: [
-    { name: 'Authentication', description: 'Signup, login, OTP, Google OAuth, token management' },
-    { name: 'Users', description: 'Profile management, pictures, password, account lifecycle' },
-    { name: 'Companies', description: 'Company CRUD, logo/cover upload, HR management' },
+    {
+      name: 'Authentication',
+      description: 'Signup, login, OTP, Google OAuth, token management',
+    },
+    {
+      name: 'Users',
+      description: 'Profile management, pictures, password, account lifecycle',
+    },
+    {
+      name: 'Companies',
+      description: 'Company CRUD, logo/cover upload, HR management',
+    },
     { name: 'Jobs', description: 'Job postings CRUD with filtering' },
-    { name: 'Applications', description: 'Job applications, status updates, Excel export' },
-    { name: 'Admin', description: 'Admin-only actions: ban/unban users and companies, approve companies' },
+    {
+      name: 'Applications',
+      description: 'Job applications, status updates, Excel export',
+    },
+    {
+      name: 'Admin',
+      description:
+        'Admin-only actions: ban/unban users and companies, approve companies',
+    },
     { name: 'Chat', description: 'Chat history between users' },
   ],
   components: {

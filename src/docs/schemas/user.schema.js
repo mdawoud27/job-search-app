@@ -15,7 +15,10 @@ export const userSchemas = {
         nullable: true,
         type: 'object',
         properties: {
-          secure_url: { type: 'string', example: 'https://cloudinary.com/profile.jpg' },
+          secure_url: {
+            type: 'string',
+            example: 'https://cloudinary.com/profile.jpg',
+          },
           public_id: { type: 'string', example: 'profilePics/abc123' },
         },
       },
@@ -23,7 +26,10 @@ export const userSchemas = {
         nullable: true,
         type: 'object',
         properties: {
-          secure_url: { type: 'string', example: 'https://cloudinary.com/cover.jpg' },
+          secure_url: {
+            type: 'string',
+            example: 'https://cloudinary.com/cover.jpg',
+          },
           public_id: { type: 'string', example: 'coverPics/abc123' },
         },
       },
@@ -33,16 +39,39 @@ export const userSchemas = {
 
   SignupRequest: {
     type: 'object',
-    required: ['firstName', 'lastName', 'email', 'password', 'gender', 'DOB', 'mobileNumber'],
+    required: [
+      'firstName',
+      'lastName',
+      'email',
+      'password',
+      'gender',
+      'DOB',
+      'mobileNumber',
+    ],
     properties: {
-      firstName: { type: 'string', minLength: 3, maxLength: 30, example: 'John' },
+      firstName: {
+        type: 'string',
+        minLength: 3,
+        maxLength: 30,
+        example: 'John',
+      },
       lastName: { type: 'string', example: 'Doe' },
       email: { type: 'string', format: 'email', example: 'john@example.com' },
-      password: { type: 'string', minLength: 8, maxLength: 32, example: 'Secret123!' },
+      password: {
+        type: 'string',
+        minLength: 8,
+        maxLength: 32,
+        example: 'Secret123!',
+      },
       gender: { type: 'string', enum: ['Male', 'Female'], example: 'Male' },
       DOB: { type: 'string', format: 'date', example: '1995-06-15' },
       mobileNumber: { type: 'string', example: '+1234567890' },
-      role: { type: 'string', enum: ['User', 'HR'], default: 'User', example: 'User' },
+      role: {
+        type: 'string',
+        enum: ['User', 'HR'],
+        default: 'User',
+        example: 'User',
+      },
     },
   },
 
@@ -51,7 +80,12 @@ export const userSchemas = {
     required: ['email', 'password'],
     properties: {
       email: { type: 'string', format: 'email', example: 'john@example.com' },
-      password: { type: 'string', minLength: 8, maxLength: 32, example: 'Secret123!' },
+      password: {
+        type: 'string',
+        minLength: 8,
+        maxLength: 32,
+        example: 'Secret123!',
+      },
     },
   },
 
@@ -86,7 +120,12 @@ export const userSchemas = {
     properties: {
       email: { type: 'string', format: 'email', example: 'john@example.com' },
       OTP: { type: 'string', maxLength: 6, example: '123456' },
-      password: { type: 'string', minLength: 8, maxLength: 32, example: 'NewSecret123!' },
+      password: {
+        type: 'string',
+        minLength: 8,
+        maxLength: 32,
+        example: 'NewSecret123!',
+      },
     },
   },
 
@@ -94,14 +133,22 @@ export const userSchemas = {
     type: 'object',
     required: ['refreshToken'],
     properties: {
-      refreshToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+      refreshToken: {
+        type: 'string',
+        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+      },
     },
   },
 
   UpdateUserRequest: {
     type: 'object',
     properties: {
-      firstName: { type: 'string', minLength: 3, maxLength: 30, example: 'John' },
+      firstName: {
+        type: 'string',
+        minLength: 3,
+        maxLength: 30,
+        example: 'John',
+      },
       lastName: { type: 'string', example: 'Doe' },
       gender: { type: 'string', enum: ['Male', 'Female'], example: 'Male' },
       DOB: { type: 'string', format: 'date', example: '1995-06-15' },
@@ -113,8 +160,18 @@ export const userSchemas = {
     type: 'object',
     required: ['oldPassword', 'newPassword'],
     properties: {
-      oldPassword: { type: 'string', minLength: 8, maxLength: 32, example: 'OldSecret123!' },
-      newPassword: { type: 'string', minLength: 8, maxLength: 32, example: 'NewSecret123!' },
+      oldPassword: {
+        type: 'string',
+        minLength: 8,
+        maxLength: 32,
+        example: 'OldSecret123!',
+      },
+      newPassword: {
+        type: 'string',
+        minLength: 8,
+        maxLength: 32,
+        example: 'NewSecret123!',
+      },
     },
   },
 };

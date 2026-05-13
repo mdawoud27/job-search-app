@@ -2,31 +2,48 @@ export const chatSchemas = {
   MessageObject: {
     type: 'object',
     properties: {
-      message: { type: 'string', example: 'Hello, are you available for an interview?' },
+      message: {
+        type: 'string',
+        example: 'Hello, are you available for an interview?',
+      },
       senderId: {
         type: 'object',
         properties: {
           _id: { type: 'string', example: '507f1f77bcf86cd799439011' },
           firstName: { type: 'string', example: 'John' },
           lastName: { type: 'string', example: 'Doe' },
-          email: { type: 'string', format: 'email', example: 'john@example.com' },
+          email: {
+            type: 'string',
+            format: 'email',
+            example: 'john@example.com',
+          },
           profilePic: {
             nullable: true,
             type: 'object',
             properties: {
-              secure_url: { type: 'string', example: 'https://cloudinary.com/profile.jpg' },
+              secure_url: {
+                type: 'string',
+                example: 'https://cloudinary.com/profile.jpg',
+              },
             },
           },
         },
       },
-      timestamp: { type: 'string', format: 'date-time', example: '2024-01-01T12:00:00.000Z' },
+      timestamp: {
+        type: 'string',
+        format: 'date-time',
+        example: '2024-01-01T12:00:00.000Z',
+      },
     },
   },
 
   ChatHistoryResponse: {
     type: 'object',
     properties: {
-      message: { type: 'string', example: 'Chat history retrieved successfully' },
+      message: {
+        type: 'string',
+        example: 'Chat history retrieved successfully',
+      },
       data: {
         type: 'object',
         properties: {

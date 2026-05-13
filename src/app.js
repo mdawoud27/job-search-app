@@ -59,6 +59,7 @@ app.use(apiLimiter);
 
 // CORS
 const allowedOrigins = [
+  /* eslint no-undef: off */
   process.env.FRONTEND_URL,
   'http://localhost:5173',
   'http://localhost:3000',
@@ -68,7 +69,9 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
+      if (!origin) {
+        return callback(null, true);
+      }
 
       if (allowedOrigins.includes(origin) || origin.includes('localhost')) {
         callback(null, true);

@@ -15,13 +15,19 @@ export const chatDocs = {
           description: 'The other user ID to retrieve chat history with',
         },
         { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
-        { name: 'limit', in: 'query', schema: { type: 'integer', default: 50 } },
+        {
+          name: 'limit',
+          in: 'query',
+          schema: { type: 'integer', default: 50 },
+        },
       ],
       responses: {
         200: {
           description: 'Chat history retrieved successfully',
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/ChatHistoryResponse' } },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ChatHistoryResponse' },
+            },
           },
         },
         401: { description: 'Unauthorized' },

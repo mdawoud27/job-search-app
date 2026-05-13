@@ -2,7 +2,6 @@ import bcrypt from 'bcryptjs';
 import { UserResponseDto } from '../dtos/user/user-response.dto.js';
 import { CloudinaryUtils } from '../utils/cloudinary.util.js';
 import { UpdateUserDto } from '../dtos/user/update-user.dto.js';
-import { decrypt } from '../utils/crypto.js';
 import { MSG } from '../utils/messages.js';
 
 export class UserService {

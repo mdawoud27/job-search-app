@@ -83,8 +83,7 @@ export class Authorization {
     // Otherwise deny access
     return res.status(403).json({
       success: false,
-      message:
-        MSG.MIDDLEWARE.NO_PERMISSION,
+      message: MSG.MIDDLEWARE.NO_PERMISSION,
     });
   }
 

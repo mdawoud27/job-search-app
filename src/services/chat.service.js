@@ -67,9 +67,7 @@ export class ChatService {
     // If chat has no messages, only HR/Admin can initiate
     if (existingChat.messages.length === 0) {
       if (sender.role !== 'HR' && sender.role !== 'Admin') {
-        throw new Error(
-          MSG.CHAT.ONLY_HR_CAN_INITIATE,
-        );
+        throw new Error(MSG.CHAT.ONLY_HR_CAN_INITIATE);
       }
     }
 

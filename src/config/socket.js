@@ -29,7 +29,9 @@ export const initSocket = (server) => {
     const token = socket.handshake.auth.token;
 
     if (!token) {
-      return next(new Error(`${MSG.MIDDLEWARE.AUTH_ERROR}: ${MSG.MIDDLEWARE.NO_TOKEN}`));
+      return next(
+        new Error(`${MSG.MIDDLEWARE.AUTH_ERROR}: ${MSG.MIDDLEWARE.NO_TOKEN}`),
+      );
     }
 
     try {
@@ -39,7 +41,12 @@ export const initSocket = (server) => {
       socket.userRole = decoded.role;
       next();
     } catch (err) {
-      next(new Error(`${MSG.MIDDLEWARE.AUTH_ERROR}: ${MSG.MIDDLEWARE.INVALID_TOKEN}`, err));
+      next(
+        new Error(
+          `${MSG.MIDDLEWARE.AUTH_ERROR}: ${MSG.MIDDLEWARE.INVALID_TOKEN}`,
+          err,
+        ),
+      );
     }
   });
 
@@ -173,8 +180,7 @@ export const initSocket = (server) => {
 
         if (!canManage) {
           socket.emit('error', {
-            message:
-              MSG.JOB.NOT_AUTHORIZED('view applicants for'),
+            message: MSG.JOB.NOT_AUTHORIZED('view applicants for'),
           });
           return;
         }

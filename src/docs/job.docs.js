@@ -7,19 +7,29 @@ export const jobDocs = {
       summary: 'Create a new job (HR only)',
       security: bearerAuth,
       parameters: [
-        { name: 'companyId', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
+        {
+          name: 'companyId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
       ],
       requestBody: {
         required: true,
         content: {
-          'application/json': { schema: { $ref: '#/components/schemas/CreateJobRequest' } },
+          'application/json': {
+            schema: { $ref: '#/components/schemas/CreateJobRequest' },
+          },
         },
       },
       responses: {
         201: {
           description: 'Job created successfully',
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/JobResponse' } },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/JobResponse' },
+            },
           },
         },
         400: { description: 'Validation error' },
@@ -36,7 +46,12 @@ export const jobDocs = {
       summary: 'Get all jobs with optional filters',
       security: bearerAuth,
       parameters: [
-        { name: 'jobTitle', in: 'query', schema: { type: 'string' }, description: 'Filter by job title' },
+        {
+          name: 'jobTitle',
+          in: 'query',
+          schema: { type: 'string' },
+          description: 'Filter by job title',
+        },
         {
           name: 'jobLocation',
           in: 'query',
@@ -52,7 +67,17 @@ export const jobDocs = {
         {
           name: 'seniorityLevel',
           in: 'query',
-          schema: { type: 'string', enum: ['Fresh', 'Junior', 'Mid-Level', 'Senior', 'Team-Lead', 'CTO'] },
+          schema: {
+            type: 'string',
+            enum: [
+              'Fresh',
+              'Junior',
+              'Mid-Level',
+              'Senior',
+              'Team-Lead',
+              'CTO',
+            ],
+          },
           description: 'Filter by seniority level',
         },
         {
@@ -62,7 +87,11 @@ export const jobDocs = {
           description: 'Filter by technical skills (comma-separated)',
         },
         { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
-        { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } },
+        {
+          name: 'limit',
+          in: 'query',
+          schema: { type: 'integer', default: 10 },
+        },
       ],
       responses: {
         200: {
@@ -72,7 +101,10 @@ export const jobDocs = {
               schema: {
                 type: 'object',
                 properties: {
-                  data: { type: 'array', items: { $ref: '#/components/schemas/JobResponse' } },
+                  data: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/JobResponse' },
+                  },
                   pagination: {
                     type: 'object',
                     properties: {
@@ -98,13 +130,21 @@ export const jobDocs = {
       summary: 'Get a specific job by ID',
       security: bearerAuth,
       parameters: [
-        { name: 'jobId', in: 'path', required: true, schema: { type: 'string' }, description: 'Job ID' },
+        {
+          name: 'jobId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Job ID',
+        },
       ],
       responses: {
         200: {
           description: 'Job retrieved successfully',
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/JobResponse' } },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/JobResponse' },
+            },
           },
         },
         401: { description: 'Unauthorized' },
@@ -119,9 +159,19 @@ export const jobDocs = {
       summary: 'Get all jobs for a specific company',
       security: bearerAuth,
       parameters: [
-        { name: 'companyId', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
+        {
+          name: 'companyId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
         { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
-        { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } },
+        {
+          name: 'limit',
+          in: 'query',
+          schema: { type: 'integer', default: 10 },
+        },
       ],
       responses: {
         200: {
@@ -131,7 +181,10 @@ export const jobDocs = {
               schema: {
                 type: 'object',
                 properties: {
-                  data: { type: 'array', items: { $ref: '#/components/schemas/JobResponse' } },
+                  data: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/JobResponse' },
+                  },
                 },
               },
             },
@@ -149,20 +202,36 @@ export const jobDocs = {
       summary: 'Update a job (HR only)',
       security: bearerAuth,
       parameters: [
-        { name: 'companyId', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
-        { name: 'jobId', in: 'path', required: true, schema: { type: 'string' }, description: 'Job ID' },
+        {
+          name: 'companyId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
+        {
+          name: 'jobId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Job ID',
+        },
       ],
       requestBody: {
         required: true,
         content: {
-          'application/json': { schema: { $ref: '#/components/schemas/UpdateJobRequest' } },
+          'application/json': {
+            schema: { $ref: '#/components/schemas/UpdateJobRequest' },
+          },
         },
       },
       responses: {
         200: {
           description: 'Job updated successfully',
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/JobResponse' } },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/JobResponse' },
+            },
           },
         },
         400: { description: 'Validation error' },
@@ -179,8 +248,20 @@ export const jobDocs = {
       summary: 'Delete a job (HR only)',
       security: bearerAuth,
       parameters: [
-        { name: 'companyId', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
-        { name: 'jobId', in: 'path', required: true, schema: { type: 'string' }, description: 'Job ID' },
+        {
+          name: 'companyId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
+        {
+          name: 'jobId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Job ID',
+        },
       ],
       responses: {
         200: { description: 'Job deleted successfully' },

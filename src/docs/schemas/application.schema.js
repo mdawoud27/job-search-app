@@ -8,7 +8,10 @@ export const applicationSchemas = {
       userCV: {
         type: 'object',
         properties: {
-          secure_url: { type: 'string', example: 'https://cloudinary.com/cv.pdf' },
+          secure_url: {
+            type: 'string',
+            example: 'https://cloudinary.com/cv.pdf',
+          },
           public_id: { type: 'string', example: 'cv/abc123' },
           fileType: { type: 'string', example: 'pdf' },
         },
