@@ -226,10 +226,6 @@ export class ApplicationService {
       endDate,
     );
 
-    if (applications.length === 0) {
-      throw new Error(MSG.APPLICATION.NO_APPS_FOR_COMPANY(companyId));
-    }
-
     const excelBuffer = await generateApplicationsExcel(
       applications,
       company.companyName,

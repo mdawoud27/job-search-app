@@ -1,5 +1,5 @@
 import rateLimit from 'express-rate-limit';
-import { MSG } from './messages';
+import { MSG } from './messages.js';
 
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,

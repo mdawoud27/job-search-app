@@ -3,10 +3,10 @@ export const MSG = {
   AUTH: {
     // success
     SIGNUP_SUCCESS: 'User created successfully. Please confirm your email',
-    OTP_CONFIRMED: 'You confirm your account',
+    OTP_CONFIRMED: 'Account confirmed successfully',
     OTP_SENT: 'OTP sent to email',
     OTP_RESENT: 'New OTP sent successfully',
-    LOGIN_SUCCESS: 'User login successfully',
+    LOGIN_SUCCESS: 'User logged in successfully',
     PASSWORD_RESET_SUCCESS: 'Password reset successful. Please login.',
     TOKEN_REFRESHED: 'Access token has been generated',
     GOOGLE_LOGIN_SUCCESS: 'Successfully signed in with Google',
@@ -14,11 +14,11 @@ export const MSG = {
 
     // errors
     INVALID_ROLE: 'Invalid role selection',
-    EMAIL_EXISTS: 'Email is already exists',
+    EMAIL_EXISTS: 'Email already exists',
     INVALID_CREDENTIALS: 'Invalid credentials',
     USE_GOOGLE_LOGIN: 'Please use Google to sign in using this email.',
     CONFIRM_EMAIL_FIRST: 'Please confirm your email first',
-    EMAIL_ALREADY_CONFIRMED: 'Email is already confirmed',
+    EMAIL_ALREADY_CONFIRMED: 'Email already confirmed',
     NO_OTP_FOUND: 'No OTP found',
     OTP_EXPIRED: 'OTP expired',
     INVALID_OTP: 'Invalid OTP',
@@ -31,7 +31,7 @@ export const MSG = {
   // USER
   USER: {
     // success
-    ACCOUNT_UPDATED: 'Your account is updated successfully',
+    ACCOUNT_UPDATED: 'Account updated successfully',
     PROFILE_RETRIEVED: 'User profile retrieved successfully',
     PASSWORD_CHANGED: 'Password changed successfully. Please login again',
     PROFILE_PIC_UPLOADED: 'Profile picture uploaded successfully',
@@ -48,15 +48,15 @@ export const MSG = {
     NOT_FOUND_OR_UPDATE_FAILED: 'User not found or update failed',
     NOT_LOGGED_IN: 'User is not logged in',
     NOT_LOGGED_IN_ALT: 'You are not logged in',
-    DELETED_OR_BANNED: 'You are deleted or banned',
+    DELETED_OR_BANNED: 'Your account has been deleted or banned',
     IS_DELETED_OR_BANNED: 'User is deleted or banned',
     ALREADY_DELETED: 'User is already deleted',
-    ALREADY_ACTIVE: 'User is already active not deleted',
+    ALREADY_ACTIVE: 'User is already active and not deleted',
     CANNOT_CHANGE_GOOGLE_PASSWORD:
       'You cannot change the password of a Google account.',
-    SAME_PASSWORD: 'New password cannot be same as old password',
+    SAME_PASSWORD: 'New password cannot be the same as the old password',
     INVALID_EMAIL_TYPE: 'Invalid email type',
-    NOT_FOUND_OR_BANNED: 'User not found or deleted or banned',
+    NOT_FOUND_OR_BANNED: 'User not found, deleted, or banned',
   },
 
   // COMPANY
@@ -82,8 +82,8 @@ export const MSG = {
     // errors
     NOT_FOUND: 'Company not found',
     NOT_FOUND_OR_INACTIVE: 'Company not found or inactive',
-    NOT_FOUND_OR_BANNED: 'Company not found or deleted or banned',
-    DELETED_OR_BANNED: 'Company is deleted or banned',
+    NOT_FOUND_OR_BANNED: 'Company not found, deleted, or banned',
+    DELETED_OR_BANNED: 'Company has been deleted or banned',
     NO_COMPANIES_FOUND: 'No companies found',
     LEGAL_ATTACHMENT_NOT_ALLOWED: 'Legal attachment is not allowed',
     NO_PERMISSION_UPDATE: 'You do not have permission to update this company',
@@ -177,7 +177,7 @@ export const MSG = {
     NO_IMAGE: 'No image uploaded',
     IMAGE_REQUIRED: 'Image is required',
     ONLY_IMAGES: 'Only images are allowed',
-    ONLY_PDF: 'Only PDF are allowed',
+    ONLY_PDF: 'Only PDF files are allowed',
   },
 
   // RATE_LIMIT
