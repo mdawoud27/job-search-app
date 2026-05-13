@@ -7,8 +7,8 @@ export const rootValue = {
   ...companyResolver,
   getAllData: async () => {
     const [users, companies] = await Promise.all([
-      userRepository.findAll({ deletedAt: null, bannedAt: null }),
-      companyRepository.findAll({ deletedAt: null, bannedAt: null }),
+      userRepository.findAll({ deletedAt: null }),
+      companyRepository.findAll({ deletedAt: null }),
     ]);
     return { users, companies };
   },

@@ -9,5 +9,7 @@ export const companySchema = `
     companyEmail: String
     logo: Image
     coverPic: Image
+    bannedAt: String
+    approvedByAdmin: Boolean
   }
 `;

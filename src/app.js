@@ -14,6 +14,7 @@ import { apiLimiter } from './utils/apiLimiter.js';
 import routes from './routes/index.js';
 import { configurePassport } from './config/passport.config.js';
 import { setupSwagger } from './config/swagger.js';
+import { Authorization } from './middlewares/auth.middleware.js';
 import { ErrorHandler } from './middlewares/error.middleware.js';
 import { schema, rootValue } from './graphql/index.js';
 import { MSG } from './utils/messages.js';
@@ -107,6 +108,8 @@ setupSwagger(app);
 // GraphQL
 app.use(
   '/graphql',
+  Authorization.verifyToken,
+  Authorization.verifyAdminPermission,
   graphqlHTTP({
     schema,
     rootValue,
