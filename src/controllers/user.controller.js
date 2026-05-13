@@ -2,6 +2,8 @@ import { UpdateUserDto } from '../dtos/user/update-user.dto.js';
 import { UpdatePasswordDto } from '../dtos/user/update-password.dto.js';
 import { uploadBuffer } from '../config/cloudinary.config.js';
 
+import { MSG } from '../utils/messages.js';
+
 export class UserController {
   constructor(userService) {
     this.userService = userService;
@@ -64,7 +66,7 @@ export class UserController {
   async uploadProfilePic(req, res, next) {
     try {
       if (!req.file) {
-        return res.status(400).json({ message: 'No image uploaded' });
+        return res.status(400).json({ message: MSG.UPLOAD.NO_IMAGE });
       }
       const cloudResult = await uploadBuffer(req.file.buffer, 'profilePics');
 
@@ -83,7 +85,7 @@ export class UserController {
   async uploadCoverPic(req, res, next) {
     try {
       if (!req.file) {
-        return res.status(400).json({ message: 'No image uploaded' });
+        return res.status(400).json({ message: MSG.UPLOAD.NO_IMAGE });
       }
       const cloudResult = await uploadBuffer(req.file.buffer, 'coverPics');
 

@@ -4,6 +4,7 @@ import { UserResponseDto } from '../dtos/auth/user-response.dto.js';
 import { ConfirmOtpDto } from '../dtos/auth/confirm-opt.dto.js';
 import { TokenUtils } from '../utils/tokens.utils.js';
 import { sendOTPEmail } from '../utils/email.utils.js';
+import { MSG } from '../utils/messages.js';
 
 export class AuthService {
   constructor(userRepository) {
@@ -13,13 +14,13 @@ export class AuthService {
   // signup
   async signup(dto) {
     if (dto.role && dto.role === 'Admin') {
-      throw new Error('Invalid role selection');
+      throw new Error(MSG.AUTH.INVALID_ROLE);
     }
 
     //check if user exists or not
     const existingUser = await this.userRepository.findByEmail(dto.email);
     if (existingUser) {
-      throw new Error('Email is already exists');
+      throw new Error(MSG.AUTH.EMAIL_EXISTS);
     }
 
     const otpCode = OtpUtils.generateOTP();
@@ -46,21 +47,21 @@ export class AuthService {
   async confirmEmail(dto) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     const lastOtp = user.OTP.findLast((o) => o.type === 'confirmEmail');
     if (!lastOtp) {
-      throw new Error('No OTP found');
+      throw new Error(MSG.AUTH.NO_OTP_FOUND);
     }
 
     if (lastOtp.expiresIn < new Date()) {
-      throw new Error('OTP expired');
+      throw new Error(MSG.AUTH.OTP_EXPIRED);
     }
 
     const isValid = await OtpUtils.validate(dto.OTP, lastOtp.code);
     if (!isValid) {
-      throw new Error('Invalid OTP');
+      throw new Error(MSG.AUTH.INVALID_OTP);
     }
 
     user.isConfirmed = true;
@@ -73,11 +74,11 @@ export class AuthService {
   async resendOtpCode(dto) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     if (user.isConfirmed) {
-      throw new Error('Email is already confirmed');
+      throw new Error(MSG.AUTH.EMAIL_ALREADY_CONFIRMED);
     }
 
     const lastOtp = user.OTP.findLast((o) => o.type === 'confirmEmail');
@@ -109,7 +110,7 @@ export class AuthService {
     await sendOTPEmail(dto.email, otpCode);
 
     return {
-      message: 'New OTP sent successfully',
+      message: MSG.AUTH.OTP_RESENT,
       email: user.email,
     };
   }
@@ -118,20 +119,20 @@ export class AuthService {
   async login(dto) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new Error(MSG.AUTH.INVALID_CREDENTIALS);
     }
 
     if (user.provider === 'google') {
-      throw new Error('Please use Google to sign in using this email.');
+      throw new Error(MSG.AUTH.USE_GOOGLE_LOGIN);
     }
 
     const match = await OtpUtils.validate(dto.password, user.password);
     if (!match) {
-      throw new Error('Invalid credentials');
+      throw new Error(MSG.AUTH.INVALID_CREDENTIALS);
     }
 
     if (!user.isConfirmed) {
-      throw new Error('Please confirm your email first');
+      throw new Error(MSG.AUTH.CONFIRM_EMAIL_FIRST);
     }
 
     const accessToken = TokenUtils.genAccessToken(user);
@@ -145,7 +146,7 @@ export class AuthService {
   async forgotPassword(dto) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     const lastOtp = user.OTP.findLast((o) => o.type === 'forgetPassword');
@@ -174,28 +175,28 @@ export class AuthService {
     await this.userRepository.updateOtp(dto.email, otpEntry);
 
     await sendOTPEmail(dto.email, otp, 'Reset your password');
-    return { user, message: 'OTP sent to email' };
+    return { user, message: MSG.AUTH.OTP_SENT };
   }
 
   // reset password
   async resetPassword(dto) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     const lastOtp = user.OTP.findLast((o) => o.type === 'forgetPassword');
     if (!lastOtp) {
-      throw new Error('No OTP found');
+      throw new Error(MSG.AUTH.NO_OTP_FOUND);
     }
 
     if (lastOtp.expiresIn < new Date()) {
-      throw new Error('OTP expired');
+      throw new Error(MSG.AUTH.OTP_EXPIRED);
     }
 
     const isValid = await OtpUtils.validate(dto.OTP, lastOtp.code);
     if (!isValid) {
-      throw new Error('Invalid OTP');
+      throw new Error(MSG.AUTH.INVALID_OTP);
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -204,7 +205,7 @@ export class AuthService {
     await this.userRepository.updatePassword(user._id, hashedPassword);
     user.refreshToken = null;
     await user.save();
-    return { user, message: 'Password reset successful. Please login.' };
+    return { user, message: MSG.AUTH.PASSWORD_RESET_SUCCESS };
   }
 
   // refresh tokens
@@ -213,11 +214,11 @@ export class AuthService {
     const user = await this.userRepository.findById(payload.id);
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     if (user.refreshToken !== refreshToken) {
-      throw new Error('Invalid refresh token');
+      throw new Error(MSG.AUTH.INVALID_REFRESH_TOKEN);
     }
 
     const tokenIssuedAt = new Date(payload.iat * 1000);
@@ -229,21 +230,21 @@ export class AuthService {
       user.refreshToken = null;
       await user.save();
 
-      throw new Error('Credentials have been changed. Please login again');
+      throw new Error(MSG.AUTH.CREDENTIALS_CHANGED);
     }
 
     const accessToken = TokenUtils.genAccessToken(user);
     return {
       refreshToken,
       accessToken,
-      message: 'Access token has been generated',
+      message: MSG.AUTH.TOKEN_REFRESHED,
     };
   }
 
   // Google OAuth callback handler
   async googleCallback(user) {
     if (!user) {
-      throw new Error('Google authentication failed');
+      throw new Error(MSG.AUTH.GOOGLE_AUTH_FAILED);
     }
 
     // Generate tokens
@@ -268,7 +269,7 @@ export class AuthService {
       },
       accessToken,
       refreshToken,
-      message: 'Successfully signed in with Google',
+      message: MSG.AUTH.GOOGLE_LOGIN_SUCCESS,
     };
   }
 
@@ -276,12 +277,12 @@ export class AuthService {
   async logout(userId) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     user.refreshToken = null;
     user.changeCredentialTime = new Date();
     await user.save();
-    return { message: 'Logged out successfully' };
+    return { message: MSG.AUTH.LOGOUT_SUCCESS };
   }
 }

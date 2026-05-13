@@ -1,4 +1,5 @@
 import rateLimit from 'express-rate-limit';
+import { MSG } from './messages.js';
 
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -7,6 +8,6 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     status: 429,
-    message: 'Too many requests, please try again later.',
+    message: MSG.RATE_LIMIT.TOO_MANY_REQUESTS,
   },
 });

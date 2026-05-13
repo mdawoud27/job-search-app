@@ -1,4 +1,13 @@
-const EMPLOYEE_RANGES = ['1-10', '11-20', '21-50', '51-100', '101-250', '251-500', '501-1000', '1000+'];
+const EMPLOYEE_RANGES = [
+  '1-10',
+  '11-20',
+  '21-50',
+  '51-100',
+  '101-250',
+  '251-500',
+  '501-1000',
+  '1000+',
+];
 
 export const companySchemas = {
   CompanyResponse: {
@@ -9,14 +18,25 @@ export const companySchemas = {
       description: { type: 'string', example: 'Leading technology company' },
       industry: { type: 'string', example: 'Technology' },
       address: { type: 'string', example: '123 Tech Street, Silicon Valley' },
-      numberOfEmployees: { type: 'string', enum: EMPLOYEE_RANGES, example: '101-250' },
-      companyEmail: { type: 'string', format: 'email', example: 'contact@techcorp.com' },
+      numberOfEmployees: {
+        type: 'string',
+        enum: EMPLOYEE_RANGES,
+        example: '101-250',
+      },
+      companyEmail: {
+        type: 'string',
+        format: 'email',
+        example: 'contact@techcorp.com',
+      },
       createdBy: { type: 'string', example: '507f1f77bcf86cd799439011' },
       logo: {
         nullable: true,
         type: 'object',
         properties: {
-          secure_url: { type: 'string', example: 'https://cloudinary.com/logo.png' },
+          secure_url: {
+            type: 'string',
+            example: 'https://cloudinary.com/logo.png',
+          },
           public_id: { type: 'string', example: 'companyLogos/abc123' },
         },
       },
@@ -24,7 +44,10 @@ export const companySchemas = {
         nullable: true,
         type: 'object',
         properties: {
-          secure_url: { type: 'string', example: 'https://cloudinary.com/cover.jpg' },
+          secure_url: {
+            type: 'string',
+            example: 'https://cloudinary.com/cover.jpg',
+          },
           public_id: { type: 'string', example: 'companyCovers/abc123' },
         },
       },
@@ -37,14 +60,29 @@ export const companySchemas = {
 
   CreateCompanyRequest: {
     type: 'object',
-    required: ['companyName', 'description', 'industry', 'address', 'numberOfEmployees', 'companyEmail'],
+    required: [
+      'companyName',
+      'description',
+      'industry',
+      'address',
+      'numberOfEmployees',
+      'companyEmail',
+    ],
     properties: {
       companyName: { type: 'string', example: 'Tech Corp' },
       description: { type: 'string', example: 'Leading technology company' },
       industry: { type: 'string', example: 'Technology' },
       address: { type: 'string', example: '123 Tech Street, Silicon Valley' },
-      numberOfEmployees: { type: 'string', enum: EMPLOYEE_RANGES, example: '101-250' },
-      companyEmail: { type: 'string', format: 'email', example: 'contact@techcorp.com' },
+      numberOfEmployees: {
+        type: 'string',
+        enum: EMPLOYEE_RANGES,
+        example: '101-250',
+      },
+      companyEmail: {
+        type: 'string',
+        format: 'email',
+        example: 'contact@techcorp.com',
+      },
     },
   },
 
@@ -55,8 +93,16 @@ export const companySchemas = {
       description: { type: 'string', example: 'Updated description' },
       industry: { type: 'string', example: 'Software' },
       address: { type: 'string', example: '456 New Street' },
-      numberOfEmployees: { type: 'string', enum: EMPLOYEE_RANGES, example: '251-500' },
-      companyEmail: { type: 'string', format: 'email', example: 'new@techcorp.com' },
+      numberOfEmployees: {
+        type: 'string',
+        enum: EMPLOYEE_RANGES,
+        example: '251-500',
+      },
+      companyEmail: {
+        type: 'string',
+        format: 'email',
+        example: 'new@techcorp.com',
+      },
     },
   },
 };

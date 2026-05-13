@@ -1,3 +1,5 @@
+import { MSG } from '../utils/messages.js';
+
 export class AdminService {
   constructor(userDao, adminDao, companyDao) {
     this.userDao = userDao;
@@ -9,14 +11,14 @@ export class AdminService {
   async banUser(userId, admin) {
     const user = await this.userDao.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
     if (user.bannedAt !== null) {
-      throw new Error('User is already banned');
+      throw new Error(MSG.ADMIN.USER_ALREADY_BANNED);
     }
     await this.adminDao.banUser(userId, admin.id);
     return {
-      message: 'User banned successfully',
+      message: MSG.ADMIN.USER_BANNED,
       date: {
         email: user.email,
         bannedAt: user.updatedAt,
@@ -30,14 +32,14 @@ export class AdminService {
   async unbanUser(userId, admin) {
     const user = await this.userDao.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
     if (user.bannedAt === null) {
-      throw new Error('User is already unbanned');
+      throw new Error(MSG.ADMIN.USER_ALREADY_UNBANNED);
     }
     await this.adminDao.unbanUser(userId, admin.id);
     return {
-      message: 'User unbanned successfully',
+      message: MSG.ADMIN.USER_UNBANNED,
       date: {
         email: user.email,
         unbannedAt: user.updatedAt,
@@ -52,20 +54,20 @@ export class AdminService {
     const company = await this.companyDao.findById(companyId);
 
     if (!company) {
-      throw new Error('Company not found or inactive');
+      throw new Error(MSG.COMPANY.NOT_FOUND_OR_INACTIVE);
     }
 
     if (company.bannedAt !== null) {
-      throw new Error('Company is already banned');
+      throw new Error(MSG.COMPANY.ALREADY_BANNED);
     }
 
     if (!company.approvedByAdmin) {
-      throw new Error('Company is not approved yet');
+      throw new Error(MSG.COMPANY.NOT_APPROVED_YET);
     }
 
     await this.adminDao.banCompany(companyId, admin.id);
     return {
-      message: 'Company banned successfully',
+      message: MSG.COMPANY.BANNED,
       date: {
         name: company.companyName,
         bannedAt: company.updatedAt,
@@ -79,15 +81,15 @@ export class AdminService {
   async unbanCompany(companyId, admin) {
     const company = await this.companyDao.findById(companyId);
     if (!company) {
-      throw new Error('Company not found or inactive');
+      throw new Error(MSG.COMPANY.NOT_FOUND_OR_INACTIVE);
     }
     if (company.bannedAt === null) {
-      throw new Error('Company is already unbanned');
+      throw new Error(MSG.COMPANY.ALREADY_UNBANNED);
     }
 
     await this.adminDao.unbanCompany(companyId, admin.id);
     return {
-      message: 'Company unbanned successfully',
+      message: MSG.COMPANY.UNBANNED,
       date: {
         name: company.companyName,
         unbannedAt: company.updatedAt,
@@ -101,14 +103,14 @@ export class AdminService {
   async approveCompany(companyId, admin) {
     const company = await this.companyDao.findById(companyId);
     if (!company) {
-      throw new Error('Company not found or inactive');
+      throw new Error(MSG.COMPANY.NOT_FOUND_OR_INACTIVE);
     }
     if (company.approvedByAdmin) {
-      throw new Error('Company is already approved');
+      throw new Error(MSG.COMPANY.ALREADY_APPROVED);
     }
     await this.adminDao.approveCompany(companyId, admin.id);
     return {
-      message: 'Company approved successfully',
+      message: MSG.COMPANY.APPROVED,
       date: {
         name: company.companyName,
         approvedAt: company.updatedAt,

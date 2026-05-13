@@ -1,12 +1,14 @@
 import Joi from 'joi';
 
+import { MSG } from '../../utils/messages.js';
+
 export class UpdatePasswordDto {
   static validate(body) {
     const schema = Joi.object({
       oldPassword: Joi.string().required().min(8).max(32).messages({
-        'string.empty': 'Password is required.',
-        'string.min': 'Password must be at least 8 characters long.',
-        'string.max': 'Password must be at most 32 characters long.',
+        'string.empty': MSG.AUTH.PASSWORD_REQUIRED,
+        'string.min': MSG.AUTH.PASSWORD_MIN,
+        'string.max': MSG.AUTH.PASSWORD_MAX,
       }),
       newPassword: Joi.string().required().min(8).max(32).messages({
         'string.empty': 'Password is required.',
@@ -22,6 +24,6 @@ export class UpdatePasswordDto {
   }
 
   static toResponse() {
-    return { message: 'Password updated successfully' };
+    return { message: MSG.USER.PASSWORD_CHANGED };
   }
 }

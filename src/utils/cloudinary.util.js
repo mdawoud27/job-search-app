@@ -1,9 +1,10 @@
 import cloudinary from '../config/cloudinary.config.js';
+import { MSG } from '../utils/messages.js';
 
 export class CloudinaryUtils {
   static async uploadImage(req) {
     if (!req.file) {
-      throw new Error('Image is required');
+      throw new Error(MSG.UPLOAD.IMAGE_REQUIRED);
     }
 
     return cloudinary.uploader.upload(req.file.path, {

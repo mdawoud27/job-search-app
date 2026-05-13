@@ -7,13 +7,21 @@ export const userDocs = {
       summary: "Get another user's public profile",
       security: bearerAuth,
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'User ID' },
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'User ID',
+        },
       ],
       responses: {
         200: {
           description: 'User profile retrieved',
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/UserResponse' } },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UserResponse' },
+            },
           },
         },
         401: { description: 'Unauthorized' },
@@ -32,7 +40,9 @@ export const userDocs = {
         200: {
           description: 'Profile retrieved successfully',
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/UserResponse' } },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UserResponse' },
+            },
           },
         },
         401: { description: 'Unauthorized' },
@@ -45,14 +55,18 @@ export const userDocs = {
       requestBody: {
         required: true,
         content: {
-          'application/json': { schema: { $ref: '#/components/schemas/UpdateUserRequest' } },
+          'application/json': {
+            schema: { $ref: '#/components/schemas/UpdateUserRequest' },
+          },
         },
       },
       responses: {
         200: {
           description: 'Profile updated successfully',
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/UserResponse' } },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UserResponse' },
+            },
           },
         },
         400: { description: 'Validation error' },
@@ -69,7 +83,9 @@ export const userDocs = {
       requestBody: {
         required: true,
         content: {
-          'application/json': { schema: { $ref: '#/components/schemas/UpdatePasswordRequest' } },
+          'application/json': {
+            schema: { $ref: '#/components/schemas/UpdatePasswordRequest' },
+          },
         },
       },
       responses: {
@@ -170,7 +186,13 @@ export const userDocs = {
       summary: 'Soft delete a specific user account (admin or self)',
       security: bearerAuth,
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'User ID' },
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'User ID',
+        },
       ],
       responses: {
         200: { description: 'Account deleted successfully' },
@@ -187,13 +209,21 @@ export const userDocs = {
       summary: 'Restore a soft-deleted user account (Admin only)',
       security: bearerAuth,
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'User ID' },
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'User ID',
+        },
       ],
       responses: {
         200: {
           description: 'Account restored successfully',
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/UserResponse' } },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UserResponse' },
+            },
           },
         },
         401: { description: 'Unauthorized' },

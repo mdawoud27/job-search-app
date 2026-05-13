@@ -5,10 +5,17 @@ export const applicationDocs = {
     post: {
       tags: ['Applications'],
       summary: 'Apply to a job (User only)',
-      description: 'Submit a job application with a CV file (PDF only). Prevents duplicate applications.',
+      description:
+        'Submit a job application with a CV file (PDF only). Prevents duplicate applications.',
       security: bearerAuth,
       parameters: [
-        { name: 'jobId', in: 'path', required: true, schema: { type: 'string' }, description: 'Job ID' },
+        {
+          name: 'jobId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Job ID',
+        },
       ],
       requestBody: {
         required: true,
@@ -32,7 +39,9 @@ export const applicationDocs = {
         201: {
           description: 'Application submitted successfully',
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/ApplicationResponse' } },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ApplicationResponse' },
+            },
           },
         },
         400: { description: 'No file uploaded or validation error' },
@@ -50,18 +59,34 @@ export const applicationDocs = {
       summary: 'Get all applications for a specific job (HR only)',
       security: bearerAuth,
       parameters: [
-        { name: 'jobId', in: 'path', required: true, schema: { type: 'string' }, description: 'Job ID' },
+        {
+          name: 'jobId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Job ID',
+        },
         {
           name: 'status',
           in: 'query',
           schema: {
             type: 'string',
-            enum: ['pending', 'accepted', 'viewed', 'in consideration', 'rejected'],
+            enum: [
+              'pending',
+              'accepted',
+              'viewed',
+              'in consideration',
+              'rejected',
+            ],
           },
           description: 'Filter by application status',
         },
         { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
-        { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } },
+        {
+          name: 'limit',
+          in: 'query',
+          schema: { type: 'integer', default: 10 },
+        },
       ],
       responses: {
         200: {
@@ -71,7 +96,10 @@ export const applicationDocs = {
               schema: {
                 type: 'object',
                 properties: {
-                  data: { type: 'array', items: { $ref: '#/components/schemas/ApplicationResponse' } },
+                  data: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ApplicationResponse' },
+                  },
                   pagination: {
                     type: 'object',
                     properties: {
@@ -110,14 +138,20 @@ export const applicationDocs = {
       requestBody: {
         required: true,
         content: {
-          'application/json': { schema: { $ref: '#/components/schemas/UpdateApplicationStatusRequest' } },
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/UpdateApplicationStatusRequest',
+            },
+          },
         },
       },
       responses: {
         200: {
           description: 'Status updated successfully',
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/ApplicationResponse' } },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ApplicationResponse' },
+            },
           },
         },
         400: { description: 'Validation error' },
@@ -134,7 +168,13 @@ export const applicationDocs = {
       summary: 'Export applications by date as Excel file (HR only)',
       security: bearerAuth,
       parameters: [
-        { name: 'companyId', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
+        {
+          name: 'companyId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
         {
           name: 'date',
           in: 'query',
@@ -147,9 +187,10 @@ export const applicationDocs = {
         200: {
           description: 'Excel file downloaded successfully',
           content: {
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
-              schema: { type: 'string', format: 'binary' },
-            },
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              {
+                schema: { type: 'string', format: 'binary' },
+              },
           },
         },
         400: { description: 'Date query parameter is required' },

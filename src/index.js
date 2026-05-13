@@ -7,6 +7,7 @@ import { initSocket } from './config/socket.js';
 
 dotenv.config();
 
+/* eslint no-undef: off */
 const PORT = process.env.PORT || 3000;
 
 const server = http.createServer(app);
@@ -19,6 +20,7 @@ connectToDB();
 
 // Start Server
 server.listen(PORT, () => {
+  /* eslint no-console: off */
   console.log(
     `Server running in ${
       process.env.NODE_ENV || 'development'

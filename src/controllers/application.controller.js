@@ -1,6 +1,8 @@
 import { uploadBuffer } from '../config/cloudinary.config.js';
 import { UpdateAppStatusDto } from '../dtos/application/update-app-status.dto.js';
 
+import { MSG } from '../utils/messages.js';
+
 export class ApplicationController {
   constructor(applicationService) {
     this.applicationService = applicationService;
@@ -10,7 +12,7 @@ export class ApplicationController {
   async createApplication(req, res, next) {
     try {
       if (!req.file) {
-        return next(new Error('No file uploaded'));
+        return next(new Error(MSG.APPLICATION.NO_FILE_UPLOADED));
       }
 
       const cloudResult = await uploadBuffer(req.file.buffer, 'cv');
@@ -68,9 +70,7 @@ export class ApplicationController {
       const { date } = req.query;
 
       if (!date) {
-        return res
-          .status(400)
-          .json({ message: 'Date query parameter is required (YYYY-MM-DD)' });
+        return res.status(400).json({ message: MSG.APPLICATION.DATE_REQUIRED });
       }
 
       const result =

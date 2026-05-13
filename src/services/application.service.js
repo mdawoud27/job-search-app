@@ -4,6 +4,7 @@ import {
   sendRejectionEmail,
 } from '../utils/email.utils.js';
 import { generateApplicationsExcel } from '../utils/excel.utils.js';
+import { MSG } from '../utils/messages.js';
 
 /* eslint no-console: off */
 // TODO: remove console.log statements
@@ -26,11 +27,11 @@ export class ApplicationService {
     const job = await this.jobRepository.findById(jobId);
 
     if (!user.refreshToken) {
-      throw new Error('User is not logged in');
+      throw new Error(MSG.USER.NOT_LOGGED_IN);
     }
 
     if (!job) {
-      throw new Error('Job not found');
+      throw new Error(MSG.JOB.NOT_FOUND);
     }
 
     const application = await this.applicationRepository.createApplication(
@@ -57,7 +58,7 @@ export class ApplicationService {
     }
 
     return {
-      message: 'Application created successfully',
+      message: MSG.APPLICATION.CREATED,
       data: {
         user: user.email,
         job: job.jobTitle,
@@ -77,7 +78,7 @@ export class ApplicationService {
     const job = await this.jobRepository.findById(jobId);
 
     if (!job) {
-      throw new Error('Job not found');
+      throw new Error(MSG.JOB.NOT_FOUND);
     }
 
     const canManage = await this.companyRepository.canManage(
@@ -86,9 +87,7 @@ export class ApplicationService {
     );
 
     if (!canManage) {
-      throw new Error(
-        'You do not have permission to view applications for this job',
-      );
+      throw new Error(MSG.JOB.NOT_AUTHORIZED('view applications for'));
     }
 
     const jobWithApplications =
@@ -103,7 +102,7 @@ export class ApplicationService {
       await this.applicationRepository.countApplications(jobId);
 
     return {
-      message: 'Applications retrieved successfully',
+      message: MSG.APPLICATION.ALL_RETRIEVED,
       data: {
         applications: jobWithApplications.jobApplications || [],
         pagination: {
@@ -123,7 +122,7 @@ export class ApplicationService {
       await this.applicationRepository.findById(applicationId);
 
     if (!application) {
-      throw new Error('Application not found');
+      throw new Error(MSG.APPLICATION.NOT_FOUND);
     }
 
     const canManage = await this.companyRepository.canManage(
@@ -132,13 +131,13 @@ export class ApplicationService {
     );
 
     if (!canManage) {
-      throw new Error('You do not have permission to update this application');
+      throw new Error(MSG.APPLICATION.NO_PERMISSION_UPDATE);
     }
 
     const hrUser = await this.userRepository.findById(hrUserId);
 
     if (!hrUser) {
-      throw new Error('HR user not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     const company = await this.companyRepository.findById(
@@ -146,7 +145,7 @@ export class ApplicationService {
     );
 
     if (!company) {
-      throw new Error('Company not found');
+      throw new Error(MSG.COMPANY.NOT_FOUND);
     }
 
     const updatedApplication = await this.applicationRepository.updateStatus(
@@ -183,7 +182,7 @@ export class ApplicationService {
     }
 
     return {
-      message: `Application ${status} successfully`,
+      message: MSG.APPLICATION.STATUS_UPDATED(status),
       data: {
         applicationId: updatedApplication._id,
         status: updatedApplication.status,
@@ -201,18 +200,18 @@ export class ApplicationService {
     );
     if (!canManage) {
       throw new Error(
-        'You do not have permission to export applications for this company',
+        MSG.MIDDLEWARE.HR_REQUIRED('export applications for this company'),
       );
     }
 
     const company = await this.companyRepository.findById(companyId);
     if (!company) {
-      throw new Error('Company not found');
+      throw new Error(MSG.COMPANY.NOT_FOUND);
     }
 
     const targetDate = new Date(date);
     if (isNaN(targetDate.getTime())) {
-      throw new Error('Invalid date format. Please use YYYY-MM-DD');
+      throw new Error(MSG.APPLICATION.INVALID_DATE_FORMAT);
     }
 
     const startDate = new Date(targetDate);

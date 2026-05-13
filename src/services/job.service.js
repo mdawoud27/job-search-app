@@ -1,5 +1,6 @@
 import { JobResponseDto } from '../dtos/job/job-response.dto.js';
 import _ from 'lodash';
+import { MSG } from '../utils/messages.js';
 
 export class JobService {
   constructor(userDao, companyDao, jobDao) {
@@ -13,25 +14,23 @@ export class JobService {
     const user = await this.userDao.findByIdAndActive(userId);
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     if (!user.refreshToken) {
-      throw new Error('User is not logged in');
+      throw new Error(MSG.USER.NOT_LOGGED_IN);
     }
 
     const company = await this.companyDao.isActive(companyId);
     const canManage = await this.companyDao.canManage(companyId, userId);
 
     if (!canManage) {
-      throw new Error(
-        'You do not have permission to create a job in this company',
-      );
+      throw new Error(MSG.JOB.NOT_AUTHORIZED('create'));
     }
 
     const job = await this.jobDao.createJob(dto, user.id, company.id);
     return {
-      message: 'Job created successfully',
+      message: MSG.JOB.CREATED,
       data: {
         companyName: company.companyName,
         ...JobResponseDto.toResponse(job),
@@ -44,29 +43,27 @@ export class JobService {
     const user = await this.userDao.findByIdAndActive(userId);
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     if (!user.refreshToken) {
-      throw new Error('User is not logged in');
+      throw new Error(MSG.USER.NOT_LOGGED_IN);
     }
 
     const company = await this.companyDao.isActive(companyId);
     const canManage = await this.companyDao.canManage(companyId, userId);
 
     if (!canManage) {
-      throw new Error(
-        'You do not have permission to update a job in this company',
-      );
+      throw new Error(MSG.JOB.NOT_AUTHORIZED('update'));
     }
 
     const job = await this.jobDao.updateJob(dto, user.id, company.id, jobId);
     if (!job) {
-      throw new Error('Job not found, already deleted, or closed');
+      throw new Error(MSG.JOB.NOT_FOUND_OR_CLOSED);
     }
 
     return {
-      message: 'Job updated successfully',
+      message: MSG.JOB.UPDATED,
       updatedBy: user.email,
       data: {
         companyName: company.companyName,
@@ -80,30 +77,28 @@ export class JobService {
     const user = await this.userDao.findByIdAndActive(userId);
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(MSG.USER.NOT_FOUND);
     }
 
     if (!user.refreshToken) {
-      throw new Error('User is not logged in');
+      throw new Error(MSG.USER.NOT_LOGGED_IN);
     }
 
     const company = await this.companyDao.isActive(companyId);
     const canManage = await this.companyDao.canManage(companyId, userId);
 
     if (!canManage) {
-      throw new Error(
-        'You do not have permission to delete a job in this company',
-      );
+      throw new Error(MSG.JOB.NOT_AUTHORIZED('delete'));
     }
 
     const job = await this.jobDao.deleteJob(user.id, company.id, jobId);
 
     if (!job) {
-      throw new Error('Job not found or already deleted');
+      throw new Error(MSG.JOB.NOT_FOUND_OR_DELETED);
     }
 
     return {
-      message: 'Job deleted successfully',
+      message: MSG.JOB.DELETED,
       deletedBy: user.email,
       data: {
         companyName: company.companyName,
@@ -191,7 +186,7 @@ export class JobService {
   async getJob(jobId) {
     const job = await this.jobDao.findById(jobId);
     if (!job) {
-      throw new Error('Job not found');
+      throw new Error(MSG.JOB.NOT_FOUND);
     }
     return JobResponseDto.toResponse(job);
   }

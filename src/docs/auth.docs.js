@@ -17,7 +17,8 @@ export const authDocs = {
       },
       responses: {
         201: {
-          description: 'User created successfully. OTP sent to email for confirmation.',
+          description:
+            'User created successfully. OTP sent to email for confirmation.',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/UserResponse' },
@@ -89,13 +90,22 @@ export const authDocs = {
               schema: {
                 type: 'object',
                 properties: {
-                  message: { type: 'string', example: 'User login successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'User login successfully',
+                  },
                   data: {
                     type: 'object',
                     properties: {
                       email: { type: 'string', example: 'john@example.com' },
-                      accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
-                      refreshToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+                      accessToken: {
+                        type: 'string',
+                        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                      },
+                      refreshToken: {
+                        type: 'string',
+                        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                      },
                     },
                   },
                 },
@@ -169,7 +179,10 @@ export const authDocs = {
               schema: {
                 type: 'object',
                 properties: {
-                  message: { type: 'string', example: 'Token refreshed successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Token refreshed successfully',
+                  },
                   data: {
                     type: 'object',
                     properties: {
@@ -221,9 +234,13 @@ export const authDocs = {
     get: {
       tags: ['Authentication'],
       summary: 'Google OAuth callback',
-      description: 'Handles the callback from Google. Redirects with accessToken, refreshToken, and uName as query params.',
+      description:
+        'Handles the callback from Google. Redirects with accessToken, refreshToken, and uName as query params.',
       responses: {
-        302: { description: 'Redirects with tokens on success, or with error param on failure' },
+        302: {
+          description:
+            'Redirects with tokens on success, or with error param on failure',
+        },
       },
     },
   },

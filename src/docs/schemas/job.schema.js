@@ -1,6 +1,13 @@
 const JOB_LOCATIONS = ['onsite', 'remotely', 'hybrid'];
 const WORKING_TIME = ['part-time', 'full-time'];
-const SENIORITY_LEVELS = ['Fresh', 'Junior', 'Mid-Level', 'Senior', 'Team-Lead', 'CTO'];
+const SENIORITY_LEVELS = [
+  'Fresh',
+  'Junior',
+  'Mid-Level',
+  'Senior',
+  'Team-Lead',
+  'CTO',
+];
 
 export const jobSchemas = {
   JobResponse: {
@@ -10,10 +17,25 @@ export const jobSchemas = {
       jobTitle: { type: 'string', example: 'Senior Backend Engineer' },
       jobLocation: { type: 'string', enum: JOB_LOCATIONS, example: 'hybrid' },
       workingTime: { type: 'string', enum: WORKING_TIME, example: 'full-time' },
-      seniorityLevel: { type: 'string', enum: SENIORITY_LEVELS, example: 'Senior' },
-      jobDescription: { type: 'string', example: 'We are looking for an experienced backend engineer...' },
-      technicalSkills: { type: 'array', items: { type: 'string' }, example: ['Node.js', 'MongoDB', 'Docker'] },
-      softSkills: { type: 'array', items: { type: 'string' }, example: ['Communication', 'Teamwork'] },
+      seniorityLevel: {
+        type: 'string',
+        enum: SENIORITY_LEVELS,
+        example: 'Senior',
+      },
+      jobDescription: {
+        type: 'string',
+        example: 'We are looking for an experienced backend engineer...',
+      },
+      technicalSkills: {
+        type: 'array',
+        items: { type: 'string' },
+        example: ['Node.js', 'MongoDB', 'Docker'],
+      },
+      softSkills: {
+        type: 'array',
+        items: { type: 'string' },
+        example: ['Communication', 'Teamwork'],
+      },
       addedBy: { type: 'string', example: '507f1f77bcf86cd799439011' },
       updatedBy: { type: 'string', nullable: true },
       closed: { type: 'boolean', example: false },
@@ -36,16 +58,29 @@ export const jobSchemas = {
 
   CreateJobRequest: {
     type: 'object',
-    required: ['jobTitle', 'jobLocation', 'workingTime', 'seniorityLevel', 'jobDescription', 'technicalSkills', 'softSkills'],
+    required: [
+      'jobTitle',
+      'jobLocation',
+      'workingTime',
+      'seniorityLevel',
+      'jobDescription',
+      'technicalSkills',
+      'softSkills',
+    ],
     properties: {
       jobTitle: { type: 'string', example: 'Senior Backend Engineer' },
       jobLocation: { type: 'string', enum: JOB_LOCATIONS, example: 'hybrid' },
       workingTime: { type: 'string', enum: WORKING_TIME, example: 'full-time' },
-      seniorityLevel: { type: 'string', enum: SENIORITY_LEVELS, example: 'Senior' },
+      seniorityLevel: {
+        type: 'string',
+        enum: SENIORITY_LEVELS,
+        example: 'Senior',
+      },
       jobDescription: {
         type: 'string',
         minLength: 100,
-        example: 'We are looking for an experienced backend engineer with strong Node.js skills...',
+        example:
+          'We are looking for an experienced backend engineer with strong Node.js skills...',
       },
       technicalSkills: {
         type: 'array',
@@ -80,7 +115,11 @@ export const jobSchemas = {
       workingTime: { type: 'string', enum: WORKING_TIME },
       seniorityLevel: { type: 'string', enum: SENIORITY_LEVELS },
       jobDescription: { type: 'string', minLength: 100 },
-      technicalSkills: { type: 'array', items: { type: 'string' }, minItems: 1 },
+      technicalSkills: {
+        type: 'array',
+        items: { type: 'string' },
+        minItems: 1,
+      },
       softSkills: { type: 'array', items: { type: 'string' }, minItems: 1 },
       salary: {
         type: 'object',

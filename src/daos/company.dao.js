@@ -1,4 +1,5 @@
 import { Company } from '../models/Company.js';
+import { MSG } from '../utils/messages.js';
 
 export class CompanyDAO {
   async findById(id) {
@@ -42,7 +43,7 @@ export class CompanyDAO {
   async update(id, dto, userId) {
     const isOwner = await this.isOwner(id, userId);
     if (!isOwner) {
-      throw new Error('You do not have permission to update this company');
+      throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
     }
 
     await this.isActive(id);
@@ -54,9 +55,7 @@ export class CompanyDAO {
     );
 
     if (!company) {
-      throw new Error(
-        'Company not found or you do not have permission to update it',
-      );
+      throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
     }
 
     return company;
@@ -95,7 +94,7 @@ export class CompanyDAO {
   async softDelete(id, user) {
     const isOwner = (await this.isOwner(id, user.id)) || user.role === 'Admin';
     if (!isOwner) {
-      throw new Error('You do not have permission to delete this company');
+      throw new Error(MSG.COMPANY.NO_PERMISSION_DELETE);
     }
 
     await this.isActive(id);
@@ -107,9 +106,7 @@ export class CompanyDAO {
     );
 
     if (!company) {
-      throw new Error(
-        'Company not found or you do not have permission to delete it',
-      );
+      throw new Error(MSG.COMPANY.NO_PERMISSION_DELETE);
     }
 
     return company;
@@ -124,7 +121,7 @@ export class CompanyDAO {
     });
 
     if (!company) {
-      throw new Error('Company not found or inactive');
+      throw new Error(MSG.COMPANY.NOT_FOUND_OR_INACTIVE);
     }
 
     return company;

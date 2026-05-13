@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { MSG } from '../utils/messages.js';
 
 export class Authorization {
   // verify token
@@ -8,7 +9,7 @@ export class Authorization {
       if (!authorization) {
         return res.status(401).json({
           success: false,
-          message: 'No authorization token provided',
+          message: MSG.MIDDLEWARE.NO_TOKEN,
         });
       }
       const [type, token] = authorization.split(' ');
@@ -21,20 +22,20 @@ export class Authorization {
               message:
                 err.name === 'TokenExpiredError'
                   ? 'Token expired'
-                  : 'Invalid token',
+                  : MSG.MIDDLEWARE.INVALID_TOKEN,
             });
           }
           req.user = decoded;
           next();
         });
       } else {
-        return res.status(403).json({ message: 'Invalid token' });
+        return res.status(403).json({ message: MSG.MIDDLEWARE.INVALID_TOKEN });
       }
     } catch (error) {
       return res.status(500).json({
         success: false,
         error,
-        message: 'Authentication error',
+        message: MSG.MIDDLEWARE.AUTH_ERROR,
       });
     }
   }
@@ -47,7 +48,7 @@ export class Authorization {
     // Otherwise deny access
     return res.status(403).json({
       success: false,
-      message: 'Only users can apply for jobs',
+      message: MSG.MIDDLEWARE.ONLY_USERS_CAN_APPLY,
     });
   }
 
@@ -56,7 +57,7 @@ export class Authorization {
     if (!req.user.id) {
       return res.status(403).json({
         success: false,
-        message: "You are not allowed to modify another user's account",
+        message: MSG.MIDDLEWARE.CANNOT_MODIFY_OTHER_USER,
       });
     }
     next();
@@ -70,7 +71,7 @@ export class Authorization {
     // Otherwise deny access
     return res.status(403).json({
       success: false,
-      message: 'You do not have permission to perform this action',
+      message: MSG.MIDDLEWARE.NO_PERMISSION,
     });
   }
 
@@ -82,8 +83,7 @@ export class Authorization {
     // Otherwise deny access
     return res.status(403).json({
       success: false,
-      message:
-        'You do not have permission to perform this action [only admins]',
+      message: MSG.MIDDLEWARE.NO_PERMISSION,
     });
   }
 
@@ -95,7 +95,7 @@ export class Authorization {
     // Otherwise deny access
     return res.status(403).json({
       success: false,
-      message: 'You do not have permission to perform this action',
+      message: MSG.MIDDLEWARE.NO_PERMISSION,
     });
   }
 }

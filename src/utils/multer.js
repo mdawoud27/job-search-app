@@ -1,4 +1,5 @@
 import multer from 'multer';
+import { MSG } from './messages.js';
 
 // Store file in memory
 const storage = multer.memoryStorage();
@@ -8,7 +9,7 @@ function fileFilter(req, file, cb) {
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {
-    cb(new Error('Only images are allowed'), false);
+    cb(new Error(MSG.UPLOAD.ONLY_IMAGES), false);
   }
 }
 
@@ -16,7 +17,7 @@ function fileFilterCV(req, file, cb) {
   if (file.mimetype.startsWith('application/pdf')) {
     cb(null, true);
   } else {
-    cb(new Error('Only PDF are allowed'), false);
+    cb(new Error(MSG.UPLOAD.ONLY_PDF), false);
   }
 }
 

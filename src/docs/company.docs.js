@@ -9,14 +9,18 @@ export const companyDocs = {
       requestBody: {
         required: true,
         content: {
-          'application/json': { schema: { $ref: '#/components/schemas/CreateCompanyRequest' } },
+          'application/json': {
+            schema: { $ref: '#/components/schemas/CreateCompanyRequest' },
+          },
         },
       },
       responses: {
         201: {
           description: 'Company created successfully',
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/CompanyResponse' } },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CompanyResponse' },
+            },
           },
         },
         400: { description: 'Validation error' },
@@ -33,7 +37,13 @@ export const companyDocs = {
       summary: 'Search company by name',
       security: bearerAuth,
       parameters: [
-        { name: 'name', in: 'path', required: true, schema: { type: 'string' }, description: 'Company name to search' },
+        {
+          name: 'name',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company name to search',
+        },
       ],
       responses: {
         200: {
@@ -58,7 +68,13 @@ export const companyDocs = {
       summary: 'Get company details with its jobs',
       security: bearerAuth,
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
       ],
       responses: {
         200: {
@@ -69,7 +85,10 @@ export const companyDocs = {
                 type: 'object',
                 properties: {
                   company: { $ref: '#/components/schemas/CompanyResponse' },
-                  jobs: { type: 'array', items: { $ref: '#/components/schemas/JobResponse' } },
+                  jobs: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/JobResponse' },
+                  },
                 },
               },
             },
@@ -84,19 +103,29 @@ export const companyDocs = {
       summary: 'Update company (HR only)',
       security: bearerAuth,
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
       ],
       requestBody: {
         required: true,
         content: {
-          'application/json': { schema: { $ref: '#/components/schemas/UpdateCompanyRequest' } },
+          'application/json': {
+            schema: { $ref: '#/components/schemas/UpdateCompanyRequest' },
+          },
         },
       },
       responses: {
         200: {
           description: 'Company updated successfully',
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/CompanyResponse' } },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CompanyResponse' },
+            },
           },
         },
         400: { description: 'Validation error' },
@@ -110,7 +139,13 @@ export const companyDocs = {
       summary: 'Soft delete company (HR only)',
       security: bearerAuth,
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
       ],
       responses: {
         200: { description: 'Company deleted successfully' },
@@ -127,7 +162,13 @@ export const companyDocs = {
       summary: 'Upload company logo (HR only)',
       security: bearerAuth,
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
       ],
       requestBody: {
         required: true,
@@ -156,7 +197,13 @@ export const companyDocs = {
       summary: 'Delete company logo (HR only)',
       security: bearerAuth,
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
       ],
       responses: {
         200: { description: 'Logo deleted successfully' },
@@ -173,7 +220,13 @@ export const companyDocs = {
       summary: 'Upload company cover picture (HR only)',
       security: bearerAuth,
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
       ],
       requestBody: {
         required: true,
@@ -202,7 +255,13 @@ export const companyDocs = {
       summary: 'Delete company cover picture (HR only)',
       security: bearerAuth,
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
       ],
       responses: {
         200: { description: 'Cover picture deleted successfully' },
@@ -219,7 +278,13 @@ export const companyDocs = {
       summary: 'Add HR to company',
       security: bearerAuth,
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
       ],
       requestBody: {
         required: true,
@@ -246,7 +311,13 @@ export const companyDocs = {
       summary: 'Remove HR from company',
       security: bearerAuth,
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Company ID' },
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Company ID',
+        },
       ],
       requestBody: {
         required: true,
