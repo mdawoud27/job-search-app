@@ -67,7 +67,10 @@ export const initSocket = (server) => {
         }
         if (socket.userRole === 'HR' || socket.userRole === 'Admin') {
           // Verify user belongs to this company
-          const canManage = await companyDAO.canManage(companyId, socket.userId);
+          const canManage = await companyDAO.canManage(
+            companyId,
+            socket.userId,
+          );
 
           if (canManage) {
             socket.join(`company:${companyId}`);
@@ -301,7 +304,7 @@ export const initSocket = (server) => {
         );
       } catch (error) {
         console.error('Error fetching company jobs:', error.message);
-        socket.emit("error", { message: MSG.CHAT.FAILED_FETCH_COMPANY_JOBS });
+        socket.emit('error', { message: MSG.CHAT.FAILED_FETCH_COMPANY_JOBS });
       }
     });
 
