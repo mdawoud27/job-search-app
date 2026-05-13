@@ -159,7 +159,7 @@ export const jobDocs = {
         },
       },
       responses: {
-        201: {
+        200: {
           description: 'Job updated successfully',
           content: {
             'application/json': { schema: { $ref: '#/components/schemas/JobResponse' } },
@@ -183,7 +183,7 @@ export const jobDocs = {
         { name: 'jobId', in: 'path', required: true, schema: { type: 'string' }, description: 'Job ID' },
       ],
       responses: {
-        201: { description: 'Job deleted successfully' },
+        200: { description: 'Job deleted successfully' },
         401: { description: 'Unauthorized' },
         403: { description: 'HR access required' },
         404: { description: 'Job or company not found' },

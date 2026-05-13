@@ -46,10 +46,10 @@ export const chatSchemas = {
           pagination: {
             type: 'object',
             properties: {
-              total: { type: 'number', example: 150 },
-              page: { type: 'number', example: 1 },
-              limit: { type: 'number', example: 50 },
-              pages: { type: 'number', example: 3 },
+              total: { type: 'integer', example: 150 },
+              page: { type: 'integer', example: 1 },
+              limit: { type: 'integer', example: 50 },
+              pages: { type: 'integer', example: 3 },
             },
           },
         },
