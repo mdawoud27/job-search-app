@@ -38,6 +38,8 @@ export class AuthService {
       role: dto.role || 'User',
     });
 
+    //TODO: if user role is HR then companyId or companyCode is required
+
     // Send OTP email
     await sendOTPEmail(dto.email, otpCode);
     return UserResponseDto.toResponse(user);
