@@ -26,6 +26,9 @@ export const MSG = {
     EXPIRED_REFRESH_TOKEN: 'Invalid or expired refresh token',
     CREDENTIALS_CHANGED: 'Credentials have been changed. Please login again',
     GOOGLE_AUTH_FAILED: 'Google authentication failed',
+    PASSWORD_REQUIRED: 'Password is required.',
+    PASSWORD_MIN: 'Password must be at least 8 characters long.',
+    PASSWORD_MAX: 'Password must be at most 32 characters long.',
   },
 
   // USER
