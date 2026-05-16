@@ -191,7 +191,7 @@ describe('updateJob', () => {
 
     expect(mockUserDao.findByIdAndActive).toHaveBeenCalledWith(userId);
     expect(mockCompanyDao.isActive).toHaveBeenCalledWith(companyId);
-    expect(mockCompanyDao.canManage).toHaveBeenCalledWith(companyId, userId);
+    expect(mockCompanyDao.isOwner).toHaveBeenCalledWith(companyId, userId);
     expect(mockJobDao.updateJob).toHaveBeenCalledWith(
       dto,
       mockUser.id,

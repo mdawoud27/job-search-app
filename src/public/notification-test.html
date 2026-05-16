@@ -531,6 +531,11 @@
       let socket = null;
 
       function connectSocket() {
+        if (socket && socket.connected) {
+          updateStatus('Already connected', 'connected');
+          return;
+        }
+
         const token = document.getElementById('token').value;
         const companyId = document.getElementById('companyId').value;
 
@@ -544,7 +549,7 @@
           return;
         }
 
-        console.log('Attempting to connect with token:', token.substring(0, 10) + '...', 'to company:', companyId);
+        console.log('Attempting to connect to company:', companyId);
         updateStatus('Connecting...', 'waiting');
 
         socket = io({
@@ -663,8 +668,12 @@
 
       // Add event listeners when DOM is loaded
       document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('connectBtn').addEventListener('click', connectSocket);
-        document.getElementById('disconnectBtn').addEventListener('click', disconnectSocket);
+        document
+          .getElementById('connectBtn')
+          .addEventListener('click', connectSocket);
+        document
+          .getElementById('disconnectBtn')
+          .addEventListener('click', disconnectSocket);
         console.log('Event listeners attached');
       });
     </script>

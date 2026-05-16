@@ -1098,7 +1098,9 @@
           return;
         }
 
-        document.getElementById('myChatsSection').style.display = 'block';
+        const myChatsSection = document.getElementById('myChatsSection');
+        myChatsSection.classList.remove('hidden');
+        myChatsSection.style.display = 'block';
         document.getElementById('myChatsList').innerHTML = '<p>Loading...</p>';
 
         try {

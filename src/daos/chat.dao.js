@@ -67,6 +67,8 @@ export class ChatDAO {
       $or: [{ senderId: userId }, { receiverId: userId }],
       'messages.0': { $exists: true }, // Only return chats with at least one message
     })
+      .select('senderId receiverId updatedAt messages')
+      .slice('messages', -1)
       .populate('senderId', 'firstName lastName email role profilePic')
       .populate('receiverId', 'firstName lastName email role profilePic')
       .sort({ updatedAt: -1 });
