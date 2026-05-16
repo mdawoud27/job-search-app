@@ -3,6 +3,7 @@ import { ApplicationService } from '../../src/services/application.service.js';
 import * as SocketModule from '../../src/config/socket.js';
 import * as EmailUtilsModule from '../../src/utils/email.utils.js';
 import * as ExcelUtilsModule from '../../src/utils/excel.utils.js';
+import { MSG } from '../../src/utils/messages.js';
 
 let applicationService;
 let mockUserRepository;
@@ -34,6 +35,7 @@ beforeEach(() => {
 
   mockCompanyRepository = {
     canManage: jest.fn(),
+    isHR: jest.fn(),
     findById: jest.fn(),
   };
 
@@ -327,9 +329,7 @@ describe('getAllApplicationsForSpecificJob', () => {
 
     await expect(
       applicationService.getAllApplicationsForSpecificJob(jobId, userId, query),
-    ).rejects.toThrow(
-      'You do not have permission to view applications for this job',
-    );
+    ).rejects.toThrow(MSG.CHAT.ONLY_HR_CAN_VIEW_APPLICANTS);
   });
 
   it('should handle custom sorting', async () => {
@@ -500,7 +500,7 @@ describe('updateApplicationStatus', () => {
         status,
         hrUserId,
       ),
-    ).rejects.toThrow('HR user not found');
+    ).rejects.toThrow(MSG.USER.NOT_FOUND);
   });
 
   it('should throw error when company not found', async () => {
@@ -614,7 +614,7 @@ describe('exportCompanyApplicationsByDate', () => {
         hrUserId,
       ),
     ).rejects.toThrow(
-      'You do not have permission to export applications for this company',
+      MSG.MIDDLEWARE.HR_REQUIRED('export applications for this company'),
     );
   });
 

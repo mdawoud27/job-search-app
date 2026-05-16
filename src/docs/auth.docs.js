@@ -211,37 +211,4 @@ export const authDocs = {
       },
     },
   },
-
-  '/api/auth/google': {
-    get: {
-      tags: ['Authentication'],
-      summary: 'Initiate Google OAuth login',
-      parameters: [
-        {
-          name: 'redirect_to',
-          in: 'query',
-          description: 'URL to redirect after successful login',
-          schema: { type: 'string', example: '/dashboard' },
-        },
-      ],
-      responses: {
-        302: { description: 'Redirects to Google OAuth consent screen' },
-      },
-    },
-  },
-
-  '/api/auth/google/callback': {
-    get: {
-      tags: ['Authentication'],
-      summary: 'Google OAuth callback',
-      description:
-        'Handles the callback from Google. Redirects with accessToken, refreshToken, and uName as query params.',
-      responses: {
-        302: {
-          description:
-            'Redirects with tokens on success, or with error param on failure',
-        },
-      },
-    },
-  },
 };

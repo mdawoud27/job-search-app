@@ -75,4 +75,45 @@ export class ChatService {
 
     return true;
   }
+
+  async getUserChats(userId) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new Error(MSG.USER.NOT_FOUND);
+    }
+
+    const chats = await this.chatRepository.getUserChats(userId);
+
+    // Format the chats
+    const formattedChats = chats.map((chat) => {
+      // Determine who the "other" user is
+      const isSender = chat.senderId._id.toString() === userId.toString();
+      const otherUser = isSender ? chat.receiverId : chat.senderId;
+
+      const latestMessage = chat.messages[chat.messages.length - 1];
+
+      return {
+        chatId: chat._id,
+        otherUser: {
+          id: otherUser._id,
+          name: `${otherUser.firstName} ${otherUser.lastName}`,
+          role: otherUser.role,
+          profilePic: otherUser.profilePic?.secure_url || null,
+        },
+        latestMessage: latestMessage
+          ? {
+              message: latestMessage.message,
+              senderId: latestMessage.senderId,
+              timestamp: latestMessage.timestamp,
+            }
+          : null,
+        updatedAt: chat.updatedAt,
+      };
+    });
+
+    return {
+      message: 'Active chats retrieved successfully',
+      data: formattedChats,
+    };
+  }
 }

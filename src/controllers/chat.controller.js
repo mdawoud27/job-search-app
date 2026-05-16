@@ -16,4 +16,14 @@ export class ChatController {
       next(error);
     }
   }
+
+  // get user chats
+  async getUserChats(req, res, next) {
+    try {
+      const result = await this.chatService.getUserChats(req.user.id);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

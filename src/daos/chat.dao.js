@@ -58,7 +58,21 @@ export class ChatDAO {
 
   async getChatById(chatId) {
     return Chat.findById(chatId)
-      .populate('senderId', 'firstName lastName email role')
-      .populate('receiverId', 'firstName lastName email role');
+      .populate('senderId', 'firstName lastName email role profilePic')
+      .populate('receiverId', 'firstName lastName email role profilePic');
+  }
+
+  async getUserChats(userId) {
+    const chats = await Chat.find({
+      $or: [{ senderId: userId }, { receiverId: userId }],
+      'messages.0': { $exists: true }, // Only return chats with at least one message
+    })
+      .select('senderId receiverId updatedAt messages')
+      .slice('messages', -1)
+      .populate('senderId', 'firstName lastName email role profilePic')
+      .populate('receiverId', 'firstName lastName email role profilePic')
+      .sort({ updatedAt: -1 });
+
+    return chats;
   }
 }

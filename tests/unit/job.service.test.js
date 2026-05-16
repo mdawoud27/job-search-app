@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import { JobService } from '../../src/services/job.service.js';
 import * as JobResponseDtoModule from '../../src/dtos/job/job-response.dto.js';
+import { MSG } from '../../src/utils/messages.js';
 
 let jobService;
 let mockUserDao;
@@ -16,6 +17,7 @@ beforeEach(() => {
   mockCompanyDao = {
     isActive: jest.fn(),
     canManage: jest.fn(),
+    isOwner: jest.fn(),
     findByCompanyName: jest.fn(),
   };
 
@@ -124,7 +126,7 @@ describe('createJob', () => {
     mockCompanyDao.canManage.mockResolvedValue(false);
 
     await expect(jobService.createJob(dto, userId, companyId)).rejects.toThrow(
-      'You do not have permission to create a job in this company',
+      MSG.JOB.NOT_AUTHORIZED('create'),
     );
     expect(mockJobDao.createJob).not.toHaveBeenCalled();
   });
@@ -178,6 +180,7 @@ describe('updateJob', () => {
     mockUserDao.findByIdAndActive.mockResolvedValue(mockUser);
     mockCompanyDao.isActive.mockResolvedValue(mockCompany);
     mockCompanyDao.canManage.mockResolvedValue(true);
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockJobDao.updateJob.mockResolvedValue(mockJob);
     dtoSpies.jobResponse.mockReturnValue({
       id: 'job_123',
@@ -188,7 +191,7 @@ describe('updateJob', () => {
 
     expect(mockUserDao.findByIdAndActive).toHaveBeenCalledWith(userId);
     expect(mockCompanyDao.isActive).toHaveBeenCalledWith(companyId);
-    expect(mockCompanyDao.canManage).toHaveBeenCalledWith(companyId, userId);
+    expect(mockCompanyDao.isOwner).toHaveBeenCalledWith(companyId, userId);
     expect(mockJobDao.updateJob).toHaveBeenCalledWith(
       dto,
       mockUser.id,
@@ -209,13 +212,11 @@ describe('updateJob', () => {
 
     mockUserDao.findByIdAndActive.mockResolvedValue(mockUser);
     mockCompanyDao.isActive.mockResolvedValue(mockCompany);
-    mockCompanyDao.canManage.mockResolvedValue(false);
+    mockCompanyDao.isOwner.mockResolvedValue(false);
 
     await expect(
       jobService.updateJob(dto, userId, companyId, jobId),
-    ).rejects.toThrow(
-      'You do not have permission to update a job in this company',
-    );
+    ).rejects.toThrow(MSG.JOB.NOT_AUTHORIZED('update'));
     expect(mockJobDao.updateJob).not.toHaveBeenCalled();
   });
 
@@ -230,6 +231,7 @@ describe('updateJob', () => {
     mockUserDao.findByIdAndActive.mockResolvedValue(mockUser);
     mockCompanyDao.isActive.mockResolvedValue(mockCompany);
     mockCompanyDao.canManage.mockResolvedValue(true);
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockJobDao.updateJob.mockResolvedValue(null);
 
     await expect(
@@ -282,9 +284,7 @@ describe('deleteJob', () => {
 
     await expect(
       jobService.deleteJob(userId, companyId, jobId),
-    ).rejects.toThrow(
-      'You do not have permission to delete a job in this company',
-    );
+    ).rejects.toThrow(MSG.JOB.NOT_AUTHORIZED('delete'));
     expect(mockJobDao.deleteJob).not.toHaveBeenCalled();
   });
 

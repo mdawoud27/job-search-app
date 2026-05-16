@@ -39,6 +39,7 @@ app.use(
           "'unsafe-inline'",
           'https://unpkg.com',
           'https://cdn.jsdelivr.net',
+          'https://cdn.socket.io',
           "'unsafe-eval'",
         ],
         styleSrc: [
@@ -49,7 +50,14 @@ app.use(
           'https://cdn.jsdelivr.net',
         ],
         imgSrc: ["'self'", 'data:', 'https://www.w3.org'],
-        connectSrc: ["'self'", 'https://unpkg.com', 'https://cdn.jsdelivr.net'],
+        connectSrc: [
+          "'self'",
+          'https://unpkg.com',
+          'https://cdn.jsdelivr.net',
+          'https://cdn.socket.io',
+          'ws://localhost:3000',
+          'wss://localhost:3000',
+        ],
       },
     },
   }),
@@ -83,6 +91,18 @@ app.use(
     credentials: true,
   }),
 );
+
+// Morgan logger with sensitive data redaction
+morgan.token('url', (req) => {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  if (url.searchParams.has('accessToken')) {
+    url.searchParams.set('accessToken', '[REDACTED]');
+  }
+  if (url.searchParams.has('refreshToken')) {
+    url.searchParams.set('refreshToken', '[REDACTED]');
+  }
+  return url.pathname + url.search;
+});
 
 app.use(morgan('dev'));
 app.use(express.json());

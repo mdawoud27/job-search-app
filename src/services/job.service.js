@@ -85,9 +85,9 @@ export class JobService {
     }
 
     const company = await this.companyDao.isActive(companyId);
-    const isHR = await this.companyDao.isHR(companyId, userId);
+    const canManage = await this.companyDao.canManage(companyId, userId);
 
-    if (!isHR) {
+    if (!canManage) {
       throw new Error(MSG.JOB.NOT_AUTHORIZED('delete'));
     }
 

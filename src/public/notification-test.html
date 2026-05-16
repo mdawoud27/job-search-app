@@ -485,13 +485,13 @@
         </div>
 
         <div class="button-group">
-          <button class="btn btn-primary" onclick="connectSocket()">
+          <button id="connectBtn" class="btn btn-primary">
             <svg class="btn-icon" viewBox="0 0 24 24">
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
             </svg>
             Connect to Socket.IO
           </button>
-          <button class="btn btn-secondary" onclick="disconnectSocket()">
+          <button id="disconnectBtn" class="btn btn-secondary">
             <svg class="btn-icon" viewBox="0 0 24 24">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -531,6 +531,11 @@
       let socket = null;
 
       function connectSocket() {
+        if (socket && socket.connected) {
+          updateStatus('Already connected', 'connected');
+          return;
+        }
+
         const token = document.getElementById('token').value;
         const companyId = document.getElementById('companyId').value;
 
@@ -544,12 +549,16 @@
           return;
         }
 
+        console.log('Attempting to connect to company:', companyId);
+        updateStatus('Connecting...', 'waiting');
+
         socket = io({
           auth: { token: token },
           transports: ['websocket', 'polling'],
         });
 
         socket.on('connect', () => {
+          console.log('Connected to socket server with ID:', socket.id);
           updateStatus('Connected to server', 'connected');
           socket.emit('joinCompany', companyId);
           setTimeout(() => {
@@ -622,7 +631,9 @@
         });
 
         socket.on('connect_error', (error) => {
+          console.error('Socket connection error:', error);
           updateStatus(`Connection Error: ${error.message}`, 'error');
+          alert(`Socket connection failed: ${error.message}`);
         });
       }
 
@@ -654,6 +665,17 @@
         messageEl.textContent = message;
         statusEl.appendChild(messageEl);
       }
+
+      // Add event listeners when DOM is loaded
+      document.addEventListener('DOMContentLoaded', () => {
+        document
+          .getElementById('connectBtn')
+          .addEventListener('click', connectSocket);
+        document
+          .getElementById('disconnectBtn')
+          .addEventListener('click', disconnectSocket);
+        console.log('Event listeners attached');
+      });
     </script>
   </body>
 </html>
