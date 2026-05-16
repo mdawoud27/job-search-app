@@ -113,7 +113,7 @@ router.delete('/user/delete', Authorization.verifyToken, (req, res, next) =>
 router.delete(
   '/user/:id/delete',
   Authorization.verifyToken,
-  Authorization.verifyUserPermission,
+  Authorization.verifyAdminPermission,
   (req, res, next) => userController.softDelete(req, res, next),
 );
 
