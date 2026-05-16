@@ -137,3 +137,6 @@ restfunctions.js
 TODO.md
 **/src/utils/send.js
 .idea/
+seed.js
+swagger.json
+text.txt
