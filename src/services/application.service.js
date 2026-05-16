@@ -87,7 +87,7 @@ export class ApplicationService {
     );
 
     if (!canManage) {
-      throw new Error(MSG.JOB.NOT_AUTHORIZED('view applications for'));
+      throw new Error(MSG.CHAT.ONLY_HR_CAN_VIEW_APPLICANTS);
     }
 
     const jobWithApplications =
@@ -129,12 +129,12 @@ export class ApplicationService {
       throw new Error(MSG.APPLICATION.NOT_FOUND);
     }
 
-    const isHR = await this.companyRepository.isHR(
+    const canManage = await this.companyRepository.canManage(
       application.jobId.companyId,
       hrUserId,
     );
 
-    if (!isHR) {
+    if (!canManage) {
       throw new Error(MSG.APPLICATION.NO_PERMISSION_UPDATE);
     }
 
