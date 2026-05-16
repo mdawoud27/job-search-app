@@ -19,7 +19,12 @@ const companyDAO = new CompanyDAO();
 export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+      origin: [
+        process.env.FRONTEND_URL,
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://localhost:5174',
+      ].filter(Boolean),
       credentials: true,
     },
   });
@@ -27,6 +32,7 @@ export const initSocket = (server) => {
   // Authentication middleware
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
+    // console.log(`Socket connection attempt with token: ${token ? 'present' : 'missing'}`);
 
     if (!token) {
       return next(
@@ -39,8 +45,10 @@ export const initSocket = (server) => {
       const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
       socket.userId = decoded.id;
       socket.userRole = decoded.role;
+      // console.log(`Socket authenticated: User ${socket.userId} (${socket.userRole})`);
       next();
     } catch (err) {
+      // console.error('Socket authentication failed:', err.message);
       next(
         new Error(
           `${MSG.MIDDLEWARE.AUTH_ERROR}: ${MSG.MIDDLEWARE.INVALID_TOKEN}`,
@@ -51,9 +59,9 @@ export const initSocket = (server) => {
   });
 
   io.on('connection', (socket) => {
-    console.log(
-      `New client connected: ${socket.id} (User: ${socket.userId}, Role: ${socket.userRole})`,
-    );
+    // console.log(
+    //   `New client connected: ${socket.id} (User: ${socket.userId}, Role: ${socket.userRole})`,
+    // );
 
     // Join user to their personal room
     socket.join(`user:${socket.userId}`);
@@ -74,9 +82,9 @@ export const initSocket = (server) => {
 
           if (canManage) {
             socket.join(`company:${companyId}`);
-            console.log(
-              `User ${socket.userId} joined company room: ${companyId}`,
-            );
+            // console.log(
+            //   `User ${socket.userId} joined company room: ${companyId}`,
+            // );
           } else {
             socket.emit('error', {
               message: MSG.JOB.NOT_AUTHORIZED('join company room for'),
