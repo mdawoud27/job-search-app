@@ -150,7 +150,7 @@ router.post(
   '/company/:id/hr',
   apiLimiter,
   Authorization.verifyToken,
-  // Authorization.verifyHRPermission,
+  Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.addHR(req, res, next);
   },
@@ -165,7 +165,7 @@ router.delete(
   '/company/:id/hr',
   apiLimiter,
   Authorization.verifyToken,
-  // Authorization.verifyHRPermission,
+  Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.removeHR(req, res, next);
   },
