@@ -6,6 +6,7 @@ import * as UserResponseDtoModule from '../../src/dtos/auth/user-response.dto.js
 import * as ConfirmOtpDtoModule from '../../src/dtos/auth/confirm-opt.dto.js';
 import * as TokenUtilsModule from '../../src/utils/tokens.utils.js';
 import bcrypt from 'bcrypt';
+import { MSG } from '../../src/utils/messages.js';
 
 let authService;
 let mockUserRepository;
@@ -183,7 +184,7 @@ describe('signup', () => {
     mockUserRepository.findByEmail.mockResolvedValue({ _id: 'existing' });
 
     await expect(authService.signup(dto)).rejects.toThrow(
-      'Email is already exists',
+      MSG.USER.ALREADY_EXISTS,
     );
     expect(mockUserRepository.create).not.toHaveBeenCalled();
   });
@@ -299,7 +300,7 @@ describe('resendOtpCode', () => {
     mockUserRepository.findByEmail.mockResolvedValue(null);
 
     await expect(authService.resendOtpCode(dto)).rejects.toThrow(
-      'User not found',
+      MSG.USER.NOT_FOUND,
     );
   });
 
@@ -310,7 +311,7 @@ describe('resendOtpCode', () => {
     );
 
     await expect(authService.resendOtpCode(dto)).rejects.toThrow(
-      'Email is already confirmed',
+      MSG.USER.EMAIL_ALREADY_CONFIRMED,
     );
   });
 

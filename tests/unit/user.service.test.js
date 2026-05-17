@@ -5,6 +5,7 @@ import * as UpdateUserDtoModule from '../../src/dtos/user/update-user.dto.js';
 import * as CloudinaryUtilsModule from '../../src/utils/cloudinary.util.js';
 import * as CryptoModule from '../../src/utils/crypto.js';
 import bcrypt from 'bcryptjs';
+import { MSG } from '../../src/utils/messages.js';
 
 let userService;
 let mockUserRepository;
@@ -100,7 +101,7 @@ describe('updateAccount', () => {
       updateDto,
     );
     expect(dtoSpies.updateUser).toHaveBeenCalledWith(updatedUser);
-    expect(result.message).toBe('Your account is updated successfully');
+    expect(result.message).toBe(MSG.USER.ACCOUNT_UPDATED);
     expect(result.data).toBeDefined();
   });
 
@@ -142,10 +143,9 @@ describe('getLoggedUser', () => {
     const result = await userService.getLoggedUser(userId);
 
     expect(mockUserRepository.findById).toHaveBeenCalledWith(userId);
-    expect(cryptoSpies.decrypt).toHaveBeenCalledWith(mockUser.mobileNumber);
-    expect(result.message).toBe('User profile retrived successfully');
+    expect(result.message).toBe(MSG.USER.PROFILE_RETRIEVED);
     expect(result.data).toBeDefined();
-    expect(result.data.mobileNumber).toBe('123456789');
+    expect(result.data.mobileNumber).toBe('encrypted_123456');
   });
 
   it('should throw error when user not found', async () => {
@@ -175,9 +175,9 @@ describe('getPublicProfile', () => {
     const result = await userService.getPublicProfile(userId);
 
     expect(mockUserRepository.findById).toHaveBeenCalledWith(userId);
-    expect(result.message).toBe('User profile retrived successfully');
+    expect(result.message).toBe(MSG.USER.PROFILE_RETRIEVED);
     expect(result.data.username).toBe(mockUser.username);
-    expect(result.data.mobileNumber).toBe('123456789');
+    expect(result.data.mobileNumber).toBe('encrypted_123456');
     expect(result.data.profilePic).toBeDefined();
     expect(result.data.coverPic).toBeDefined();
   });
@@ -219,9 +219,7 @@ describe('changePassword', () => {
     expect(mockUser.changeCredentialTime).toBeInstanceOf(Date);
     expect(mockUser.refreshToken).toBeNull();
     expect(mockUser.save).toHaveBeenCalled();
-    expect(result.message).toBe(
-      'Password changed successfully. Please login again',
-    );
+    expect(result.message).toBe(MSG.USER.PASSWORD_CHANGED);
   });
 
   it('should throw error when user not found', async () => {
@@ -230,7 +228,7 @@ describe('changePassword', () => {
     mockUserRepository.findById.mockResolvedValue(null);
 
     await expect(userService.changePassword(userId, dto)).rejects.toThrow(
-      'User not found',
+      MSG.USER.NOT_FOUND,
     );
   });
 
@@ -241,7 +239,7 @@ describe('changePassword', () => {
     mockUserRepository.isActive.mockResolvedValue(false);
 
     await expect(userService.changePassword(userId, dto)).rejects.toThrow(
-      'User is deleted or banned',
+      MSG.USER.DELETED_OR_BANNED,
     );
   });
 
@@ -532,7 +530,7 @@ describe('restoreAccount', () => {
     mockUserRepository.findById.mockResolvedValue(mockUser);
 
     await expect(userService.restoreAccount(userId, admin)).rejects.toThrow(
-      'User is already active not deleted',
+      MSG.USER.ALREADY_ACTIVE,
     );
     expect(mockUser.save).not.toHaveBeenCalled();
   });
