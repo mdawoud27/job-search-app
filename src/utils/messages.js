@@ -34,7 +34,7 @@ export const MSG = {
   // USER
   USER: {
     // success
-    ACCOUNT_UPDATED: 'Account updated successfully',
+    ACCOUNT_UPDATED: 'Your account is updated successfully',
     PROFILE_RETRIEVED: 'User profile retrieved successfully',
     PASSWORD_CHANGED: 'Password changed successfully. Please login again',
     PROFILE_PIC_UPLOADED: 'Profile picture uploaded successfully',
