@@ -1,9 +1,8 @@
-// import { jest } from '@jest/globals';
 import request from 'supertest';
 import express from 'express';
 import { connect, closeDatabase, clearDatabase } from './setup.js';
 import { createAuthUser, createTestCompany } from './helpers.js';
-import routes from '../../src/routes/index.routes.js';
+import routes from '../../src/routes/index.js';
 import { ErrorHandler } from '../../src/middlewares/error.middleware.js';
 
 const app = express();

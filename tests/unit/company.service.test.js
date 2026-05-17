@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 import { CompanyService } from '../../src/services/company.service.js';
 import * as CompanyResponseDtoModule from '../../src/dtos/company/company-response.dto.js';
 import * as CloudinaryUtilsModule from '../../src/utils/cloudinary.util.js';
+import { MSG } from '../../src/utils/messages.js';
 
 let companyService;
 let mockUserDao;
@@ -21,6 +22,7 @@ beforeEach(() => {
     findByIdWithJobs: jest.fn(),
     findByCompanyName: jest.fn(),
     isActive: jest.fn(),
+    isOwner: jest.fn(),
     updateCompanyLogo: jest.fn(),
     updateCompanyCover: jest.fn(),
     addHR: jest.fn(),
@@ -101,7 +103,7 @@ describe('createCompany', () => {
 
     expect(mockUserDao.findByIdAndActive).toHaveBeenCalledWith(userId);
     expect(mockCompanyDao.create).toHaveBeenCalledWith(dto, userId);
-    expect(result.message).toBe('Company created successfully');
+    expect(result.message).toBe(MSG.COMPANY.CREATED);
     expect(result.createdBy).toBe(mockUser.email);
     expect(result.role).toBe(mockUser.role);
   });
@@ -121,7 +123,7 @@ describe('createCompany', () => {
     mockCompanyDao.create.mockRejectedValue(duplicateError);
 
     await expect(companyService.createCompany(dto, userId)).rejects.toThrow(
-      'email already exists',
+      MSG.COMPANY.ALREADY_EXISTS,
     );
   });
 
@@ -137,7 +139,7 @@ describe('createCompany', () => {
     );
 
     await expect(companyService.createCompany(dto, userId)).rejects.toThrow(
-      'User not found',
+      MSG.USER.NOT_FOUND,
     );
     expect(mockCompanyDao.create).not.toHaveBeenCalled();
   });
@@ -165,7 +167,7 @@ describe('updateCompany', () => {
 
     expect(mockUserDao.findByIdAndActive).toHaveBeenCalledWith(userId);
     expect(mockCompanyDao.update).toHaveBeenCalledWith(companyId, dto, userId);
-    expect(result.message).toBe('Company updated successfully');
+    expect(result.message).toBe(MSG.COMPANY.UPDATED);
   });
 
   it('should throw error when trying to update legalAttachment', async () => {
@@ -175,7 +177,7 @@ describe('updateCompany', () => {
 
     await expect(
       companyService.updateCompany(companyId, dto, userId),
-    ).rejects.toThrow('Legal attachment is not allowed');
+    ).rejects.toThrow(MSG.COMPANY.LEGAL_ATTACHMENT_NOT_ALLOWED);
     expect(mockUserDao.findByIdAndActive).not.toHaveBeenCalled();
   });
 
@@ -190,7 +192,7 @@ describe('updateCompany', () => {
 
     await expect(
       companyService.updateCompany(companyId, dto, userId),
-    ).rejects.toThrow('Company not found');
+    ).rejects.toThrow(MSG.COMPANY.NOT_FOUND);
   });
 
   it('should throw error when company is deleted or banned', async () => {
@@ -205,7 +207,7 @@ describe('updateCompany', () => {
 
     await expect(
       companyService.updateCompany(companyId, dto, userId),
-    ).rejects.toThrow('Company is deleted or banned');
+    ).rejects.toThrow(MSG.COMPANY.DELETED_OR_BANNED);
   });
 
   it('should handle duplicate key error', async () => {
@@ -296,7 +298,7 @@ describe('getSpecificCompanyWithJobs', () => {
 
     await expect(
       companyService.getSpecificCompanyWithJobs(companyId),
-    ).rejects.toThrow('Company not found or deleted or banned');
+    ).rejects.toThrow(MSG.COMPANY.NOT_FOUND);
   });
 });
 
@@ -320,7 +322,7 @@ describe('searchCompanywithName', () => {
     const result = await companyService.searchCompanywithName(companyName);
 
     expect(mockCompanyDao.findByCompanyName).toHaveBeenCalledWith(companyName);
-    expect(result.message).toBe('Companies found successfully');
+    expect(result.message).toBe(MSG.COMPANY.ALL_FOUND);
     expect(result.count).toBe(2);
     expect(result.data).toHaveLength(2);
   });
@@ -332,7 +334,7 @@ describe('searchCompanywithName', () => {
 
     await expect(
       companyService.searchCompanywithName(companyName),
-    ).rejects.toThrow('No companies found');
+    ).rejects.toThrow(MSG.COMPANY.NO_COMPANIES_FOUND);
   });
 
   it('should throw error when companies is null', async () => {
@@ -342,7 +344,7 @@ describe('searchCompanywithName', () => {
 
     await expect(
       companyService.searchCompanywithName(companyName),
-    ).rejects.toThrow('No companies found');
+    ).rejects.toThrow(MSG.COMPANY.NO_COMPANIES_FOUND);
   });
 });
 
@@ -353,20 +355,27 @@ describe('uploadCompanyLogo', () => {
   it('should upload logo successfully', async () => {
     const companyId = 'company_123';
     const logo = { secure_url: 'logo.jpg', public_id: 'logo_id' };
+    const mockUser = { id: 'user_123', role: 'HR' };
     const mockCompany = createMockCompany();
     const updatedCompany = createMockCompany({ logo });
 
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockCompanyDao.isActive.mockResolvedValue(mockCompany);
     mockCompanyDao.updateCompanyLogo.mockResolvedValue(updatedCompany);
 
-    const result = await companyService.uploadCompanyLogo(companyId, logo);
+    const result = await companyService.uploadCompanyLogo(
+      companyId,
+      logo,
+      mockUser,
+    );
 
+    expect(mockCompanyDao.isOwner).toHaveBeenCalledWith(companyId, mockUser.id);
     expect(mockCompanyDao.isActive).toHaveBeenCalledWith(companyId);
     expect(mockCompanyDao.updateCompanyLogo).toHaveBeenCalledWith(
       companyId,
       logo,
     );
-    expect(result.message).toBe('Logo uploaded successfully');
+    expect(result.message).toBe(MSG.COMPANY.LOGO_UPLOADED);
     expect(result.data.logo).toEqual(logo);
   });
 
@@ -378,25 +387,32 @@ describe('uploadCompanyLogo', () => {
     });
     const updatedCompany = createMockCompany({ logo });
 
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockCompanyDao.isActive.mockResolvedValue(mockCompany);
-    cloudinarySpies.deleteFile.mockResolvedValue(true);
     mockCompanyDao.updateCompanyLogo.mockResolvedValue(updatedCompany);
 
-    const result = await companyService.uploadCompanyLogo(companyId, logo);
+    const result = await companyService.uploadCompanyLogo(companyId, logo, {
+      id: 'user_123',
+      role: 'HR',
+    });
 
     expect(cloudinarySpies.deleteFile).toHaveBeenCalledWith('old_logo_id');
-    expect(result.message).toBe('Logo uploaded successfully');
+    expect(result.message).toBe(MSG.COMPANY.LOGO_UPLOADED);
   });
 
   it('should throw error when company not found', async () => {
     const companyId = 'company_123';
     const logo = { secure_url: 'logo.jpg', public_id: 'logo_id' };
 
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockCompanyDao.isActive.mockResolvedValue(null);
 
     await expect(
-      companyService.uploadCompanyLogo(companyId, logo),
-    ).rejects.toThrow('Company not found or deleted or banned');
+      companyService.uploadCompanyLogo(companyId, logo, {
+        id: 'user_123',
+        role: 'HR',
+      }),
+    ).rejects.toThrow(MSG.COMPANY.NOT_FOUND_OR_BANNED);
   });
 });
 
@@ -410,38 +426,50 @@ describe('deleteCompanyLogo', () => {
       logo: { secure_url: 'logo.jpg', public_id: 'logo_id' },
     });
 
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockCompanyDao.isActive.mockResolvedValue(mockCompany);
     cloudinarySpies.deleteFile.mockResolvedValue(true);
 
-    const result = await companyService.deleteCompanyLogo(companyId);
+    const result = await companyService.deleteCompanyLogo(companyId, {
+      id: 'user_123',
+      role: 'HR',
+    });
 
     expect(cloudinarySpies.deleteFile).toHaveBeenCalledWith('logo_id');
     expect(mockCompany.logo).toBeNull();
     expect(mockCompany.save).toHaveBeenCalled();
-    expect(result.message).toBe('Logo deleted successfully');
+    expect(result.message).toBe(MSG.COMPANY.LOGO_DELETED);
   });
 
   it('should return message when no logo to delete', async () => {
     const companyId = 'company_123';
     const mockCompany = createMockCompany({ logo: null });
 
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockCompanyDao.isActive.mockResolvedValue(mockCompany);
 
-    const result = await companyService.deleteCompanyLogo(companyId);
+    const result = await companyService.deleteCompanyLogo(companyId, {
+      id: 'user_123',
+      role: 'HR',
+    });
 
     expect(cloudinarySpies.deleteFile).not.toHaveBeenCalled();
     expect(mockCompany.save).not.toHaveBeenCalled();
-    expect(result.message).toBe('No logo to delete');
+    expect(result.message).toBe(MSG.COMPANY.NO_LOGO);
   });
 
   it('should throw error when company not found', async () => {
     const companyId = 'company_123';
 
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockCompanyDao.isActive.mockResolvedValue(null);
 
-    await expect(companyService.deleteCompanyLogo(companyId)).rejects.toThrow(
-      'Company not found or deleted or banned',
-    );
+    await expect(
+      companyService.deleteCompanyLogo(companyId, {
+        id: 'user_123',
+        role: 'HR',
+      }),
+    ).rejects.toThrow(MSG.COMPANY.NOT_FOUND);
   });
 });
 
@@ -455,17 +483,22 @@ describe('uploadCompanyCover', () => {
     const mockCompany = createMockCompany();
     const updatedCompany = createMockCompany({ coverPic: cover });
 
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockCompanyDao.isActive.mockResolvedValue(mockCompany);
     mockCompanyDao.updateCompanyCover.mockResolvedValue(updatedCompany);
 
-    const result = await companyService.uploadCompanyCover(companyId, cover);
+    const result = await companyService.uploadCompanyCover(companyId, cover, {
+      id: 'user_123',
+      role: 'HR',
+    });
 
+    expect(mockCompanyDao.isOwner).toHaveBeenCalledWith(companyId, 'user_123');
     expect(mockCompanyDao.isActive).toHaveBeenCalledWith(companyId);
     expect(mockCompanyDao.updateCompanyCover).toHaveBeenCalledWith(
       companyId,
       cover,
     );
-    expect(result.message).toBe('Cover uploaded successfully');
+    expect(result.message).toBe(MSG.COMPANY.COVER_UPLOADED);
     expect(result.data.coverPic).toEqual(cover);
   });
 
@@ -477,25 +510,32 @@ describe('uploadCompanyCover', () => {
     });
     const updatedCompany = createMockCompany({ coverPic: cover });
 
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockCompanyDao.isActive.mockResolvedValue(mockCompany);
-    cloudinarySpies.deleteFile.mockResolvedValue(true);
     mockCompanyDao.updateCompanyCover.mockResolvedValue(updatedCompany);
 
-    const result = await companyService.uploadCompanyCover(companyId, cover);
+    const result = await companyService.uploadCompanyCover(companyId, cover, {
+      id: 'user_123',
+      role: 'HR',
+    });
 
     expect(cloudinarySpies.deleteFile).toHaveBeenCalledWith('old_cover_id');
-    expect(result.message).toBe('Cover uploaded successfully');
+    expect(result.message).toBe(MSG.COMPANY.COVER_UPLOADED);
   });
 
   it('should throw error when company not found', async () => {
     const companyId = 'company_123';
     const cover = { secure_url: 'cover.jpg', public_id: 'cover_id' };
 
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockCompanyDao.isActive.mockResolvedValue(null);
 
     await expect(
-      companyService.uploadCompanyCover(companyId, cover),
-    ).rejects.toThrow('Company not found or deleted or banned');
+      companyService.uploadCompanyCover(companyId, cover, {
+        id: 'user_123',
+        role: 'HR',
+      }),
+    ).rejects.toThrow(MSG.COMPANY.NOT_FOUND);
   });
 });
 
@@ -509,38 +549,50 @@ describe('deleteCompanyCover', () => {
       coverPic: { secure_url: 'cover.jpg', public_id: 'cover_id' },
     });
 
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockCompanyDao.isActive.mockResolvedValue(mockCompany);
     cloudinarySpies.deleteFile.mockResolvedValue(true);
 
-    const result = await companyService.deleteCompanyCover(companyId);
+    const result = await companyService.deleteCompanyCover(companyId, {
+      id: 'user_123',
+      role: 'HR',
+    });
 
     expect(cloudinarySpies.deleteFile).toHaveBeenCalledWith('cover_id');
     expect(mockCompany.coverPic).toBeNull();
     expect(mockCompany.save).toHaveBeenCalled();
-    expect(result.message).toBe('Cover deleted successfully');
+    expect(result.message).toBe(MSG.COMPANY.COVER_DELETED);
   });
 
   it('should return message when no cover to delete', async () => {
     const companyId = 'company_123';
     const mockCompany = createMockCompany({ coverPic: null });
 
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockCompanyDao.isActive.mockResolvedValue(mockCompany);
 
-    const result = await companyService.deleteCompanyCover(companyId);
+    const result = await companyService.deleteCompanyCover(companyId, {
+      id: 'user_123',
+      role: 'HR',
+    });
 
     expect(cloudinarySpies.deleteFile).not.toHaveBeenCalled();
     expect(mockCompany.save).not.toHaveBeenCalled();
-    expect(result.message).toBe('No cover to delete');
+    expect(result.message).toBe(MSG.COMPANY.NO_COVER);
   });
 
   it('should throw error when company not found', async () => {
     const companyId = 'company_123';
 
+    mockCompanyDao.isOwner.mockResolvedValue(true);
     mockCompanyDao.isActive.mockResolvedValue(null);
 
-    await expect(companyService.deleteCompanyCover(companyId)).rejects.toThrow(
-      'Company not found or deleted or banned',
-    );
+    await expect(
+      companyService.deleteCompanyCover(companyId, {
+        id: 'user_123',
+        role: 'HR',
+      }),
+    ).rejects.toThrow(MSG.COMPANY.NOT_FOUND);
   });
 });
 
@@ -559,14 +611,17 @@ describe('addHR', () => {
     mockUserDao.findByIdAndActive.mockResolvedValue(mockUser);
     mockCompanyDao.addHR.mockResolvedValue(updatedCompany);
 
-    const result = await companyService.addHR(companyId, userId);
+    const result = await companyService.addHR(companyId, userId, {
+      id: 'user_123',
+      role: 'HR',
+    });
 
     expect(mockCompanyDao.isActive).toHaveBeenCalledWith(companyId);
     expect(mockUserDao.findByIdAndActive).toHaveBeenCalledWith(userId);
     expect(mockCompanyDao.addHR).toHaveBeenCalledWith(companyId, userId);
     expect(mockUser.role).toBe('HR');
     expect(mockUser.save).toHaveBeenCalled();
-    expect(result.message).toBe('HR added successfully');
+    expect(result.message).toBe(MSG.COMPANY.HR_ADDED);
   });
 
   it('should throw error when company not found', async () => {
@@ -575,9 +630,9 @@ describe('addHR', () => {
 
     mockCompanyDao.isActive.mockResolvedValue(null);
 
-    await expect(companyService.addHR(companyId, userId)).rejects.toThrow(
-      'Company not found or deleted or banned',
-    );
+    await expect(
+      companyService.addHR(companyId, userId, { id: 'user_123', role: 'HR' }),
+    ).rejects.toThrow(MSG.COMPANY.NOT_FOUND);
   });
 
   it('should throw error when user not found', async () => {
@@ -587,12 +642,12 @@ describe('addHR', () => {
 
     mockCompanyDao.isActive.mockResolvedValue(mockCompany);
     mockUserDao.findByIdAndActive.mockRejectedValue(
-      new Error('User not found or deleted or banned'),
+      new Error(MSG.USER.NOT_FOUND),
     );
 
-    await expect(companyService.addHR(companyId, userId)).rejects.toThrow(
-      'User not found or deleted or banned',
-    );
+    await expect(
+      companyService.addHR(companyId, userId, { id: 'user_123', role: 'HR' }),
+    ).rejects.toThrow(MSG.USER.NOT_FOUND);
   });
 });
 
@@ -611,7 +666,10 @@ describe('removeHR', () => {
     mockUserDao.findByIdAndActive.mockResolvedValue(mockUser);
     mockCompanyDao.removeHR.mockResolvedValue(updatedCompany);
 
-    const result = await companyService.removeHR(companyId, userId);
+    const result = await companyService.removeHR(companyId, userId, {
+      id: 'user_123',
+      role: 'HR',
+    });
 
     expect(mockCompanyDao.isActive).toHaveBeenCalledWith(companyId);
     expect(mockUserDao.findByIdAndActive).toHaveBeenCalledWith(userId);
@@ -625,9 +683,12 @@ describe('removeHR', () => {
 
     mockCompanyDao.isActive.mockResolvedValue(null);
 
-    await expect(companyService.removeHR(companyId, userId)).rejects.toThrow(
-      'Company not found or deleted or banned',
-    );
+    await expect(
+      companyService.removeHR(companyId, userId, {
+        id: 'user_123',
+        role: 'HR',
+      }),
+    ).rejects.toThrow(MSG.COMPANY.NOT_FOUND);
   });
 
   it('should throw error when user not found', async () => {
@@ -637,11 +698,14 @@ describe('removeHR', () => {
 
     mockCompanyDao.isActive.mockResolvedValue(mockCompany);
     mockUserDao.findByIdAndActive.mockRejectedValue(
-      new Error('User not found or deleted or banned'),
+      new Error(MSG.USER.NOT_FOUND),
     );
 
-    await expect(companyService.removeHR(companyId, userId)).rejects.toThrow(
-      'User not found or deleted or banned',
-    );
+    await expect(
+      companyService.removeHR(companyId, userId, {
+        id: 'user_123',
+        role: 'HR',
+      }),
+    ).rejects.toThrow(MSG.USER.NOT_FOUND);
   });
 });
