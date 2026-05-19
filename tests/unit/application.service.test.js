@@ -3,6 +3,12 @@ import { ApplicationService } from '../../src/services/application.service.js';
 import * as SocketModule from '../../src/config/socket.js';
 import * as EmailUtilsModule from '../../src/utils/email.utils.js';
 import * as ExcelUtilsModule from '../../src/utils/excel.utils.js';
+import {
+  createMockUser,
+  createMockJob,
+  createMockApplication,
+  createMockCompany,
+} from './helper.js';
 import { MSG } from '../../src/utils/messages.js';
 
 let applicationService;
@@ -78,56 +84,6 @@ afterEach(() => {
 });
 
 /**
- * Helper function to create mock user
- */
-const createMockUser = (overrides = {}) => ({
-  _id: 'user_123',
-  email: 'user@example.com',
-  firstName: 'John',
-  lastName: 'Doe',
-  refreshToken: 'mock-refresh-token',
-  ...overrides,
-});
-
-/**
- * Helper function to create mock job
- */
-const createMockJob = (overrides = {}) => ({
-  _id: 'job_123',
-  jobTitle: 'Software Engineer',
-  companyId: 'company_123',
-  isVisible: true,
-  closed: false,
-  ...overrides,
-});
-
-/**
- * Helper function to create mock application
- */
-const createMockApplication = (overrides = {}) => ({
-  _id: 'application_123',
-  userId: 'user_123',
-  jobId: 'job_123',
-  userCV: {
-    secure_url: 'cv.pdf',
-    public_id: 'cv_id',
-    fileType: 'pdf',
-  },
-  status: 'pending',
-  ...overrides,
-});
-
-/**
- * Helper function to create mock company
- */
-const createMockCompany = (overrides = {}) => ({
-  _id: 'company_123',
-  companyName: 'Test Company',
-  companyEmail: 'company@example.com',
-  ...overrides,
-});
-
-/**
  * Create Application tests
  */
 describe('createApplication', () => {
@@ -135,7 +91,7 @@ describe('createApplication', () => {
     const userId = 'user_123';
     const jobId = 'job_123';
     const cv = { secure_url: 'cv.pdf', public_id: 'cv_id' };
-    const mockUser = createMockUser();
+    const mockUser = createMockUser({ refreshToken: 'mock-refresh-token' });
     const mockJob = createMockJob();
     const mockApplication = createMockApplication();
 
@@ -167,7 +123,7 @@ describe('createApplication', () => {
     const userId = 'user_123';
     const jobId = 'job_123';
     const cv = { secure_url: 'cv.pdf', public_id: 'cv_id' };
-    const mockUser = createMockUser();
+    const mockUser = createMockUser({ refreshToken: 'mock-refresh-token' });
     const mockJob = createMockJob();
     const mockApplication = createMockApplication();
 
@@ -195,14 +151,14 @@ describe('createApplication', () => {
     const userId = 'user_123';
     const jobId = 'job_123';
     const cv = { secure_url: 'cv.pdf', public_id: 'cv_id' };
-    const mockUser = createMockUser();
+    const mockUser = createMockUser({ refreshToken: 'mock-refresh-token' });
 
     mockUserRepository.findByIdAndActive.mockResolvedValue(mockUser);
     mockJobRepository.findById.mockResolvedValue(null);
 
     await expect(
       applicationService.createApplication(userId, jobId, cv),
-    ).rejects.toThrow('Job not found');
+    ).rejects.toThrow(MSG.JOB.NOT_FOUND);
     expect(mockApplicationRepository.createApplication).not.toHaveBeenCalled();
   });
 
@@ -210,7 +166,7 @@ describe('createApplication', () => {
     const userId = 'user_123';
     const jobId = 'job_123';
     const cv = { secure_url: 'cv.pdf', public_id: 'cv_id' };
-    const mockUser = createMockUser();
+    const mockUser = createMockUser({ refreshToken: 'mock-refresh-token' });
     const mockJob = createMockJob();
     const mockApplication = createMockApplication();
 
@@ -405,7 +361,7 @@ describe('updateApplicationStatus', () => {
       status,
     );
     expect(emailSpies.sendAcceptanceEmail).toHaveBeenCalledWith(
-      mockCompany.companyEmail,
+      mockCompany.companyEmail || mockHrUser.email,
       mockApplication.userId.email,
       `${mockApplication.userId.firstName} ${mockApplication.userId.lastName}`,
       mockApplication.jobId.jobTitle,

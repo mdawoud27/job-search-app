@@ -1,5 +1,11 @@
 import { jest } from '@jest/globals';
 import { AdminService } from '../../src/services/admin.service.js';
+import {
+  createMockUser,
+  createMockAdmin,
+  createMockCompany,
+} from './helper.js';
+import { MSG } from '../../src/utils/messages.js';
 
 let adminService;
 let mockUserDao;
@@ -33,40 +39,6 @@ afterEach(() => {
 });
 
 /**
- * Helper function to create mock user
- */
-const createMockUser = (overrides = {}) => ({
-  _id: 'user_123',
-  email: 'user@example.com',
-  bannedAt: null,
-  updatedAt: new Date(),
-  updatedBy: null,
-  ...overrides,
-});
-
-/**
- * Helper function to create mock company
- */
-const createMockCompany = (overrides = {}) => ({
-  _id: 'company_123',
-  companyName: 'Test Company',
-  bannedAt: null,
-  approvedByAdmin: false,
-  updatedAt: new Date(),
-  updatedBy: null,
-  ...overrides,
-});
-
-/**
- * Helper function to create mock admin
- */
-const createMockAdmin = (overrides = {}) => ({
-  id: 'admin_123',
-  email: 'admin@example.com',
-  ...overrides,
-});
-
-/**
  * Ban User tests
  */
 describe('banUser', () => {
@@ -85,7 +57,7 @@ describe('banUser', () => {
 
     expect(mockUserDao.findById).toHaveBeenCalledWith(userId);
     expect(mockAdminDao.banUser).toHaveBeenCalledWith(userId, admin.id);
-    expect(result.message).toBe('User banned successfully');
+    expect(result.message).toBe(MSG.ADMIN.USER_BANNED);
     expect(result.date.email).toBe(mockUser.email);
     expect(result.date.bannedBy).toBe(admin.email);
   });
@@ -96,7 +68,7 @@ describe('banUser', () => {
     mockUserDao.findById.mockResolvedValue(null);
 
     await expect(adminService.banUser(userId, admin)).rejects.toThrow(
-      'User not found',
+      MSG.USER.NOT_FOUND,
     );
     expect(mockAdminDao.banUser).not.toHaveBeenCalled();
   });
@@ -108,7 +80,7 @@ describe('banUser', () => {
     mockUserDao.findById.mockResolvedValue(mockUser);
 
     await expect(adminService.banUser(userId, admin)).rejects.toThrow(
-      'User is already banned',
+      MSG.ADMIN.USER_ALREADY_BANNED,
     );
     expect(mockAdminDao.banUser).not.toHaveBeenCalled();
   });

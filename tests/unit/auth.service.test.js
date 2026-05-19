@@ -6,6 +6,7 @@ import * as UserResponseDtoModule from '../../src/dtos/auth/user-response.dto.js
 import * as ConfirmOtpDtoModule from '../../src/dtos/auth/confirm-opt.dto.js';
 import * as TokenUtilsModule from '../../src/utils/tokens.utils.js';
 import bcrypt from 'bcrypt';
+import { createMockUser, createOtp } from './helper.js';
 import { MSG } from '../../src/utils/messages.js';
 
 let authService;
@@ -78,35 +79,7 @@ afterEach(() => {
 });
 
 /**
- * Helper function to create mock user
- */
-const createMockUser = (overrides = {}) => ({
-  _id: 'user_123',
-  email: 'test@example.com',
-  firstName: 'Test',
-  lastName: 'User',
-  fullName: 'Test User',
-  password: 'hashed_password',
-  role: 'User',
-  isConfirmed: false,
-  OTP: [],
-  refreshToken: null,
-  changeCredentialTime: null,
-  save: jest.fn().mockResolvedValue(true),
-  ...overrides,
-});
-
-/**
- * Helper function to create mock OTP
- */
-const createOtp = (type = 'confirmEmail', expired = false) => ({
-  code: 'hashed_123456',
-  type,
-  expiresIn: new Date(Date.now() + (expired ? -1000 : 10 * 60 * 1000)),
-});
-
-/**
- * Helper function to setup successful signup
+ * Signup tests
  */
 const setupSuccessfulSignup = (
   otpCode = '123456',
@@ -123,9 +96,6 @@ const setupSuccessfulSignup = (
   });
 };
 
-/**
- * Signup tests
- */
 describe('signup', () => {
   it('should create a new user successfully', async () => {
     const dto = {
