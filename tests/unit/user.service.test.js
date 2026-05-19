@@ -136,6 +136,17 @@ describe('getLoggedUser', () => {
     );
     expect(cryptoSpies.decrypt).not.toHaveBeenCalled();
   });
+
+  it('should throw NOT_LOGGED_IN when user has no refreshToken', async () => {
+    const userId = 'user_123';
+    mockUserRepository.findById.mockResolvedValue(
+      createMockUser({ refreshToken: null }),
+    );
+
+    await expect(userService.getLoggedUser(userId)).rejects.toThrow(
+      MSG.USER.NOT_LOGGED_IN,
+    );
+  });
 });
 
 /**
@@ -231,6 +242,44 @@ describe('changePassword', () => {
 
     await expect(userService.changePassword(userId, dto)).rejects.toThrow(
       'Current password is incorrect, reset it if you forgot it',
+    );
+  });
+
+  it('should throw NOT_LOGGED_IN_ALT when user has no refreshToken', async () => {
+    const userId = 'user_123';
+    const dto = { oldPassword: 'OldPass!', newPassword: 'NewPass!' };
+    mockUserRepository.findById.mockResolvedValue(
+      createMockUser({ refreshToken: null }),
+    );
+
+    await expect(userService.changePassword(userId, dto)).rejects.toThrow(
+      MSG.USER.NOT_LOGGED_IN_ALT,
+    );
+  });
+
+  it('should throw CANNOT_CHANGE_GOOGLE_PASSWORD for google provider', async () => {
+    const userId = 'user_123';
+    const dto = { oldPassword: 'OldPass!', newPassword: 'NewPass!' };
+    mockUserRepository.findById.mockResolvedValue(
+      createMockUser({ provider: 'google' }),
+    );
+    mockUserRepository.isActive.mockResolvedValue(true);
+    bcryptSpies.compare.mockResolvedValue(true);
+
+    await expect(userService.changePassword(userId, dto)).rejects.toThrow(
+      MSG.USER.CANNOT_CHANGE_GOOGLE_PASSWORD,
+    );
+  });
+
+  it('should throw SAME_PASSWORD when new password equals old password', async () => {
+    const userId = 'user_123';
+    const dto = { oldPassword: 'SamePass123!', newPassword: 'SamePass123!' };
+    mockUserRepository.findById.mockResolvedValue(createMockUser());
+    mockUserRepository.isActive.mockResolvedValue(true);
+    bcryptSpies.compare.mockResolvedValue(true);
+
+    await expect(userService.changePassword(userId, dto)).rejects.toThrow(
+      MSG.USER.SAME_PASSWORD,
     );
   });
 });

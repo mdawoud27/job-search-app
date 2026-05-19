@@ -355,6 +355,97 @@ describe('login', () => {
       'Please confirm your email first',
     );
   });
+
+  it('should throw USE_GOOGLE_LOGIN when user registered via Google', async () => {
+    const dto = { email: 'google@example.com', password: 'any' };
+    mockUserRepository.findByEmail.mockResolvedValue(
+      createMockUser({ provider: 'google' }),
+    );
+
+    await expect(authService.login(dto)).rejects.toThrow(
+      MSG.AUTH.USE_GOOGLE_LOGIN,
+    );
+    expect(otpSpies.validate).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * googleCallback tests
+ */
+describe('googleCallback', () => {
+  it('should generate tokens and save refresh token on success', async () => {
+    const mockUser = createMockUser({
+      name: null,
+      firstName: 'Jane',
+      lastName: 'Doe',
+      provider: 'google',
+      profileComplete: true,
+      DOB: new Date('1990-01-01'),
+      gender: 'female',
+    });
+    tokenSpies.genAccessToken.mockReturnValue('google_access_token');
+    tokenSpies.genRefreshToken.mockReturnValue('google_refresh_token');
+
+    const result = await authService.googleCallback(mockUser);
+
+    expect(tokenSpies.genAccessToken).toHaveBeenCalledWith(mockUser);
+    expect(tokenSpies.genRefreshToken).toHaveBeenCalledWith(mockUser);
+    expect(mockUser.refreshToken).toBe('google_refresh_token');
+    expect(mockUser.save).toHaveBeenCalled();
+    expect(result.accessToken).toBe('google_access_token');
+    expect(result.refreshToken).toBe('google_refresh_token');
+    expect(result.message).toBe(MSG.AUTH.GOOGLE_LOGIN_SUCCESS);
+    expect(result.user.email).toBe(mockUser.email);
+    expect(result.user.firstName).toBe('Jane');
+  });
+
+  it('should throw GOOGLE_AUTH_FAILED when user is null', async () => {
+    await expect(authService.googleCallback(null)).rejects.toThrow(
+      MSG.AUTH.GOOGLE_AUTH_FAILED,
+    );
+  });
+
+  it('should use name field when firstName/lastName are empty', async () => {
+    const mockUser = createMockUser({
+      name: 'Full Name',
+      firstName: '',
+      lastName: '',
+      provider: 'google',
+    });
+    tokenSpies.genAccessToken.mockReturnValue('at');
+    tokenSpies.genRefreshToken.mockReturnValue('rt');
+
+    const result = await authService.googleCallback(mockUser);
+
+    expect(result.user.name).toBe('Full Name');
+  });
+});
+
+/**
+ * logout tests
+ */
+describe('logout', () => {
+  it('should clear refreshToken and set changeCredentialTime on success', async () => {
+    const userId = 'user_123';
+    const mockUser = createMockUser();
+    mockUserRepository.findById.mockResolvedValue(mockUser);
+
+    const result = await authService.logout(userId);
+
+    expect(mockUserRepository.findById).toHaveBeenCalledWith(userId);
+    expect(mockUser.refreshToken).toBeNull();
+    expect(mockUser.changeCredentialTime).toBeInstanceOf(Date);
+    expect(mockUser.save).toHaveBeenCalled();
+    expect(result.message).toBe(MSG.AUTH.LOGOUT_SUCCESS);
+  });
+
+  it('should throw NOT_FOUND when user does not exist', async () => {
+    mockUserRepository.findById.mockResolvedValue(null);
+
+    await expect(authService.logout('bad_id')).rejects.toThrow(
+      MSG.USER.NOT_FOUND,
+    );
+  });
 });
 
 /**
