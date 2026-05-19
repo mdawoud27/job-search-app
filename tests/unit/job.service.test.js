@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 import { JobService } from '../../src/services/job.service.js';
 import * as JobResponseDtoModule from '../../src/dtos/job/job-response.dto.js';
 import { MSG } from '../../src/utils/messages.js';
+import { createMockJob } from './helper.js';
 
 let jobService;
 let mockUserDao;
@@ -63,19 +64,6 @@ const createMockCompany = (overrides = {}) => ({
   id: 'company_123',
   _id: 'company_123',
   companyName: 'Test Company',
-  ...overrides,
-});
-
-/**
- * Helper function to create mock job
- */
-const createMockJob = (overrides = {}) => ({
-  _id: 'job_123',
-  jobTitle: 'Software Engineer',
-  companyId: 'company_123',
-  addedBy: 'user_123',
-  isVisible: true,
-  closed: false,
   ...overrides,
 });
 

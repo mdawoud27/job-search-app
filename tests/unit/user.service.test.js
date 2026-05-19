@@ -5,6 +5,7 @@ import * as UpdateUserDtoModule from '../../src/dtos/user/update-user.dto.js';
 import * as CloudinaryUtilsModule from '../../src/utils/cloudinary.util.js';
 import * as CryptoModule from '../../src/utils/crypto.js';
 import bcrypt from 'bcryptjs';
+import { createMockUser } from './helper.js';
 import { MSG } from '../../src/utils/messages.js';
 
 let userService;
@@ -55,28 +56,6 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.restoreAllMocks();
-});
-
-/**
- * Helper function to create mock user
- */
-const createMockUser = (overrides = {}) => ({
-  _id: 'user_123',
-  email: 'test@example.com',
-  firstName: 'Test',
-  lastName: 'User',
-  fullName: 'Test User',
-  username: 'testuser',
-  password: 'hashed_password',
-  role: 'User',
-  mobileNumber: 'encrypted_123456',
-  profilePic: null,
-  coverPic: null,
-  deletedAt: null,
-  bannedAt: null,
-  refreshToken: 'mock-refresh-token',
-  save: jest.fn().mockResolvedValue(true),
-  ...overrides,
 });
 
 /**

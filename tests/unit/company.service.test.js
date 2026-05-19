@@ -3,6 +3,7 @@ import { CompanyService } from '../../src/services/company.service.js';
 import * as CompanyResponseDtoModule from '../../src/dtos/company/company-response.dto.js';
 import * as CloudinaryUtilsModule from '../../src/utils/cloudinary.util.js';
 import { MSG } from '../../src/utils/messages.js';
+import { createMockUser, createMockCompany } from './helper.js';
 
 let companyService;
 let mockUserDao;
@@ -48,35 +49,6 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.restoreAllMocks();
-});
-
-/**
- * Helper function to create mock user
- */
-const createMockUser = (overrides = {}) => ({
-  _id: 'user_123',
-  email: 'user@example.com',
-  role: 'HR',
-  save: jest.fn().mockResolvedValue(true),
-  ...overrides,
-});
-
-/**
- * Helper function to create mock company
- */
-const createMockCompany = (overrides = {}) => ({
-  _id: 'company_123',
-  companyName: 'Test Company',
-  email: 'company@example.com',
-  deletedAt: null,
-  bannedAt: null,
-  approvedByAdmin: true,
-  logo: null,
-  coverPic: null,
-  createdBy: { _id: 'user_123', email: 'user@example.com', role: 'HR' },
-  jobs: [],
-  save: jest.fn().mockResolvedValue(true),
-  ...overrides,
 });
 
 /**
