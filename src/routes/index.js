@@ -32,6 +32,6 @@ router.use('/api/v1', apiLimiter, companyRouter);
 router.use('/api/v1', apiLimiter, jobRouter);
 router.use('/api/v1', apiLimiter, applicationRouter);
 router.use('/api/v1', apiLimiter, chatRouter);
-router.use(graphqlRouter);
+router.use(apiLimiter, graphqlRouter);
 
 export default router;

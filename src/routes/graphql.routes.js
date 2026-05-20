@@ -5,6 +5,7 @@ import { schema, rootValue } from '../graphql/index.js';
 
 const graphqlRouter = Router();
 
+/* eslint no-undef: off */
 graphqlRouter.use(
   '/graphql',
   Authorization.verifyToken,
@@ -12,7 +13,7 @@ graphqlRouter.use(
   graphqlHTTP({
     schema,
     rootValue,
-    graphiql: true,
+    graphiql: process.env.NODE_ENV !== 'production',
   }),
 );
 
