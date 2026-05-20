@@ -6,6 +6,7 @@ import companyRouter from './company.routes.js';
 import jobRouter from './job.routes.js';
 import applicationRouter from './application.routes.js';
 import chatRouter from './chat.routes.js';
+import graphqlRouter from './graphql.routes.js';
 
 const router = Router();
 
@@ -31,5 +32,6 @@ router.use('/api/v1', apiLimiter, companyRouter);
 router.use('/api/v1', apiLimiter, jobRouter);
 router.use('/api/v1', apiLimiter, applicationRouter);
 router.use('/api/v1', apiLimiter, chatRouter);
+router.use(graphqlRouter);
 
 export default router;
