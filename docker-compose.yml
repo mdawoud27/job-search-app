@@ -13,3 +13,14 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:
