@@ -1,9 +1,11 @@
 import jwt from 'jsonwebtoken';
 import { MSG } from '../utils/messages.js';
+import redis from '../config/redis.js';
 
+/* eslint no-undef: off */
 export class Authorization {
   // verify token
-  static verifyToken(req, res, next) {
+  static async verifyToken(req, res, next) {
     try {
       const authorization = req.headers.authorization;
       if (!authorization) {
@@ -13,24 +15,33 @@ export class Authorization {
         });
       }
       const [type, token] = authorization.split(' ');
-      if (type === 'Bearer' && token) {
-        // eslint-disable-next-line
-        jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, decoded) => {
-          if (err) {
-            return res.status(401).json({
-              success: false,
-              message:
-                err.name === 'TokenExpiredError'
-                  ? 'Token expired'
-                  : MSG.MIDDLEWARE.INVALID_TOKEN,
-            });
-          }
-          req.user = decoded;
-          next();
-        });
-      } else {
+      if (type !== 'Bearer' || !token) {
         return res.status(403).json({ message: MSG.MIDDLEWARE.INVALID_TOKEN });
       }
+
+      let decoded;
+      try {
+        decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+      } catch (err) {
+        return res.status(401).json({
+          success: false,
+          message:
+            err.name === 'TokenExpiredError'
+              ? 'Token expired'
+              : MSG.MIDDLEWARE.INVALID_TOKEN,
+        });
+      }
+
+      const activeRefreshToken = await redis.get(`refresh:${decoded.id}`);
+      if (!activeRefreshToken) {
+        return res.status(401).json({
+          success: false,
+          message: 'User is not logged in or token is revoked',
+        });
+      }
+
+      req.user = decoded;
+      next();
     } catch (error) {
       return res.status(500).json({
         success: false,
