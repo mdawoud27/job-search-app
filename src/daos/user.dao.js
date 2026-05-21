@@ -52,30 +52,6 @@ export class UserDAO {
     return User.findOneAndDelete({ _id: { $eq: userId } });
   }
 
-  async updateOtp(email, otpData) {
-    const isActive = await this.isActive(email);
-    if (!isActive) {
-      throw new Error(MSG.USER.IS_DELETED_OR_BANNED);
-    }
-    return User.findOneAndUpdate(
-      { email: { $eq: email } },
-      { $push: { OTP: otpData } },
-      { new: true },
-    );
-  }
-
-  async updateRefreshToken(userId, token) {
-    const isActive = await this.isActive(userId);
-    if (!isActive) {
-      throw new Error(MSG.USER.IS_DELETED_OR_BANNED);
-    }
-    return User.findOneAndUpdate(
-      { _id: { $eq: userId } },
-      { refreshToken: token },
-      { new: true },
-    );
-  }
-
   async isActive(userId) {
     let user;
     if (mongoose.isValidObjectId(userId)) {
