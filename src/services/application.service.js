@@ -26,10 +26,6 @@ export class ApplicationService {
     const user = await this.userRepository.findByIdAndActive(userId);
     const job = await this.jobRepository.findById(jobId);
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
-
     if (!job) {
       throw new Error(MSG.JOB.NOT_FOUND);
     }
