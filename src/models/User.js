@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { imageSchema } from './Attachments.js';
-import { otpSchema } from './OtpSchema.js';
 import { decrypt, encrypt } from '../utils/crypto.js';
 import { Application } from './Application.js';
 import { Chat } from './Chat.js';
@@ -65,8 +64,6 @@ const userSchema = new mongoose.Schema(
     changeCredentialTime: { type: Date, default: Date.now },
     profilePic: { type: imageSchema, default: null },
     coverPic: { type: imageSchema, default: null },
-    OTP: [otpSchema],
-    refreshToken: { type: String, default: null },
   },
   {
     timestamps: true,
