@@ -64,4 +64,16 @@ router.patch(
   (req, res, next) => adminController.approveCompany(req, res, next),
 );
 
+/**
+ * @route GET /api/v1/admin/audit
+ * @desc Get audit logs
+ * @access Private
+ */
+router.get(
+  '/audit',
+  Authorization.verifyToken,
+  Authorization.verifyAdminPermission,
+  (req, res, next) => adminController.getAuditLogs(req, res, next),
+);
+
 export default router;
