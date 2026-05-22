@@ -530,6 +530,20 @@
     <script>
       let socket = null;
 
+      function escapeHtml(value) {
+        return String(value ?? '').replace(
+          /[&<>"']/g,
+          (char) =>
+            ({
+              '&': '&amp;',
+              '<': '&lt;',
+              '>': '&gt;',
+              '"': '&quot;',
+              "'": '&#39;',
+            })[char],
+        );
+      }
+
       function connectSocket() {
         if (socket && socket.connected) {
           updateStatus('Already connected', 'connected');
@@ -589,27 +603,27 @@
             <div class="notification-body">
               <div class="notification-field">
                 <strong>Job Title:</strong>
-                <span>${data.jobTitle}</span>
+                <span>${escapeHtml(data.jobTitle)}</span>
               </div>
               <div class="notification-field">
                 <strong>Applicant:</strong>
-                <span>${data.userName}</span>
+                <span>${escapeHtml(data.userName)}</span>
               </div>
               <div class="notification-field">
                 <strong>Email:</strong>
-                <span>${data.userEmail}</span>
+                <span>${escapeHtml(data.userEmail)}</span>
               </div>
               <div class="notification-field">
                 <strong>Status:</strong>
-                <span>${data.status}</span>
+                <span>${escapeHtml(data.status)}</span>
               </div>
               <div class="notification-field">
                 <strong>Application ID:</strong>
-                <span>${data.applicationId}</span>
+                <span>${escapeHtml(data.applicationId)}</span>
               </div>
               <div class="notification-field">
                 <strong>Job ID:</strong>
-                <span>${data.jobId}</span>
+                <span>${escapeHtml(data.jobId)}</span>
               </div>
             </div>
             <div class="notification-footer">
@@ -641,17 +655,17 @@
             `
             <div class="notification-card" style="border-color: ${color}; box-shadow: 0 4px 12px ${color}33">
               <div class="notification-header">
-                <h3 style="color: ${color}">${emoji} Application ${data.status.toUpperCase()}</h3>
+                <h3 style="color: ${color}">${emoji} Application ${escapeHtml(data.status).toUpperCase()}</h3>
               </div>
               <div class="notification-body">
                 <div class="notification-field">
-                  <strong>Job:</strong><span>${data.jobTitle}</span>
+                  <strong>Job:</strong><span>${escapeHtml(data.jobTitle)}</span>
                 </div>
                 <div class="notification-field">
-                  <strong>Company:</strong><span>${data.companyName}</span>
+                  <strong>Company:</strong><span>${escapeHtml(data.companyName)}</span>
                 </div>
                 <div class="notification-field">
-                  <strong>Status:</strong><span style="color:${color}">${data.status}</span>
+                  <strong>Status:</strong><span style="color:${color}">${escapeHtml(data.status)}</span>
                 </div>
               </div>
               <div class="notification-footer">${new Date().toLocaleString()}</div>
