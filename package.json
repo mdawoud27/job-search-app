@@ -1,6 +1,6 @@
 {
   "name": "job-search-app",
-  "version": "2.2.7",
+  "version": "2.2.10",
   "description": "This is a job search app",
   "type": "module",
   "main": "src/index.js",

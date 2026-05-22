@@ -154,6 +154,19 @@ export class ApplicationService {
     );
 
     try {
+      const io = getIO();
+      io.to(`user:${application.userId._id}`).emit('applicationStatusUpdated', {
+        applicationId: updatedApplication._id,
+        status: updatedApplication.status,
+        jobTitle: application.jobId.jobTitle,
+        companyName: company.companyName,
+        // include companyLogo if you want a richer notification
+      });
+    } catch (error) {
+      console.error('Failed to emit status update:', error.message);
+    }
+
+    try {
       const applicantName = `${application.userId.firstName} ${application.userId.lastName}`;
       const applicantEmail = application.userId.email;
       const jobTitle = application.jobId.jobTitle;
