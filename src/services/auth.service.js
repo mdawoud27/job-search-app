@@ -6,6 +6,7 @@ import { TokenUtils } from '../utils/tokens.utils.js';
 import { sendOTPEmail } from '../utils/email.utils.js';
 import { MSG } from '../utils/messages.js';
 import redis from '../config/redis.js';
+import { AuditService } from './audit.service.js';
 
 export class AuthService {
   constructor(userRepository) {
@@ -13,7 +14,7 @@ export class AuthService {
   }
 
   // signup
-  async signup(dto) {
+  async signup(dto, meta = {}) {
     if (dto.role && dto.role === 'Admin') {
       throw new Error(MSG.AUTH.INVALID_ROLE);
     }
@@ -39,11 +40,22 @@ export class AuthService {
 
     // Send OTP email
     await sendOTPEmail(dto.email, otpCode);
+
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'CREATE_USER',
+      targetModel: 'User',
+      targetId: user._id,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
     return UserResponseDto.toResponse(user);
   }
 
   // confirm otp
-  async confirmEmail(dto) {
+  async confirmEmail(dto, meta = {}) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -64,11 +76,21 @@ export class AuthService {
     user.isConfirmed = true;
     await user.save();
 
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'CONFIRM_EMAIL',
+      targetModel: 'User',
+      targetId: user._id,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
     return ConfirmOtpDto.toResponse(user);
   }
 
   // resend OTP code
-  async resendOtpCode(dto) {
+  async resendOtpCode(dto, meta = {}) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -94,6 +116,16 @@ export class AuthService {
     await redis.setex(`otp:confirmEmail:${dto.email}`, 600, hashedOtp);
     await sendOTPEmail(dto.email, otpCode);
 
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'RESEND_OTP',
+      targetModel: 'User',
+      targetId: user._id,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
     return {
       message: MSG.AUTH.OTP_RESENT,
       email: user.email,
@@ -101,7 +133,7 @@ export class AuthService {
   }
 
   // login
-  async login(dto) {
+  async login(dto, meta = {}) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
       throw new Error(MSG.AUTH.INVALID_CREDENTIALS);
@@ -124,11 +156,21 @@ export class AuthService {
     const refreshToken = TokenUtils.genRefreshToken(user);
     await this.userRepository.updateRefreshToken(user._id, refreshToken);
 
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'LOGIN',
+      targetModel: 'User',
+      targetId: user._id,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
     return { email: user.email, accessToken, refreshToken };
   }
 
   // forget password
-  async forgotPassword(dto) {
+  async forgotPassword(dto, meta = {}) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -148,11 +190,22 @@ export class AuthService {
     await redis.setex(`otp:forgetPassword:${dto.email}`, 600, hashed);
 
     await sendOTPEmail(dto.email, otp, 'Reset your password');
+
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'FORGOT_PASSWORD',
+      targetModel: 'User',
+      targetId: user._id,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
     return { user, message: MSG.AUTH.OTP_SENT };
   }
 
   // reset password
-  async resetPassword(dto) {
+  async resetPassword(dto, meta = {}) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -177,11 +230,22 @@ export class AuthService {
     user.refreshToken = null;
     user.changeCredentialTime = new Date();
     await user.save();
+
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'RESET_PASSWORD',
+      targetModel: 'User',
+      targetId: user._id,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
     return { user, message: MSG.AUTH.PASSWORD_RESET_SUCCESS };
   }
 
   // refresh tokens
-  async refresh(refreshToken) {
+  async refresh(refreshToken, meta = {}) {
     const payload = TokenUtils.verifyRefreshToken(refreshToken);
     const user = await this.userRepository.findById(payload.id);
 
@@ -206,6 +270,18 @@ export class AuthService {
     }
 
     const accessToken = TokenUtils.genAccessToken(user);
+
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'REFRESH_TOKEN',
+      targetModel: 'User',
+      targetId: user._id,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
+
     return {
       refreshToken,
       accessToken,
@@ -246,7 +322,7 @@ export class AuthService {
   }
 
   // logout
-  async logout(userId) {
+  async logout(userId, meta = {}) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -255,6 +331,18 @@ export class AuthService {
     user.refreshToken = null;
     user.changeCredentialTime = new Date();
     await user.save();
+
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'LOGOUT',
+      targetModel: 'User',
+      targetId: user._id,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
+
     return { message: MSG.AUTH.LOGOUT_SUCCESS };
   }
 }
