@@ -1,5 +1,7 @@
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
+import { createAdapter } from '@socket.io/redis-adapter';
+import redisClient from './redis.js';
 import { ChatDAO } from '../daos/chat.dao.js';
 import { UserDAO } from '../daos/user.dao.js';
 import { ApplicationDAO } from '../daos/application.dao.js';
@@ -27,6 +29,7 @@ export const initSocket = (server) => {
       ].filter(Boolean),
       credentials: true,
     },
+    adapter: createAdapter(redisClient, redisClient.duplicate()),
   });
 
   // Authentication middleware

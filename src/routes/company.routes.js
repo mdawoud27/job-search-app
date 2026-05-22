@@ -3,6 +3,7 @@ import { Authorization } from '../middlewares/auth.middleware.js';
 import { apiLimiter } from '../utils/apiLimiter.js';
 import { companyController } from '../container.js';
 import { uploadImage } from '../utils/multer.js';
+import { cahceMiddleware } from '../middlewares/cache.middleware.js';
 
 const router = Router();
 
@@ -74,6 +75,7 @@ router.get(
   '/company/:id',
   apiLimiter,
   Authorization.verifyToken,
+  cahceMiddleware(6000),
   (req, res, next) => {
     companyController.getSpecificCompanyWithJobs(req, res, next);
   },

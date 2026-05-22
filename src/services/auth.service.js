@@ -5,6 +5,7 @@ import { ConfirmOtpDto } from '../dtos/auth/confirm-opt.dto.js';
 import { TokenUtils } from '../utils/tokens.utils.js';
 import { sendOTPEmail } from '../utils/email.utils.js';
 import { MSG } from '../utils/messages.js';
+import redis from '../config/redis.js';
 
 export class AuthService {
   constructor(userRepository) {
@@ -26,17 +27,13 @@ export class AuthService {
     const otpCode = OtpUtils.generateOTP();
     const hashedOtp = await OtpUtils.hashOTP(otpCode);
 
-    const otpEntry = {
-      code: hashedOtp,
-      type: 'confirmEmail',
-      expiresIn: new Date(Date.now() + 10 * 60 * 1000), // 10 min
-    };
-
     const user = await this.userRepository.create({
       ...dto,
-      OTP: [otpEntry],
       role: dto.role || 'User',
     });
+
+    // Store OTP in Redis (10 minutes TTL)
+    await redis.setex(`otp:confirmEmail:${dto.email}`, 600, hashedOtp);
 
     //TODO: if user role is HR then companyId or companyCode is required
 
@@ -52,19 +49,17 @@ export class AuthService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    const lastOtp = user.OTP.findLast((o) => o.type === 'confirmEmail');
-    if (!lastOtp) {
-      throw new Error(MSG.AUTH.NO_OTP_FOUND);
-    }
-
-    if (lastOtp.expiresIn < new Date()) {
+    const hashedOtp = await redis.get(`otp:confirmEmail:${dto.email}`);
+    if (!hashedOtp) {
       throw new Error(MSG.AUTH.OTP_EXPIRED);
     }
 
-    const isValid = await OtpUtils.validate(dto.OTP, lastOtp.code);
+    const isValid = await OtpUtils.validate(dto.OTP, hashedOtp);
     if (!isValid) {
       throw new Error(MSG.AUTH.INVALID_OTP);
     }
+
+    await redis.del(`otp:confirmEmail:${dto.email}`);
 
     user.isConfirmed = true;
     await user.save();
@@ -83,32 +78,20 @@ export class AuthService {
       throw new Error(MSG.AUTH.EMAIL_ALREADY_CONFIRMED);
     }
 
-    const lastOtp = user.OTP.findLast((o) => o.type === 'confirmEmail');
-    if (lastOtp) {
-      const timeSinceLastOTP =
-        Date.now() - (lastOtp.expiresIn - 10 * 60 * 1000);
-      const oneMinute = 60 * 1000;
-
-      if (timeSinceLastOTP < oneMinute) {
-        const waitTime = Math.ceil((oneMinute - timeSinceLastOTP) / 1000);
-        throw new Error(
-          `Please wait ${waitTime} seconds before requesting a new OTP`,
-        );
-      }
+    const ttl = await redis.ttl(`otp:confirmEmail:${dto.email}`);
+    // If ttl > 540 (10 mins - 1 min), the OTP was requested less than a minute ago
+    if (ttl > 540) {
+      const waitTime = ttl - 540;
+      throw new Error(
+        `Please wait ${waitTime} seconds before requesting a new OTP`,
+      );
     }
 
     // Generate new otp
     const otpCode = OtpUtils.generateOTP();
     const hashedOtp = await OtpUtils.hashOTP(otpCode);
 
-    const otpEntry = {
-      code: hashedOtp,
-      type: 'confirmEmail',
-      expiresIn: new Date(Date.now() + 10 * 60 * 1000),
-    };
-
-    await this.userRepository.updateOtp(dto.email, otpEntry);
-    await user.save();
+    await redis.setex(`otp:confirmEmail:${dto.email}`, 600, hashedOtp);
     await sendOTPEmail(dto.email, otpCode);
 
     return {
@@ -151,30 +134,18 @@ export class AuthService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    const lastOtp = user.OTP.findLast((o) => o.type === 'forgetPassword');
-    if (lastOtp) {
-      const timeSinceLastOTP =
-        Date.now() - (lastOtp.expiresIn - 10 * 60 * 1000);
-      const oneMinute = 60 * 1000;
-
-      if (timeSinceLastOTP < oneMinute) {
-        const waitTime = Math.ceil((oneMinute - timeSinceLastOTP) / 1000);
-        throw new Error(
-          `Please wait ${waitTime} seconds before requesting a new OTP`,
-        );
-      }
+    const ttl = await redis.ttl(`otp:forgetPassword:${dto.email}`);
+    if (ttl > 540) {
+      const waitTime = ttl - 540;
+      throw new Error(
+        `Please wait ${waitTime} seconds before requesting a new OTP`,
+      );
     }
 
     const otp = OtpUtils.generateOTP();
     const hashed = await OtpUtils.hashOTP(otp);
 
-    const otpEntry = {
-      code: hashed,
-      type: 'forgetPassword',
-      expiresIn: new Date(Date.now() + 10 * 60 * 1000),
-    };
-
-    await this.userRepository.updateOtp(dto.email, otpEntry);
+    await redis.setex(`otp:forgetPassword:${dto.email}`, 600, hashed);
 
     await sendOTPEmail(dto.email, otp, 'Reset your password');
     return { user, message: MSG.AUTH.OTP_SENT };
@@ -187,25 +158,24 @@ export class AuthService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    const lastOtp = user.OTP.findLast((o) => o.type === 'forgetPassword');
-    if (!lastOtp) {
-      throw new Error(MSG.AUTH.NO_OTP_FOUND);
-    }
-
-    if (lastOtp.expiresIn < new Date()) {
+    const hashedOtp = await redis.get(`otp:forgetPassword:${dto.email}`);
+    if (!hashedOtp) {
       throw new Error(MSG.AUTH.OTP_EXPIRED);
     }
 
-    const isValid = await OtpUtils.validate(dto.OTP, lastOtp.code);
+    const isValid = await OtpUtils.validate(dto.OTP, hashedOtp);
     if (!isValid) {
       throw new Error(MSG.AUTH.INVALID_OTP);
     }
+
+    await redis.del(`otp:forgetPassword:${dto.email}`);
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(dto.password, salt);
 
     await this.userRepository.updatePassword(user._id, hashedPassword);
     user.refreshToken = null;
+    user.changeCredentialTime = new Date();
     await user.save();
     return { user, message: MSG.AUTH.PASSWORD_RESET_SUCCESS };
   }

@@ -17,9 +17,6 @@ export class UserService {
       throw new Error(MSG.USER.NOT_FOUND_OR_UPDATE_FAILED);
     }
 
-    if (!updated.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
     return {
       message: MSG.USER.ACCOUNT_UPDATED,
       data: {
@@ -33,10 +30,6 @@ export class UserService {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
-    }
-
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
     }
 
     return {
@@ -71,10 +64,6 @@ export class UserService {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
-    }
-
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN_ALT);
     }
 
     const isActive = await this.userRepository.isActive(userId);
