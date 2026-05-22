@@ -14,6 +14,8 @@ import { configurePassport } from './config/passport.config.js';
 import { setupSwagger } from './config/swagger.js';
 import { ErrorHandler } from './middlewares/error.middleware.js';
 import { MSG } from './utils/messages.js';
+import { attachRequestId } from './middlewares/requestId.middleware.js';
+import { httpLogger } from './middlewares/httpLogger.middleware.js';
 
 dotenv.config();
 
@@ -23,6 +25,12 @@ const __dirname = dirname(__filename);
 const app = express();
 
 app.set('trust proxy', 1);
+
+// Request ID
+app.use(attachRequestId);
+
+// HTTP Logger
+app.use(httpLogger);
 
 // Helmet
 app.use(
