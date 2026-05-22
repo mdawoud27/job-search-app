@@ -626,6 +626,39 @@
           notificationsEl.innerHTML = notification + notificationsEl.innerHTML;
         });
 
+        socket.on('applicationStatusUpdated', (data) => {
+          console.log('Status updated:', data);
+
+          // Show a toast / notification card
+          const notificationsEl = document.getElementById('notifications');
+          const emptyState = notificationsEl.querySelector('.empty-state');
+          if (emptyState) emptyState.remove();
+
+          const color = data.status === 'accepted' ? '#22c55e' : '#ef4444';
+          const emoji = data.status === 'accepted' ? '🎉' : '📋';
+
+          notificationsEl.innerHTML =
+            `
+            <div class="notification-card" style="border-color: ${color}; box-shadow: 0 4px 12px ${color}33">
+              <div class="notification-header">
+                <h3 style="color: ${color}">${emoji} Application ${data.status.toUpperCase()}</h3>
+              </div>
+              <div class="notification-body">
+                <div class="notification-field">
+                  <strong>Job:</strong><span>${data.jobTitle}</span>
+                </div>
+                <div class="notification-field">
+                  <strong>Company:</strong><span>${data.companyName}</span>
+                </div>
+                <div class="notification-field">
+                  <strong>Status:</strong><span style="color:${color}">${data.status}</span>
+                </div>
+              </div>
+              <div class="notification-footer">${new Date().toLocaleString()}</div>
+            </div>
+          ` + notificationsEl.innerHTML;
+        });
+
         socket.on('disconnect', () => {
           updateStatus('Disconnected from server', 'error');
         });
