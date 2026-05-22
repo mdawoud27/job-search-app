@@ -18,7 +18,10 @@ export class UserController {
       }
 
       const dto = UpdateUserDto.fromRequest(req.body);
-      const result = await this.userService.updateAccount(req.user.id, dto);
+      const result = await this.userService.updateAccount(req.user.id, dto, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
 
       res.status(200).json(result);
     } catch (err) {
@@ -29,7 +32,10 @@ export class UserController {
   // Get login user data
   async getLoggedUser(req, res, next) {
     try {
-      const data = await this.userService.getLoggedUser(req.user.id);
+      const data = await this.userService.getLoggedUser(req.user.id, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       res.status(200).json(data);
     } catch (err) {
       next(err);
@@ -39,7 +45,10 @@ export class UserController {
   // Get another user's public profile
   async getProfile(req, res, next) {
     try {
-      const data = await this.userService.getPublicProfile(req.params.id);
+      const data = await this.userService.getPublicProfile(req.params.id, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       res.json(data);
     } catch (err) {
       next(err);
@@ -55,7 +64,10 @@ export class UserController {
       }
 
       const dto = UpdatePasswordDto.fromRequest(req.body);
-      const result = await this.userService.changePassword(req.user.id, dto);
+      const result = await this.userService.changePassword(req.user.id, dto, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       res.json(result);
     } catch (err) {
       next(err);
@@ -73,6 +85,10 @@ export class UserController {
       const result = await this.userService.uploadProfilePic(
         req.user.id,
         cloudResult,
+        {
+          requestId: req.requestId,
+          ip: req.ip,
+        },
       );
 
       res.status(200).json(result);
@@ -92,6 +108,10 @@ export class UserController {
       const result = await this.userService.uploadCoverPic(
         req.user.id,
         cloudResult,
+        {
+          requestId: req.requestId,
+          ip: req.ip,
+        },
       );
 
       res.status(200).json(result);
@@ -103,7 +123,10 @@ export class UserController {
   // Delete Profile Pic
   async deleteProfilePic(req, res, next) {
     try {
-      const result = await this.userService.deleteProfilePic(req.user.id);
+      const result = await this.userService.deleteProfilePic(req.user.id, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       res.json(result);
     } catch (err) {
       next(err);
@@ -113,7 +136,10 @@ export class UserController {
   // Delete Cover Pic
   async deleteCoverPic(req, res, next) {
     try {
-      const result = await this.userService.deleteCoverPic(req.user.id);
+      const result = await this.userService.deleteCoverPic(req.user.id, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       res.json(result);
     } catch (err) {
       next(err);
@@ -124,7 +150,10 @@ export class UserController {
   async softDelete(req, res, next) {
     try {
       const userId = req.params.id ?? req.user.id;
-      const data = await this.userService.softDelete(userId);
+      const data = await this.userService.softDelete(userId, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       res.status(200).json(data);
     } catch (err) {
       next(err);
@@ -136,7 +165,10 @@ export class UserController {
     try {
       const userId = req.params.id ?? req.body.id;
       const admin = req.user;
-      const data = await this.userService.restoreAccount(userId, admin);
+      const data = await this.userService.restoreAccount(userId, admin, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       res.status(200).json(data);
     } catch (err) {
       next(err);
