@@ -4,7 +4,13 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 /* eslint no-undef: off */
-const redisConnection = new IORedis(process.env.REDIS_URL, {
+const redisUrl = process.env.REDIS_URL;
+
+if (!redisUrl) {
+  throw new Error('REDIS_URL is not defined');
+}
+
+const redisConnection = new IORedis(redisUrl, {
   maxRetriesPerRequest: null,
 });
 

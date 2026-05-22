@@ -18,7 +18,7 @@ const server = http.createServer(app);
 initSocket(server);
 
 // Connect Database
-connectToDB();
+await connectToDB();
 
 // Connect Redis
 if (redis.status === 'wait') {

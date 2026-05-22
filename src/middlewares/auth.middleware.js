@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import { MSG } from '../utils/messages.js';
-import redis from '../config/redis.js';
 
 /* eslint no-undef: off */
 export class Authorization {
@@ -32,11 +31,22 @@ export class Authorization {
         });
       }
 
-      const activeRefreshToken = await redis.get(`refresh:${decoded.id}`);
-      if (!activeRefreshToken) {
+      const tokenIssuedAt = new Date(decoded.iat * 1000);
+
+      const user = await userRepository.findById(decoded.id);
+      if (!user) {
+        return res
+          .status(401)
+          .json({ success: false, message: 'User not found' });
+      }
+
+      if (
+        user.changeCredentialTime &&
+        tokenIssuedAt < user.changeCredentialTime
+      ) {
         return res.status(401).json({
           success: false,
-          message: 'User is not logged in or token is revoked',
+          message: 'Session expired. Please log in again.',
         });
       }
 
@@ -65,6 +75,7 @@ export class Authorization {
 
   // ensure user is updating his own account
   static onlySelf(req, res, next) {
+    // if (req.user.id !== req.params.id) {
     if (!req.user.id) {
       return res.status(403).json({
         success: false,

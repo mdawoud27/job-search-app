@@ -14,13 +14,15 @@ export const cahceMiddleware =
       const originalJson = res.json.bind(res);
 
       res.json = (data) => {
-        redis.setex(key, ttl, JSON.stringify(data)).catch(() => {});
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          redis.setex(key, ttl, JSON.stringify(data)).catch(() => {});
+        }
         return originalJson(data);
       };
 
       next();
-    } catch (err) {
+    } catch {
       // just continue if redis fails
-      next(err);
+      next();
     }
   };

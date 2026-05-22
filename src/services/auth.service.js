@@ -175,6 +175,7 @@ export class AuthService {
 
     await this.userRepository.updatePassword(user._id, hashedPassword);
     user.refreshToken = null;
+    user.changeCredentialTime = new Date();
     await user.save();
     return { user, message: MSG.AUTH.PASSWORD_RESET_SUCCESS };
   }

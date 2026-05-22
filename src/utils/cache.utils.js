@@ -11,27 +11,43 @@ export const CacheKeys = {
 };
 
 export async function getOrSet(key, fetcher, ttl) {
+  let cached = null;
   try {
-    const cached = await redis.get(key);
-    if (cached) {
-      return JSON.parse(cached);
-    }
-    const fresh = await fetcher();
-    await redis.setex(key, ttl, JSON.stringify(fresh));
-    return fresh;
+    cached = await redis.get(key);
   } catch {
-    // dont break the API if redis down
-    return fetcher();
+    // redis read failed; proceed to source fetch
   }
+
+  if (cached) {
+    try {
+      return JSON.parse(cached);
+    } catch {
+      // corrupted cache payload; ignore and refetch
+    }
+  }
+
+  const fresh = await fetcher();
+  redis.setex(key, ttl, JSON.stringify(fresh)).catch(() => {});
+  return fresh;
 }
 
 export async function invalidate(...patterns) {
   try {
     for (const pattern of patterns) {
-      const keys = await redis.keys(pattern);
-      if (keys.length > 0) {
-        await redis.del(...keys);
-      }
+      let cursor = '0';
+      do {
+        const [nextCursor, keys] = await redis.scan(
+          cursor,
+          'MATCH',
+          pattern,
+          'COUNT',
+          200,
+        );
+        cursor = nextCursor;
+        if (keys.length) {
+          await redis.del(...keys);
+        }
+      } while (cursor !== '0');
     }
   } catch {
     // silence pass

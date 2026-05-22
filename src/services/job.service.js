@@ -28,7 +28,12 @@ export class JobService {
     const job = await this.jobDao.createJob(dto, user.id, company.id);
 
     // Invalidate all job list caches
-    await invalidate('jobs:list:*');
+    try {
+      await invalidate('jobs:list:*');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[cache] createJob invalidation failed', error);
+    }
 
     return {
       message: MSG.JOB.CREATED,
@@ -64,7 +69,12 @@ export class JobService {
     }
 
     // Invalidate the specific job AND all lists (it could appear in any search result)
-    await invalidate(CacheKeys.job(jobId), 'jobs:list:*');
+    try {
+      await invalidate(CacheKeys.job(jobId), 'jobs:list:*');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[cache] updateJob invalidation failed', error);
+    }
 
     return {
       message: MSG.JOB.UPDATED,
@@ -101,7 +111,12 @@ export class JobService {
       throw new Error(MSG.JOB.NOT_FOUND_OR_DELETED);
     }
 
-    await invalidate(CacheKeys.job(jobId), 'jobs:list:*');
+    try {
+      await invalidate(CacheKeys.job(jobId), 'jobs:list:*');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[cache] deleteJob invalidation failed', error);
+    }
 
     return {
       message: MSG.JOB.DELETED,
