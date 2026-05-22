@@ -15,7 +15,10 @@ export class AdminController {
         return res.status(400).json({ message: error.details[0].message });
       }
       const dto = BanUserDto.fromRequest(req.body);
-      const user = await this.adminService.banUser(dto.userId, req.user);
+      const user = await this.adminService.banUser(dto.userId, req.user, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       res.json(user);
     } catch (error) {
       next(error);
@@ -30,7 +33,10 @@ export class AdminController {
         return res.status(400).json({ message: error.details[0].message });
       }
       const dto = BanUserDto.fromRequest(req.body);
-      const user = await this.adminService.unbanUser(dto.userId, req.user);
+      const user = await this.adminService.unbanUser(dto.userId, req.user, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       res.json(user);
     } catch (error) {
       next(error);
@@ -48,6 +54,10 @@ export class AdminController {
       const company = await this.adminService.banCompany(
         dto.companyId,
         req.user,
+        {
+          requestId: req.requestId,
+          ip: req.ip,
+        },
       );
       res.json(company);
     } catch (error) {
@@ -66,6 +76,10 @@ export class AdminController {
       const company = await this.adminService.unbanCompany(
         dto.companyId,
         req.user,
+        {
+          requestId: req.requestId,
+          ip: req.ip,
+        },
       );
       res.json(company);
     } catch (error) {
@@ -84,8 +98,21 @@ export class AdminController {
       const company = await this.adminService.approveCompany(
         dto.companyId,
         req.user,
+        {
+          requestId: req.requestId,
+          ip: req.ip,
+        },
       );
       res.json(company);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getAuditLogs(req, res, next) {
+    try {
+      const logs = await this.adminService.getAuditLogs(req, res);
+      res.json(logs);
     } catch (error) {
       next(error);
     }
