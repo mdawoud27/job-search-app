@@ -7,7 +7,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import passport from 'passport';
 import compression from 'compression';
-import { apiLimiter } from './utils/apiLimiter.js';
 import routes from './routes/index.js';
 import { configurePassport } from './config/passport.config.js';
 import { setupSwagger } from './config/swagger.js';
@@ -65,9 +64,6 @@ app.use(
     },
   }),
 );
-
-// Rate Limiter
-app.use(apiLimiter);
 
 // CORS
 const allowedOrigins = [

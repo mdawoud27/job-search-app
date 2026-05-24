@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { readFileSync } from 'fs';
 import authRouter from './auth.routes.js';
 import userRouter from './user.routes.js';
 import adminRouter from './admin.routes.js';
@@ -7,31 +8,43 @@ import jobRouter from './job.routes.js';
 import applicationRouter from './application.routes.js';
 import chatRouter from './chat.routes.js';
 import graphqlRouter from './graphql.routes.js';
+import { rateLimiter } from '../middlewares/rateLimit.middleware.js';
 
 const router = Router();
 
-import { readFileSync } from 'fs';
-import { apiLimiter } from '../utils/apiLimiter.js';
-const packageJson = JSON.parse(
-  readFileSync(new URL('../../package.json', import.meta.url)),
+const { version } = JSON.parse(
+  readFileSync(new URL('../../package.json', import.meta.url), 'utf8'),
 );
 
-/**
- * @route GET /api/version
- * @desc Get API version
- * @access Public
- */
-router.get('/api/version', (req, res) => {
-  res.json({ version: packageJson.version });
-});
+router.get('/api/version', (req, res) => res.json({ version }));
 
-router.use('/api', apiLimiter, authRouter);
-router.use('/api/v1', apiLimiter, userRouter);
-router.use('/api/v1', apiLimiter, adminRouter);
-router.use('/api/v1', apiLimiter, companyRouter);
-router.use('/api/v1', apiLimiter, jobRouter);
-router.use('/api/v1', apiLimiter, applicationRouter);
-router.use('/api/v1', apiLimiter, chatRouter);
-router.use(apiLimiter, graphqlRouter);
+router.use(
+  '/api/auth',
+  rateLimiter({
+    maxRequests: 5,
+    windowSeconds: 60,
+    message: 'Too many auth attempts, try again later',
+  }),
+  authRouter,
+);
+
+const v1Limiter = rateLimiter({ maxRequests: 100, windowSeconds: 60 });
+
+router.use('/api/v1', v1Limiter, userRouter);
+router.use('/api/v1', v1Limiter, adminRouter);
+router.use('/api/v1', v1Limiter, companyRouter);
+router.use('/api/v1', v1Limiter, jobRouter);
+router.use('/api/v1', v1Limiter, applicationRouter);
+router.use('/api/v1', v1Limiter, chatRouter);
+
+router.use(
+  '/graphql',
+  rateLimiter({
+    maxRequests: 20,
+    windowSeconds: 60,
+    message: 'Too many GraphQL requests, try again later',
+  }),
+  graphqlRouter,
+);
 
 export default router;
