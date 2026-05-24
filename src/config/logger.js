@@ -1,5 +1,6 @@
 import winston from 'winston';
 import path from 'path';
+import { mkdirSync } from 'fs';
 
 /* eslint no-undef: off */
 const { combine, timestamp, json, colorize, printf, errors } = winston.format;
@@ -20,6 +21,7 @@ const transports = [
 
 // Pipe to files in production
 if (process.env.NODE_ENV === 'production') {
+  mkdirSync('logs', { recursive: true });
   transports.push(
     new winston.transports.File({
       filename: path.join('logs', 'error.log'),

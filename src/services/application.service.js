@@ -1,5 +1,6 @@
 import logger from '../config/logger.js';
 import { getIO } from '../config/socket.js';
+import { ALLOWED_ACTIONS } from '../utils/constants.js';
 import {
   sendAcceptanceEmail,
   sendRejectionEmail,
@@ -56,7 +57,7 @@ export class ApplicationService {
 
     await AuditService.log({
       actor: { _id: user._id, email: user.email, role: user.role },
-      action: 'APPLICATION_CREATED',
+      action: ALLOWED_ACTIONS.APPLICATION_SUBMITTED,
       targetModel: 'Application',
       targetId: application._id,
       metadata: { jobId: job._id, companyId: job.companyId },

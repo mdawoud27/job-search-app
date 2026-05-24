@@ -7,6 +7,7 @@ import { sendOTPEmail } from '../utils/email.utils.js';
 import { MSG } from '../utils/messages.js';
 import redis from '../config/redis.js';
 import { AuditService } from './audit.service.js';
+import { ALLOWED_ACTIONS } from '../utils/constants.js';
 
 export class AuthService {
   constructor(userRepository) {
@@ -43,7 +44,7 @@ export class AuthService {
 
     await AuditService.log({
       actor: { _id: user._id, email: user.email, role: user.role },
-      action: 'CREATE_USER',
+      action: ALLOWED_ACTIONS.USER_CREATED,
       targetModel: 'User',
       targetId: user._id,
       metadata: {
@@ -233,7 +234,7 @@ export class AuthService {
 
     await AuditService.log({
       actor: { _id: user._id, email: user.email, role: user.role },
-      action: 'RESET_PASSWORD',
+      action: ALLOWED_ACTIONS.PASSWORD_RESET,
       targetModel: 'User',
       targetId: user._id,
       metadata: {
@@ -273,7 +274,7 @@ export class AuthService {
 
     await AuditService.log({
       actor: { _id: user._id, email: user.email, role: user.role },
-      action: 'REFRESH_TOKEN',
+      action: ALLOWED_ACTIONS.TOKEN_REFRESHED,
       targetModel: 'User',
       targetId: user._id,
       metadata: {

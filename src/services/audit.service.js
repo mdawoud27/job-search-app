@@ -3,7 +3,7 @@ import logger from '../config/logger.js';
 
 export class AuditService {
   static async log({
-    actor,
+    actor = null,
     action,
     targetModel,
     targetId,
@@ -14,9 +14,9 @@ export class AuditService {
     try {
       await AuditLog.create({
         actor: {
-          _id: actor._id,
-          email: actor.email,
-          role: actor.role,
+          _id: actor?._id,
+          email: actor?.email,
+          role: actor?.role,
         },
         action,
         targetModel,

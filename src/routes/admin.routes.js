@@ -70,7 +70,7 @@ router.patch(
  * @access Private
  */
 router.get(
-  '/audit',
+  '/admin/audit',
   Authorization.verifyToken,
   Authorization.verifyAdminPermission,
   (req, res, next) => adminController.getAuditLogs(req, res, next),

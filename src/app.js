@@ -3,7 +3,6 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import path from 'path';
 import * as dotenv from 'dotenv';
-import morgan from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
 import passport from 'passport';
@@ -96,19 +95,6 @@ app.use(
   }),
 );
 
-// Morgan logger with sensitive data redaction
-morgan.token('url', (req) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  if (url.searchParams.has('accessToken')) {
-    url.searchParams.set('accessToken', '[REDACTED]');
-  }
-  if (url.searchParams.has('refreshToken')) {
-    url.searchParams.set('refreshToken', '[REDACTED]');
-  }
-  return url.pathname + url.search;
-});
-
-app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));

@@ -91,7 +91,7 @@ export class JobService {
     }
 
     await AuditService.log({
-      actor: { _id: user._id, email: user.email, role: user.role },
+      actor: { _id: user.id, email: user.email, role: user.role },
       action: 'JOB_UPDATED',
       targetModel: 'Job',
       targetId: job.id,
@@ -142,7 +142,7 @@ export class JobService {
     }
 
     await AuditService.log({
-      actor: { _id: user._id, email: user.email, role: user.role },
+      actor: { _id: user.id, email: user.email, role: user.role },
       action: 'JOB_DELETED',
       targetModel: 'Job',
       targetId: job.id,
@@ -237,7 +237,7 @@ export class JobService {
         await AuditService.log({
           action: 'GET_JOBS',
           targetModel: 'Job',
-          targetId: 'jobs',
+          targetId: jobs?.map((job) => job._id),
           metadata: { filter, skip, limit, sortOptions },
           requestId: meta.requestId,
           ip: meta.ip,
