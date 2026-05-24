@@ -20,6 +20,10 @@ export class ApplicationController {
         req.user.id,
         req.params.jobId,
         cloudResult,
+        {
+          requestId: req.requestId,
+          ip: req.ip,
+        },
       );
       res.status(201).json(application);
     } catch (error) {
@@ -35,6 +39,10 @@ export class ApplicationController {
           req.params.jobId,
           req.user.id,
           req.query,
+          {
+            requestId: req.requestId,
+            ip: req.ip,
+          },
         );
       res.status(200).json(applications);
     } catch (error) {
@@ -55,6 +63,10 @@ export class ApplicationController {
         req.params.applicationId,
         value.status,
         req.user.id,
+        {
+          requestId: req.requestId,
+          ip: req.ip,
+        },
       );
 
       res.status(200).json(result);
@@ -78,6 +90,10 @@ export class ApplicationController {
           companyId,
           date,
           req.user.id,
+          {
+            requestId: req.requestId,
+            ip: req.ip,
+          },
         );
 
       // Set headers for file download

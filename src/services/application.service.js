@@ -5,6 +5,7 @@ import {
 } from '../utils/email.utils.js';
 import { generateApplicationsExcel } from '../utils/excel.utils.js';
 import { MSG } from '../utils/messages.js';
+import { AuditService } from './audit.service.js';
 
 /* eslint no-console: off */
 // TODO: remove console.log statements
@@ -22,7 +23,7 @@ export class ApplicationService {
   }
 
   // create application
-  async createApplication(userId, jobId, cv) {
+  async createApplication(userId, jobId, cv, meta = {}) {
     const user = await this.userRepository.findByIdAndActive(userId);
     const job = await this.jobRepository.findById(jobId);
 
@@ -53,6 +54,16 @@ export class ApplicationService {
       console.error('Failed to emit socket event:', error.message);
     }
 
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'APPLICATION_CREATED',
+      targetModel: 'Application',
+      targetId: application._id,
+      metadata: { jobId: job._id, companyId: job.companyId },
+      requestId: meta.requestId,
+      ip: meta.ip,
+    });
+
     return {
       message: MSG.APPLICATION.CREATED,
       data: {
@@ -65,7 +76,7 @@ export class ApplicationService {
   }
 
   // get all applications for specific job
-  async getAllApplicationsForSpecificJob(jobId, userId, query = {}) {
+  async getAllApplicationsForSpecificJob(jobId, userId, query = {}, meta = {}) {
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 10;
     const sort = query.sort || '-createdAt';
@@ -97,6 +108,16 @@ export class ApplicationService {
     const totalCount =
       await this.applicationRepository.countApplications(jobId);
 
+    await AuditService.log({
+      actor: { _id: userId, email: 'User', role: 'user' },
+      action: 'GET_APPLICATIONS',
+      targetModel: 'Application',
+      targetId: jobId,
+      metadata: { jobId, page, limit, sort },
+      requestId: meta.requestId,
+      ip: meta.ip,
+    });
+
     return {
       message: MSG.APPLICATION.ALL_RETRIEVED,
       data: {
@@ -116,7 +137,7 @@ export class ApplicationService {
   }
 
   // update application status
-  async updateApplicationStatus(applicationId, status, hrUserId) {
+  async updateApplicationStatus(applicationId, status, hrUserId, meta = {}) {
     // Fetch application with user and job data
     const application =
       await this.applicationRepository.findById(applicationId);
@@ -194,6 +215,19 @@ export class ApplicationService {
       console.error('Failed to send email:', error.message);
     }
 
+    await AuditService.log({
+      actor: hrUser,
+      action: 'APPLICATION_STATUS_CHANGED',
+      targetModel: 'Application',
+      targetId: applicationId,
+      metadata: {
+        oldStatus: application.status,
+        newStatus: status,
+      },
+      requestId: meta.requestId,
+      ip: meta.ip,
+    });
+
     return {
       message: MSG.APPLICATION.STATUS_UPDATED(status),
       data: {
@@ -206,7 +240,7 @@ export class ApplicationService {
   }
 
   // export applications by date
-  async exportCompanyApplicationsByDate(companyId, date, hrUserId) {
+  async exportCompanyApplicationsByDate(companyId, date, hrUserId, meta = {}) {
     const canManage = await this.companyRepository.canManage(
       companyId,
       hrUserId,
@@ -244,6 +278,16 @@ export class ApplicationService {
       company.companyName,
       date,
     );
+
+    await AuditService.log({
+      actor: { _id: hrUserId, email: 'HR', role: 'hr' },
+      action: 'APPLICATIONS_EXPORTED',
+      targetModel: 'Application',
+      targetId: companyId,
+      metadata: { companyId, date },
+      requestId: meta.requestId,
+      ip: meta.ip,
+    });
 
     return {
       buffer: excelBuffer,
