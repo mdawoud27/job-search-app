@@ -17,6 +17,7 @@ export class CompanyController {
       const company = await this.companyService.createCompany(
         value,
         req.user.id,
+        { requestId: req.requestId, ip: req.ip },
       );
       res.status(201).json(company);
     } catch (error) {
@@ -35,6 +36,7 @@ export class CompanyController {
         req.params.id,
         value,
         req.user.id,
+        { requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);
     } catch (error) {
@@ -48,6 +50,7 @@ export class CompanyController {
       const company = await this.companyService.softDeleteCompany(
         req.params.id,
         req.user,
+        { requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);
     } catch (error) {
@@ -60,6 +63,7 @@ export class CompanyController {
     try {
       const company = await this.companyService.getSpecificCompanyWithJobs(
         req.params.id,
+        { requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);
     } catch (error) {
@@ -72,6 +76,7 @@ export class CompanyController {
     try {
       const company = await this.companyService.searchCompanywithName(
         req.params.name,
+        { requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);
     } catch (error) {
@@ -90,6 +95,7 @@ export class CompanyController {
         req.params.id,
         cloudResult,
         req.user,
+        { requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);
     } catch (error) {
@@ -103,6 +109,7 @@ export class CompanyController {
       const company = await this.companyService.deleteCompanyLogo(
         req.params.id,
         req.user,
+        { requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);
     } catch (error) {
@@ -121,6 +128,7 @@ export class CompanyController {
         req.params.id,
         cloudResult,
         req.user,
+        { requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);
     } catch (error) {
@@ -134,6 +142,7 @@ export class CompanyController {
       const company = await this.companyService.deleteCompanyCover(
         req.params.id,
         req.user,
+        { requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);
     } catch (error) {
@@ -147,6 +156,7 @@ export class CompanyController {
       const company = await this.companyService.addHR(
         req.params.id,
         req.body.userId,
+        { requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);
     } catch (error) {
@@ -160,6 +170,7 @@ export class CompanyController {
       const company = await this.companyService.removeHR(
         req.params.id,
         req.body.userId,
+        { requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);
     } catch (error) {

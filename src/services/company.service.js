@@ -1,6 +1,7 @@
 import { CompanyResponseDto } from '../dtos/company/company-response.dto.js';
 import { CloudinaryUtils } from '../utils/cloudinary.util.js';
 import { MSG } from '../utils/messages.js';
+import { AuditService } from './audit.service.js';
 
 export class CompanyService {
   constructor(userDao, companyDao) {
@@ -9,10 +10,19 @@ export class CompanyService {
   }
 
   // create company
-  async createCompany(dto, userId) {
+  async createCompany(dto, userId, meta = {}) {
     try {
       const user = await this.userDao.findByIdAndActive(userId);
       const company = await this.companyDao.create(dto, userId);
+
+      await AuditService.log({
+        actor: { _id: user._id, email: user.email, role: user.role },
+        action: 'CREATE_COMPANY',
+        targetModel: 'Company',
+        targetId: company._id,
+        metadata: meta,
+      });
+
       return {
         message: MSG.COMPANY.CREATED,
         createdBy: user.email,
@@ -30,7 +40,7 @@ export class CompanyService {
   }
 
   // update company
-  async updateCompany(companyId, dto, userId) {
+  async updateCompany(companyId, dto, userId, meta = {}) {
     try {
       if (dto.legalAttachment) {
         throw new Error(MSG.COMPANY.LEGAL_ATTACHMENT_NOT_ALLOWED);
@@ -45,6 +55,15 @@ export class CompanyService {
       if (company.deletedAt || company.bannedAt) {
         throw new Error(MSG.COMPANY.DELETED_OR_BANNED);
       }
+
+      await AuditService.log({
+        actor: { _id: user._id, email: user.email, role: user.role },
+        action: 'UPDATE_COMPANY',
+        targetModel: 'Company',
+        targetId: company._id,
+        metadata: meta,
+      });
+
       return {
         message: MSG.COMPANY.UPDATED,
         createdBy: user.email,
@@ -62,9 +81,18 @@ export class CompanyService {
   }
 
   // soft delete company
-  async softDeleteCompany(companyId, owner) {
+  async softDeleteCompany(companyId, owner, meta = {}) {
     const user = await this.userDao.findByIdAndActive(owner.id);
     const company = await this.companyDao.softDelete(companyId, owner);
+
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'DELETE_COMPANY',
+      targetModel: 'Company',
+      targetId: company._id,
+      metadata: meta,
+    });
+
     return {
       message: MSG.COMPANY.DELETED,
       createdBy: user.email,
@@ -74,11 +102,19 @@ export class CompanyService {
   }
 
   // get specific company with jobs
-  async getSpecificCompanyWithJobs(companyId) {
+  async getSpecificCompanyWithJobs(companyId, meta = {}) {
     const company = await this.companyDao.findByIdWithJobs(companyId);
     if (!company) {
       throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
     }
+
+    await AuditService.log({
+      action: 'VIEW_COMPANY',
+      targetModel: 'Company',
+      targetId: company._id,
+      metadata: meta,
+    });
+
     return {
       message: MSG.COMPANY.FOUND,
       createdBy: company.createdBy.email,
@@ -91,7 +127,7 @@ export class CompanyService {
   }
 
   // search company with name
-  async searchCompanywithName(companyName) {
+  async searchCompanywithName(companyName, meta = {}) {
     const companies = await this.companyDao.findByCompanyName(companyName);
 
     if (!companies || companies.length === 0) {
@@ -99,7 +135,12 @@ export class CompanyService {
       error.statusCode = 404;
       throw error;
     }
-
+    await AuditService.log({
+      action: 'VIEW_COMPANY',
+      targetModel: 'Company',
+      targetId: companies.map((company) => company._id),
+      metadata: meta,
+    });
     return {
       message: MSG.COMPANY.ALL_FOUND,
       count: companies.length,
@@ -113,7 +154,7 @@ export class CompanyService {
   }
 
   // upload company logo
-  async uploadCompanyLogo(companyId, logo, user) {
+  async uploadCompanyLogo(companyId, logo, user, meta = {}) {
     const isOwner = await this.companyDao.isOwner(companyId, user.id);
     if (!isOwner && user.role !== 'Admin') {
       throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
@@ -135,6 +176,13 @@ export class CompanyService {
       public_id: logo.public_id,
     });
 
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'UPLOAD_COMPANY_LOGO',
+      targetModel: 'Company',
+      targetId: companyId,
+      metadata: meta,
+    });
     return {
       message: MSG.COMPANY.LOGO_UPLOADED,
       data: {
@@ -144,7 +192,7 @@ export class CompanyService {
   }
 
   // delete company logo
-  async deleteCompanyLogo(companyId, user) {
+  async deleteCompanyLogo(companyId, user, meta = {}) {
     const isOwner = await this.companyDao.isOwner(companyId, user.id);
     if (!isOwner && user.role !== 'Admin') {
       throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
@@ -158,6 +206,15 @@ export class CompanyService {
       await CloudinaryUtils.deleteCloudinaryFile(company.logo.public_id);
       company.logo = null;
       await company.save();
+
+      await AuditService.log({
+        actor: { _id: user._id, email: user.email, role: user.role },
+        action: 'DELETE_COMPANY_LOGO',
+        targetModel: 'Company',
+        targetId: companyId,
+        metadata: meta,
+      });
+
       return {
         message: MSG.COMPANY.LOGO_DELETED,
         data: {
@@ -174,7 +231,7 @@ export class CompanyService {
   }
 
   // upload company cover
-  async uploadCompanyCover(companyId, cover, user) {
+  async uploadCompanyCover(companyId, cover, user, meta = {}) {
     const isOwner = await this.companyDao.isOwner(companyId, user.id);
     if (!isOwner && user.role !== 'Admin') {
       throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
@@ -192,6 +249,15 @@ export class CompanyService {
       secure_url: cover.secure_url,
       public_id: cover.public_id,
     });
+
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'UPLOAD_COMPANY_COVER',
+      targetModel: 'Company',
+      targetId: companyId,
+      metadata: meta,
+    });
+
     return {
       message: MSG.COMPANY.COVER_UPLOADED,
       data: {
@@ -201,7 +267,7 @@ export class CompanyService {
   }
 
   // delete company cover
-  async deleteCompanyCover(companyId, user) {
+  async deleteCompanyCover(companyId, user, meta = {}) {
     const isOwner = await this.companyDao.isOwner(companyId, user.id);
     if (!isOwner && user.role !== 'Admin') {
       throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
@@ -215,6 +281,15 @@ export class CompanyService {
       await CloudinaryUtils.deleteCloudinaryFile(company.coverPic.public_id);
       company.coverPic = null;
       await company.save();
+
+      await AuditService.log({
+        actor: { _id: user._id, email: user.email, role: user.role },
+        action: 'DELETE_COMPANY_COVER',
+        targetModel: 'Company',
+        targetId: companyId,
+        metadata: meta,
+      });
+
       return {
         message: MSG.COMPANY.COVER_DELETED,
         data: {
@@ -231,7 +306,7 @@ export class CompanyService {
   }
 
   // add HR
-  async addHR(companyId, userId) {
+  async addHR(companyId, userId, meta = {}) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
       throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
@@ -243,6 +318,15 @@ export class CompanyService {
     const updatedCompany = await this.companyDao.addHR(companyId, userId);
     user.role = 'HR';
     await user.save();
+
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'ADD_HR',
+      targetModel: 'Company',
+      targetId: companyId,
+      metadata: meta,
+    });
+
     return {
       message: MSG.COMPANY.HR_ADDED,
       data: {
@@ -252,7 +336,7 @@ export class CompanyService {
   }
 
   // remove HR
-  async removeHR(companyId, userId) {
+  async removeHR(companyId, userId, meta = {}) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
       throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
@@ -262,6 +346,15 @@ export class CompanyService {
       throw new Error(MSG.USER.NOT_FOUND_OR_BANNED);
     }
     const updatedCompany = await this.companyDao.removeHR(companyId, userId);
+
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'REMOVE_HR',
+      targetModel: 'Company',
+      targetId: companyId,
+      metadata: meta,
+    });
+
     return {
       message: MSG.COMPANY.HR_REMOVED,
       data: {
