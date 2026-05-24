@@ -2,6 +2,7 @@ import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { createAdapter } from '@socket.io/redis-adapter';
 import redisClient from './redis.js';
+import logger from './logger.js';
 import { ChatDAO } from '../daos/chat.dao.js';
 import { UserDAO } from '../daos/user.dao.js';
 import { ApplicationDAO } from '../daos/application.dao.js';
@@ -17,7 +18,6 @@ const jobDAO = new JobDao();
 const companyDAO = new CompanyDAO();
 
 /* eslint no-console: off */
-// TODO: remove console.log statements
 export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
@@ -35,7 +35,6 @@ export const initSocket = (server) => {
   // Authentication middleware
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
-    // console.log(`Socket connection attempt with token: ${token ? 'present' : 'missing'}`);
 
     if (!token) {
       return next(
@@ -48,10 +47,8 @@ export const initSocket = (server) => {
       const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
       socket.userId = decoded.id;
       socket.userRole = decoded.role;
-      // console.log(`Socket authenticated: User ${socket.userId} (${socket.userRole})`);
       next();
     } catch (err) {
-      // console.error('Socket authentication failed:', err.message);
       next(
         new Error(
           `${MSG.MIDDLEWARE.AUTH_ERROR}: ${MSG.MIDDLEWARE.INVALID_TOKEN}`,
@@ -62,10 +59,6 @@ export const initSocket = (server) => {
   });
 
   io.on('connection', (socket) => {
-    // console.log(
-    //   `New client connected: ${socket.id} (User: ${socket.userId}, Role: ${socket.userRole})`,
-    // );
-
     // Join user to their personal room
     socket.join(`user:${socket.userId}`);
 
@@ -85,9 +78,9 @@ export const initSocket = (server) => {
 
           if (canManage) {
             socket.join(`company:${companyId}`);
-            // console.log(
-            //   `User ${socket.userId} joined company room: ${companyId}`,
-            // );
+            logger.info(
+              `User ${socket.userId} joined company room: ${companyId}`,
+            );
           } else {
             socket.emit('error', {
               message: MSG.JOB.NOT_AUTHORIZED('join company room for'),
@@ -99,7 +92,7 @@ export const initSocket = (server) => {
           });
         }
       } catch (error) {
-        console.error('Error joining company room:', error.message);
+        logger.error('Error joining company room:', error.message);
         socket.emit('error', {
           message: MSG.JOB.NOT_AUTHORIZED('join company room for'),
           error: error.message,
@@ -166,9 +159,9 @@ export const initSocket = (server) => {
           timestamp: result.message.timestamp,
         });
 
-        console.log(`Message from ${socket.userId} to ${receiverId}`);
+        logger.info(`Message from ${socket.userId} to ${receiverId}`);
       } catch (error) {
-        console.error('Error sending message:', error.message);
+        logger.error('Error sending message:', error.message);
         socket.emit('error', { message: MSG.CHAT.FAILED_SEND_MESSAGE });
       }
     });
@@ -256,11 +249,11 @@ export const initSocket = (server) => {
           applicants,
         });
 
-        console.log(
+        logger.info(
           `Sent ${applicants.length} applicants for job ${jobId} to HR ${socket.userId}`,
         );
       } catch (error) {
-        console.error('Error fetching job applicants:', error.message);
+        logger.error('Error fetching job applicants:', error.message);
         socket.emit('error', { message: MSG.CHAT.FAILED_FETCH_APPLICANTS });
       }
     });
@@ -310,11 +303,11 @@ export const initSocket = (server) => {
           jobs: formattedJobs,
         });
 
-        console.log(
+        logger.info(
           `Sent ${formattedJobs.length} jobs for company ${companyId} to HR ${socket.userId}`,
         );
       } catch (error) {
-        console.error('Error fetching company jobs:', error.message);
+        logger.error('Error fetching company jobs:', error.message);
         socket.emit('error', { message: MSG.CHAT.FAILED_FETCH_COMPANY_JOBS });
       }
     });
@@ -345,17 +338,17 @@ export const initSocket = (server) => {
           applications: formattedApps,
         });
 
-        console.log(
+        logger.info(
           `Sent ${formattedApps.length} applications to user ${socket.userId}`,
         );
       } catch (error) {
-        console.error('Error fetching user applications:', error.message);
+        logger.error('Error fetching user applications:', error.message);
         socket.emit('error', { message: MSG.CHAT.FAILED_FETCH_APPLICATIONS });
       }
     });
 
     socket.on('disconnect', () => {
-      console.log('Client disconnected:', socket.id);
+      logger.info('Client disconnected:', socket.id);
     });
   });
 

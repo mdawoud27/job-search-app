@@ -1,4 +1,12 @@
+import mongoose from 'mongoose';
+import AuditLog from '../models/AuditLog.js';
 import { MSG } from '../utils/messages.js';
+import { AuditService } from './audit.service.js';
+import {
+  ALLOWED_ACTIONS,
+  ALLOWED_SORT_FIELDS,
+  ALLOWED_SORT_ORDERS,
+} from '../utils/constants.js';
 
 export class AdminService {
   constructor(userDao, adminDao, companyDao) {
@@ -8,7 +16,7 @@ export class AdminService {
   }
 
   // ban user
-  async banUser(userId, admin) {
+  async banUser(userId, admin, meta = {}) {
     const user = await this.userDao.findById(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -17,6 +25,22 @@ export class AdminService {
       throw new Error(MSG.ADMIN.USER_ALREADY_BANNED);
     }
     await this.adminDao.banUser(userId, admin.id);
+
+    await AuditService.log({
+      actor: {
+        _id: admin.id,
+        email: admin.email,
+        role: admin.role,
+      },
+      action: 'USER_BANNED',
+      targetModel: 'User',
+      targetId: user._id,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
+
     return {
       message: MSG.ADMIN.USER_BANNED,
       date: {
@@ -29,7 +53,7 @@ export class AdminService {
   }
 
   // unban user
-  async unbanUser(userId, admin) {
+  async unbanUser(userId, admin, meta = {}) {
     const user = await this.userDao.findById(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -38,6 +62,20 @@ export class AdminService {
       throw new Error(MSG.ADMIN.USER_ALREADY_UNBANNED);
     }
     await this.adminDao.unbanUser(userId, admin.id);
+
+    await AuditService.log({
+      actor: {
+        _id: admin.id,
+        email: admin.email,
+        role: admin.role,
+      },
+      action: 'USER_UNBANNED',
+      targetModel: 'User',
+      targetId: user._id,
+      requestId: meta.requestId,
+      ip: meta.ip,
+    });
+
     return {
       message: MSG.ADMIN.USER_UNBANNED,
       date: {
@@ -50,7 +88,7 @@ export class AdminService {
   }
 
   // ban company
-  async banCompany(companyId, admin) {
+  async banCompany(companyId, admin, meta = {}) {
     const company = await this.companyDao.findById(companyId);
 
     if (!company) {
@@ -66,6 +104,20 @@ export class AdminService {
     }
 
     await this.adminDao.banCompany(companyId, admin.id);
+
+    await AuditService.log({
+      actor: {
+        _id: admin.id,
+        email: admin.email,
+        role: admin.role,
+      },
+      action: 'COMPANY_BANNED',
+      targetModel: 'Company',
+      targetId: company._id,
+      requestId: meta.requestId,
+      ip: meta.ip,
+    });
+
     return {
       message: MSG.COMPANY.BANNED,
       date: {
@@ -78,7 +130,7 @@ export class AdminService {
   }
 
   // unban company
-  async unbanCompany(companyId, admin) {
+  async unbanCompany(companyId, admin, meta = {}) {
     const company = await this.companyDao.findById(companyId);
     if (!company) {
       throw new Error(MSG.COMPANY.NOT_FOUND_OR_INACTIVE);
@@ -88,6 +140,20 @@ export class AdminService {
     }
 
     await this.adminDao.unbanCompany(companyId, admin.id);
+
+    await AuditService.log({
+      actor: {
+        _id: admin.id,
+        email: admin.email,
+        role: admin.role,
+      },
+      action: 'COMPANY_UNBANNED',
+      targetModel: 'Company',
+      targetId: company._id,
+      requestId: meta.requestId,
+      ip: meta.ip,
+    });
+
     return {
       message: MSG.COMPANY.UNBANNED,
       date: {
@@ -100,7 +166,7 @@ export class AdminService {
   }
 
   // approve company
-  async approveCompany(companyId, admin) {
+  async approveCompany(companyId, admin, meta = {}) {
     const company = await this.companyDao.findById(companyId);
     if (!company) {
       throw new Error(MSG.COMPANY.NOT_FOUND_OR_INACTIVE);
@@ -109,6 +175,20 @@ export class AdminService {
       throw new Error(MSG.COMPANY.ALREADY_APPROVED);
     }
     await this.adminDao.approveCompany(companyId, admin.id);
+
+    await AuditService.log({
+      actor: {
+        _id: admin.id,
+        email: admin.email,
+        role: admin.role,
+      },
+      action: 'COMPANY_APPROVED',
+      targetModel: 'Company',
+      targetId: company._id,
+      requestId: meta.requestId,
+      ip: meta.ip,
+    });
+
     return {
       message: MSG.COMPANY.APPROVED,
       date: {
@@ -118,5 +198,67 @@ export class AdminService {
         approvedBy: admin.email,
       },
     };
+  }
+
+  // Get audit logs
+  async getAuditLogs(query) {
+    const {
+      targetId,
+      action,
+      actorId,
+      page = 1,
+      limit = 20,
+      sortBy,
+      sortOrder = 'desc',
+    } = query;
+
+    const filter = {};
+
+    if (actorId) {
+      if (!mongoose.Types.ObjectId.isValid(actorId)) {
+        throw new Error('Invalid actorId format');
+      }
+      filter['actor._id'] = new mongoose.Types.ObjectId(actorId);
+    }
+
+    if (targetId) {
+      if (!mongoose.Types.ObjectId.isValid(targetId)) {
+        throw new Error('Invalid targetId format');
+      }
+      filter['targetId'] = new mongoose.Types.ObjectId(targetId);
+    }
+
+    if (action) {
+      const safeAction = ALLOWED_ACTIONS.find((a) => a === action);
+      if (!safeAction) {
+        throw new Error(`Invalid action value: ${action}`);
+      }
+      filter.action = safeAction;
+    }
+
+    if (sortOrder && !ALLOWED_SORT_ORDERS.includes(sortOrder)) {
+      throw new Error(`Invalid sortOrder value: ${sortOrder}`);
+    }
+
+    const sort = {};
+    if (sortBy) {
+      const safeSortBy = ALLOWED_SORT_FIELDS.find((f) => f === sortBy);
+      if (!safeSortBy) {
+        throw new Error(`Invalid sortBy field: ${sortBy}`);
+      }
+      sort[safeSortBy] = sortOrder === 'desc' ? -1 : 1;
+    } else {
+      sort.createdAt = -1;
+    }
+
+    const safePage = Math.max(1, parseInt(page, 10) || 1);
+    const safeLimit = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+
+    const logs = await AuditLog.find(filter)
+      .sort(sort)
+      .skip((safePage - 1) * safeLimit)
+      .limit(safeLimit);
+
+    return logs;
   }
 }

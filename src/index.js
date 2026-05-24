@@ -6,6 +6,7 @@ import connectToDB from './config/db.js';
 import { initSocket } from './config/socket.js';
 import redis from './config/redis.js';
 import { scheduleCleanupJobs } from './jobs/cleanup.worker.js';
+import logger from './config/logger.js';
 
 dotenv.config();
 
@@ -30,8 +31,7 @@ await scheduleCleanupJobs();
 
 // Start Server
 server.listen(PORT, () => {
-  /* eslint no-console: off */
-  console.log(
+  logger.info(
     `Server running in ${
       process.env.NODE_ENV || 'development'
     } mode on port ${PORT}`,

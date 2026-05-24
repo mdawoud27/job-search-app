@@ -3,6 +3,7 @@ import { UserResponseDto } from '../dtos/user/user-response.dto.js';
 import { CloudinaryUtils } from '../utils/cloudinary.util.js';
 import { UpdateUserDto } from '../dtos/user/update-user.dto.js';
 import { MSG } from '../utils/messages.js';
+import { AuditService } from './audit.service.js';
 
 export class UserService {
   constructor(userRepository) {
@@ -10,12 +11,24 @@ export class UserService {
   }
 
   // Update account
-  async updateAccount(userId, updateDto) {
+  async updateAccount(userId, updateDto, meta = {}) {
     const updated = await this.userRepository.updateById(userId, updateDto);
 
     if (!updated) {
       throw new Error(MSG.USER.NOT_FOUND_OR_UPDATE_FAILED);
     }
+
+    await AuditService.log({
+      actor: { _id: userId, email: updated.email, role: updated.role },
+      action: 'UPDATE_ACCOUNT',
+      targetModel: 'User',
+      targetId: userId,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+        updatedFields: Object.keys(updateDto),
+      },
+    });
 
     return {
       message: MSG.USER.ACCOUNT_UPDATED,
@@ -26,11 +39,22 @@ export class UserService {
   }
 
   // Get logged-in user
-  async getLoggedUser(userId) {
+  async getLoggedUser(userId, meta = {}) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
     }
+
+    await AuditService.log({
+      actor: { _id: userId, email: user.email, role: user.role },
+      action: 'GET_LOGGED_USER',
+      targetModel: 'User',
+      targetId: userId,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
 
     return {
       message: MSG.USER.PROFILE_RETRIEVED,
@@ -42,11 +66,22 @@ export class UserService {
   }
 
   // Get another user's profile
-  async getPublicProfile(userId) {
+  async getPublicProfile(userId, meta = {}) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
     }
+
+    await AuditService.log({
+      actor: { _id: userId, email: user.email, role: user.role },
+      action: 'GET_PUBLIC_PROFILE',
+      targetModel: 'User',
+      targetId: userId,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
 
     return {
       message: MSG.USER.PROFILE_RETRIEVED,
@@ -60,7 +95,7 @@ export class UserService {
   }
 
   // Update password
-  async changePassword(userId, dto) {
+  async changePassword(userId, dto, meta = {}) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -98,6 +133,18 @@ export class UserService {
     user.refreshToken = null;
 
     await user.save();
+
+    await AuditService.log({
+      actor: { _id: userId, email: user.email, role: user.role },
+      action: 'CHANGE_PASSWORD',
+      targetModel: 'User',
+      targetId: userId,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
+
     return {
       message: MSG.USER.PASSWORD_CHANGED,
       data: {
@@ -107,7 +154,7 @@ export class UserService {
   }
 
   // Upload profile pic
-  async uploadProfilePic(userId, imageData) {
+  async uploadProfilePic(userId, imageData, meta = {}) {
     const user = await this.userRepository.findByIdAndActive(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -128,6 +175,18 @@ export class UserService {
     };
 
     await user.save();
+
+    await AuditService.log({
+      actor: { _id: userId, email: user.email, role: user.role },
+      action: 'UPLOAD_PROFILE_PIC',
+      targetModel: 'User',
+      targetId: userId,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
+
     return {
       message: MSG.USER.PROFILE_PIC_UPLOADED,
       data: {
@@ -138,7 +197,7 @@ export class UserService {
   }
 
   // Upload cover pic
-  async uploadCoverPic(userId, imageData) {
+  async uploadCoverPic(userId, imageData, meta = {}) {
     const user = await this.userRepository.findByIdAndActive(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -158,6 +217,18 @@ export class UserService {
     };
 
     await user.save();
+
+    await AuditService.log({
+      actor: { _id: userId, email: user.email, role: user.role },
+      action: 'UPLOAD_COVER_PIC',
+      targetModel: 'User',
+      targetId: userId,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
+
     return {
       message: MSG.USER.COVER_PIC_UPLOADED,
       data: {
@@ -168,7 +239,7 @@ export class UserService {
   }
 
   // Delete profile pic
-  async deleteProfilePic(userId) {
+  async deleteProfilePic(userId, meta = {}) {
     const user = await this.userRepository.findByIdAndActive(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -191,11 +262,22 @@ export class UserService {
       };
     }
 
+    await AuditService.log({
+      actor: { _id: userId, email: user.email, role: user.role },
+      action: 'DELETE_PROFILE_PIC',
+      targetModel: 'User',
+      targetId: userId,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
+
     return { message: MSG.USER.NO_PROFILE_PIC };
   }
 
   // Delete cover pic
-  async deleteCoverPic(userId) {
+  async deleteCoverPic(userId, meta = {}) {
     const user = await this.userRepository.findByIdAndActive(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -218,11 +300,22 @@ export class UserService {
       };
     }
 
+    await AuditService.log({
+      actor: { _id: userId, email: user.email, role: user.role },
+      action: 'DELETE_COVER_PIC',
+      targetModel: 'User',
+      targetId: userId,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
+
     return { message: MSG.USER.NO_COVER_PIC };
   }
 
   // Soft Delete
-  async softDelete(userId) {
+  async softDelete(userId, meta = {}) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -239,6 +332,17 @@ export class UserService {
     user.deletedAt = new Date();
     await user.save();
 
+    await AuditService.log({
+      actor: { _id: userId, email: user.email, role: user.role },
+      action: 'DELETE_USER',
+      targetModel: 'User',
+      targetId: userId,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
+
     return {
       message: MSG.USER.ACCOUNT_DELETED,
       data: {
@@ -248,7 +352,7 @@ export class UserService {
   }
 
   // Restore user
-  async restoreAccount(userId, admin) {
+  async restoreAccount(userId, admin, meta = {}) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
@@ -260,6 +364,17 @@ export class UserService {
 
     user.deletedAt = null;
     await user.save();
+
+    await AuditService.log({
+      actor: { _id: admin.id, email: admin.email, role: admin.role },
+      action: 'RESTORE_USER',
+      targetModel: 'User',
+      targetId: userId,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
+    });
 
     return {
       message: MSG.USER.ACCOUNT_RESTORED,

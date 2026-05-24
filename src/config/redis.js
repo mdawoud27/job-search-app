@@ -1,9 +1,9 @@
 import Redis from 'ioredis';
 import * as dotenv from 'dotenv';
+import logger from './logger.js';
 dotenv.config();
 
 /* eslint no-undef: off */
-/* eslint no-console: off */
 const redisUrl = process.env.REDIS_URL;
 
 if (!redisUrl) {
@@ -16,11 +16,11 @@ const redis = new Redis(redisUrl, {
 });
 
 redis.on('connect', () => {
-  console.log('Redis client connected');
+  logger.info('Redis client connected');
 });
 
 redis.on('error', (err) => {
-  console.log('Redis client error', err);
+  logger.error('Redis client error', { message: err.message });
 });
 
 export default redis;

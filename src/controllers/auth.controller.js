@@ -22,7 +22,10 @@ export class AuthController {
         return res.status(400).json({ message: error.details[0].message });
       }
 
-      const result = await this.authService.signup(dto);
+      const result = await this.authService.signup(dto, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       return res.status(201).json(CreateUserDto.toResponse(result));
     } catch (e) {
       next(e);
@@ -37,7 +40,10 @@ export class AuthController {
         return res.status(400).json({ error: error.details[0].message });
       }
       const dto = ConfirmOtpDto.fromRequest(req.body);
-      const result = await this.authService.confirmEmail(dto);
+      const result = await this.authService.confirmEmail(dto, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
 
       res.status(200).json(result);
     } catch (e) {
@@ -54,7 +60,10 @@ export class AuthController {
       }
 
       const dto = ResendOtpDto.fromRequest(req.body);
-      const result = await this.authService.resendOtpCode(dto);
+      const result = await this.authService.resendOtpCode(dto, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
 
       return res.status(200).json(result);
     } catch (error) {
@@ -71,7 +80,10 @@ export class AuthController {
       }
 
       const dto = LoginDto.fromRequest(req.body);
-      const result = await this.authService.login(dto);
+      const result = await this.authService.login(dto, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
 
       res.status(200).json(LoginDto.toResponse(result));
     } catch (e) {
@@ -87,7 +99,10 @@ export class AuthController {
         return res.status(400).json({ error: error.details[0].message });
       }
       const dto = ForgotPasswordDto.fromRequest(req.body);
-      const result = await this.authService.forgotPassword(dto);
+      const result = await this.authService.forgotPassword(dto, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
 
       res.status(200).json(ForgotPasswordDto.toResponse(result));
     } catch (e) {
@@ -104,7 +119,10 @@ export class AuthController {
       }
 
       const dto = ResetPasswordDto.fromRequest(req.body);
-      const result = await this.authService.resetPassword(dto);
+      const result = await this.authService.resetPassword(dto, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
 
       res.json(ResetPasswordDto.toResponse(result));
     } catch (e) {
@@ -121,7 +139,10 @@ export class AuthController {
       }
 
       const { refreshToken } = TokenDto.fromRequest(req.body);
-      const result = await this.authService.refresh(refreshToken);
+      const result = await this.authService.refresh(refreshToken, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       res.status(200).json(TokenDto.toResponse(result));
     } catch (e) {
       // Handle specific token errors
@@ -243,7 +264,10 @@ export class AuthController {
   // logout
   async logout(req, res, next) {
     try {
-      const result = await this.authService.logout(req.user.id);
+      const result = await this.authService.logout(req.user.id, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       return res.status(200).json(result);
     } catch (error) {
       next(error);
