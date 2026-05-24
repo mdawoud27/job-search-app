@@ -35,8 +35,10 @@ export class AdminService {
       action: 'USER_BANNED',
       targetModel: 'User',
       targetId: user._id,
-      requestId: meta.requestId,
-      ip: meta.ip,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+      },
     });
 
     return {

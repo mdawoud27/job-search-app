@@ -73,6 +73,39 @@ export const ALLOWED_ACTIONS = {
   GET_APPLICATIONS: 'GET_APPLICATIONS',
   APPLICATIONS_EXPORTED: 'APPLICATIONS_EXPORTED',
 };
+export const ALLOWED_ACTIONS = [
+  // User actions
+  'USER_BANNED',
+  'USER_UNBANNED',
+  'USER_CREATED',
+  'USER_DELETED',
+  'PROFILE_UPDATED',
+  'PASSWORD_RESET',
+  'PASSWORD_CHANGED',
+
+  // Auth actions
+  'LOGIN',
+  'LOGOUT',
+  'TOKEN_REFRESHED',
+
+  // Company actions
+  'COMPANY_CREATED',
+  'COMPANY_UPDATED',
+  'COMPANY_DELETED',
+  'COMPANY_APPROVED',
+  'COMPANY_BANNED',
+  'COMPANY_UNBANNED',
+  'VIEW_COMPANY',
+
+  // Job actions
+  'JOB_CREATED',
+  'JOB_UPDATED',
+  'JOB_DELETED',
+
+  // Application actions
+  'APPLICATION_SUBMITTED',
+  'APPLICATION_STATUS_CHANGED',
+];
 
 export const ALLOWED_SORT_FIELDS = ['createdAt', 'action'];
 export const ALLOWED_SORT_ORDERS = ['asc', 'desc'];
