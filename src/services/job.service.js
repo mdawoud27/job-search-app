@@ -2,6 +2,7 @@ import { JobResponseDto } from '../dtos/job/job-response.dto.js';
 import _ from 'lodash';
 import { MSG } from '../utils/messages.js';
 import { getOrSet, invalidate, CacheKeys, TTL } from '../utils/cache.utils.js';
+import { AuditService } from './audit.service.js';
 
 export class JobService {
   constructor(userDao, companyDao, jobDao) {
@@ -11,7 +12,7 @@ export class JobService {
   }
 
   // create job
-  async createJob(dto, userId, companyId) {
+  async createJob(dto, userId, companyId, meta = {}) {
     const user = await this.userDao.findByIdAndActive(userId);
 
     if (!user) {
@@ -35,6 +36,20 @@ export class JobService {
       console.error('[cache] createJob invalidation failed', error);
     }
 
+    await AuditService.log({
+      actor: {
+        _id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      action: 'JOB_CREATED',
+      targetModel: 'Job',
+      targetId: job.id,
+      metadata: { companyName: company.companyName },
+      requestId: meta.requestId,
+      ip: meta.ip,
+    });
+
     return {
       message: MSG.JOB.CREATED,
       data: {
@@ -45,7 +60,7 @@ export class JobService {
   }
 
   // update job
-  async updateJob(dto, userId, companyId, jobId) {
+  async updateJob(dto, userId, companyId, jobId, meta = {}) {
     const user = await this.userDao.findByIdAndActive(userId);
 
     if (!user) {
@@ -76,6 +91,16 @@ export class JobService {
       console.error('[cache] updateJob invalidation failed', error);
     }
 
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'JOB_UPDATED',
+      targetModel: 'Job',
+      targetId: job.id,
+      metadata: { companyName: company.companyName },
+      requestId: meta.requestId,
+      ip: meta.ip,
+    });
+
     return {
       message: MSG.JOB.UPDATED,
       updatedBy: user.email,
@@ -87,7 +112,7 @@ export class JobService {
   }
 
   // delete job
-  async deleteJob(userId, companyId, jobId) {
+  async deleteJob(userId, companyId, jobId, meta = {}) {
     const user = await this.userDao.findByIdAndActive(userId);
 
     if (!user) {
@@ -118,6 +143,16 @@ export class JobService {
       console.error('[cache] deleteJob invalidation failed', error);
     }
 
+    await AuditService.log({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'JOB_DELETED',
+      targetModel: 'Job',
+      targetId: job.id,
+      metadata: { companyName: company.companyName },
+      requestId: meta.requestId,
+      ip: meta.ip,
+    });
+
     return {
       message: MSG.JOB.DELETED,
       deletedBy: user.email,
@@ -129,7 +164,7 @@ export class JobService {
   }
 
   // get all jobs
-  async getJobs(query) {
+  async getJobs(query, meta = {}) {
     const {
       page = 1,
       limit = 10,
@@ -200,6 +235,16 @@ export class JobService {
           limit,
           sortOptions,
         );
+
+        await AuditService.log({
+          action: 'GET_JOBS',
+          targetModel: 'Job',
+          targetId: 'jobs',
+          metadata: { filter, skip, limit, sortOptions },
+          requestId: meta.requestId,
+          ip: meta.ip,
+        });
+
         return {
           jobs: jobs.map((job) => JobResponseDto.toResponse(job)),
           totalCount,
@@ -212,7 +257,7 @@ export class JobService {
   }
 
   // get specific job
-  async getJob(jobId) {
+  async getJob(jobId, meta = {}) {
     return getOrSet(
       CacheKeys.job(jobId),
       async () => {
@@ -220,6 +265,16 @@ export class JobService {
         if (!job) {
           throw new Error(MSG.JOB.NOT_FOUND);
         }
+
+        await AuditService.log({
+          action: 'GET_JOB',
+          targetModel: 'Job',
+          targetId: jobId,
+          metadata: { jobId },
+          requestId: meta.requestId,
+          ip: meta.ip,
+        });
+
         return JobResponseDto.toResponse(job);
       },
       TTL.JOB_ITEM,

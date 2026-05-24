@@ -17,6 +17,10 @@ export class JobController {
         value,
         req.user.id,
         req.params.companyId,
+        {
+          requestId: req.requestId,
+          ip: req.ip,
+        },
       );
       res.status(201).json(job);
     } catch (error) {
@@ -36,6 +40,10 @@ export class JobController {
         req.user.id,
         req.params.companyId,
         req.params.jobId,
+        {
+          requestId: req.requestId,
+          ip: req.ip,
+        },
       );
       res.status(201).json(job);
     } catch (error) {
@@ -50,6 +58,10 @@ export class JobController {
         req.user.id,
         req.params.companyId,
         req.params.jobId,
+        {
+          requestId: req.requestId,
+          ip: req.ip,
+        },
       );
       res.status(201).json(job);
     } catch (error) {
@@ -61,7 +73,10 @@ export class JobController {
   async getJobs(req, res, next) {
     try {
       const query = { ...req.query, ...req.params };
-      const result = await this.jobService.getJobs(query);
+      const result = await this.jobService.getJobs(query, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       res.status(200).json(result);
     } catch (error) {
       next(error);
@@ -71,7 +86,10 @@ export class JobController {
   // get job
   async getJob(req, res, next) {
     try {
-      const job = await this.jobService.getJob(req.params.jobId);
+      const job = await this.jobService.getJob(req.params.jobId, {
+        requestId: req.requestId,
+        ip: req.ip,
+      });
       res.status(200).json(job);
     } catch (error) {
       next(error);
