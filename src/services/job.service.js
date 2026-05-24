@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { MSG } from '../utils/messages.js';
 import { getOrSet, invalidate, CacheKeys, TTL } from '../utils/cache.utils.js';
 import { AuditService } from './audit.service.js';
+import logger from '../config/logger.js';
 
 export class JobService {
   constructor(userDao, companyDao, jobDao) {
@@ -32,8 +33,7 @@ export class JobService {
     try {
       await invalidate('jobs:list:*');
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('[cache] createJob invalidation failed', error);
+      logger.error('[cache] createJob invalidation failed', error);
     }
 
     await AuditService.log({
@@ -87,8 +87,7 @@ export class JobService {
     try {
       await invalidate(CacheKeys.job(jobId), 'jobs:list:*');
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('[cache] updateJob invalidation failed', error);
+      logger.error('[cache] updateJob invalidation failed', error);
     }
 
     await AuditService.log({
@@ -139,8 +138,7 @@ export class JobService {
     try {
       await invalidate(CacheKeys.job(jobId), 'jobs:list:*');
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('[cache] deleteJob invalidation failed', error);
+      logger.error('[cache] deleteJob invalidation failed', error);
     }
 
     await AuditService.log({

@@ -87,6 +87,8 @@
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1",
     "telnyx": "^4.3.0",
-    "twilio": "^5.10.7"
+    "twilio": "^5.10.7",
+    "uuid": "^14.0.0",
+    "winston": "^3.19.0"
   }
 }

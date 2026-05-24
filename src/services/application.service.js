@@ -1,3 +1,4 @@
+import logger from '../config/logger.js';
 import { getIO } from '../config/socket.js';
 import {
   sendAcceptanceEmail,
@@ -8,7 +9,6 @@ import { MSG } from '../utils/messages.js';
 import { AuditService } from './audit.service.js';
 
 /* eslint no-console: off */
-// TODO: remove console.log statements
 export class ApplicationService {
   constructor(
     userRepository,
@@ -49,9 +49,9 @@ export class ApplicationService {
         companyId: job.companyId,
         status: application.status,
       });
-      console.log(`Notification sent to company room: ${job.companyId}`);
+      logger.info(`Notification sent to company room: ${job.companyId}`);
     } catch (error) {
-      console.error('Failed to emit socket event:', error.message);
+      logger.error('Failed to emit socket event:', error.message);
     }
 
     await AuditService.log({
@@ -184,7 +184,7 @@ export class ApplicationService {
         // include companyLogo if you want a richer notification
       });
     } catch (error) {
-      console.error('Failed to emit status update:', error.message);
+      logger.error('Failed to emit status update:', error.message);
     }
 
     try {
@@ -210,9 +210,9 @@ export class ApplicationService {
           companyName,
         );
       }
-      console.log(`${status} email sent to ${applicantEmail}`);
+      logger.info(`${status} email sent to ${applicantEmail}`);
     } catch (error) {
-      console.error('Failed to send email:', error.message);
+      logger.error('Failed to send email:', error.message);
     }
 
     await AuditService.log({

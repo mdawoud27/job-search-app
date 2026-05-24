@@ -1,4 +1,5 @@
 import { createQueue, createWorker } from '../config/bullmq.js';
+import logger from '../config/logger.js';
 import { Job } from '../models/Job.js';
 
 export const CLEANUP_QUEUE_NAME = 'cleanup-jobs';
@@ -19,8 +20,7 @@ export const scheduleCleanupJobs = async () => {
       jobId: 'daily-old-jobs-cleanup', // Ensure it is not added multiple times
     },
   );
-  /* eslint no-console: off */
-  console.log('✅ BullMQ: Cleanup jobs scheduled');
+  logger.info('✅ BullMQ: Cleanup jobs scheduled');
 };
 
 // 3. Define the Worker
@@ -28,7 +28,7 @@ export const cleanupWorker = createWorker(
   CLEANUP_QUEUE_NAME,
   async (job) => {
     if (job.name === 'delete-old-jobs') {
-      console.log('🧹 [BullMQ] Starting daily cleanup job...');
+      logger.info('🧹 [BullMQ] Starting daily cleanup job...');
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -39,12 +39,12 @@ export const cleanupWorker = createWorker(
           updatedAt: { $lt: thirtyDaysAgo },
         });
 
-        console.log(
+        logger.info(
           `✅ [BullMQ] Cleanup complete: ${result.deletedCount} old jobs removed.`,
         );
         return { deletedCount: result.deletedCount };
       } catch (error) {
-        console.error('❌ [BullMQ] Error during job cleanup:', error);
+        logger.error('❌ [BullMQ] Error during job cleanup:', error);
         throw error; // BullMQ will handle retries or mark as failed
       }
     }
@@ -57,9 +57,9 @@ export const cleanupWorker = createWorker(
 );
 
 cleanupWorker.on('completed', (job) => {
-  console.log(`Job ${job.id} has completed!`);
+  logger.info(`Job ${job.id} has completed!`);
 });
 
 cleanupWorker.on('failed', (job, err) => {
-  console.error(`Job ${job.id} has failed with ${err.message}`);
+  logger.error(`Job ${job.id} has failed with ${err.message}`);
 });
