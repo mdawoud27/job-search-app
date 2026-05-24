@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { Authorization } from '../middlewares/auth.middleware.js';
-import { apiLimiter } from '../utils/apiLimiter.js';
 import { companyController } from '../container.js';
 import { uploadImage } from '../utils/multer.js';
 import { cahceMiddleware } from '../middlewares/cache.middleware.js';
@@ -14,7 +13,6 @@ const router = Router();
  */
 router.post(
   '/company/create',
-  apiLimiter,
   Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
@@ -29,7 +27,6 @@ router.post(
  */
 router.put(
   '/company/:id',
-  apiLimiter,
   Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
@@ -44,7 +41,6 @@ router.put(
  */
 router.delete(
   '/company/:id',
-  apiLimiter,
   Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
@@ -59,7 +55,6 @@ router.delete(
  */
 router.get(
   '/company/search/:name',
-  apiLimiter,
   Authorization.verifyToken,
   (req, res, next) => {
     companyController.searchCompanywithName(req, res, next);
@@ -73,7 +68,6 @@ router.get(
  */
 router.get(
   '/company/:id',
-  apiLimiter,
   Authorization.verifyToken,
   cahceMiddleware(6000),
   (req, res, next) => {
@@ -88,7 +82,6 @@ router.get(
  */
 router.patch(
   '/company/:id/logo',
-  apiLimiter,
   Authorization.verifyToken,
   Authorization.verifyHRPermission,
   uploadImage.single('image'),
@@ -104,7 +97,6 @@ router.patch(
  */
 router.delete(
   '/company/:id/logo',
-  apiLimiter,
   Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
@@ -119,7 +111,6 @@ router.delete(
  */
 router.patch(
   '/company/:id/cover',
-  apiLimiter,
   Authorization.verifyToken,
   Authorization.verifyHRPermission,
   uploadImage.single('image'),
@@ -135,7 +126,6 @@ router.patch(
  */
 router.delete(
   '/company/:id/cover',
-  apiLimiter,
   Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
@@ -150,7 +140,6 @@ router.delete(
  */
 router.post(
   '/company/:id/hr',
-  apiLimiter,
   Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
@@ -165,7 +154,6 @@ router.post(
  */
 router.delete(
   '/company/:id/hr',
-  apiLimiter,
   Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {

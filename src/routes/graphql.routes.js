@@ -7,7 +7,6 @@ const graphqlRouter = Router();
 
 /* eslint no-undef: off */
 graphqlRouter.use(
-  '/graphql',
   Authorization.verifyToken,
   Authorization.verifyAdminPermission,
   graphqlHTTP({
