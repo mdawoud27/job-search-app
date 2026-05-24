@@ -4,6 +4,7 @@ import { CloudinaryUtils } from '../utils/cloudinary.util.js';
 import { UpdateUserDto } from '../dtos/user/update-user.dto.js';
 import { MSG } from '../utils/messages.js';
 import { AuditService } from './audit.service.js';
+import { ALLOWED_ACTIONS } from '../utils/constants.js';
 
 export class UserService {
   constructor(userRepository) {
@@ -20,12 +21,14 @@ export class UserService {
 
     await AuditService.log({
       actor: { _id: userId, email: updated.email, role: updated.role },
-      action: 'UPDATE_ACCOUNT',
+      action: ALLOWED_ACTIONS.PROFILE_UPDATED,
       targetModel: 'User',
       targetId: userId,
-      metadata: { ...updateDto },
-      requestId: meta.requestId,
-      ip: meta.ip,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+        updatedFields: Object.keys(updateDto),
+      },
     });
 
     return {
@@ -134,7 +137,7 @@ export class UserService {
 
     await AuditService.log({
       actor: { _id: userId, email: user.email, role: user.role },
-      action: 'CHANGE_PASSWORD',
+      action: ALLOWED_ACTIONS.PASSWORD_CHANGED,
       targetModel: 'User',
       targetId: userId,
       metadata: {
@@ -252,6 +255,18 @@ export class UserService {
       await CloudinaryUtils.deleteCloudinaryFile(user.profilePic.public_id);
       user.profilePic = null; // Remove from DB
       await user.save();
+
+      await AuditService.log({
+        actor: { _id: userId, email: user.email, role: user.role },
+        action: 'DELETE_PROFILE_PIC',
+        targetModel: 'User',
+        targetId: userId,
+        metadata: {
+          requestId: meta.requestId,
+          ip: meta.ip,
+        },
+      });
+
       return {
         message: MSG.USER.PROFILE_PIC_DELETED,
         data: {
@@ -259,17 +274,6 @@ export class UserService {
         },
       };
     }
-
-    await AuditService.log({
-      actor: { _id: userId, email: user.email, role: user.role },
-      action: 'DELETE_PROFILE_PIC',
-      targetModel: 'User',
-      targetId: userId,
-      metadata: {
-        requestId: meta.requestId,
-        ip: meta.ip,
-      },
-    });
 
     return { message: MSG.USER.NO_PROFILE_PIC };
   }
@@ -290,6 +294,18 @@ export class UserService {
       await CloudinaryUtils.deleteCloudinaryFile(user.coverPic.public_id);
       user.coverPic = null; // Remove from DB
       await user.save();
+
+      await AuditService.log({
+        actor: { _id: userId, email: user.email, role: user.role },
+        action: 'DELETE_COVER_PIC',
+        targetModel: 'User',
+        targetId: userId,
+        metadata: {
+          requestId: meta.requestId,
+          ip: meta.ip,
+        },
+      });
+
       return {
         message: MSG.USER.COVER_PIC_DELETED,
         data: {
@@ -332,7 +348,7 @@ export class UserService {
 
     await AuditService.log({
       actor: { _id: userId, email: user.email, role: user.role },
-      action: 'DELETE_USER',
+      action: ALLOWED_ACTIONS.USER_DELETED,
       targetModel: 'User',
       targetId: userId,
       metadata: {

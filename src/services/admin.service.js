@@ -1,6 +1,12 @@
+import mongoose from 'mongoose';
 import AuditLog from '../models/AuditLog.js';
 import { MSG } from '../utils/messages.js';
 import { AuditService } from './audit.service.js';
+import {
+  ALLOWED_ACTIONS,
+  ALLOWED_SORT_FIELDS,
+  ALLOWED_SORT_ORDERS,
+} from '../utils/constants.js';
 
 export class AdminService {
   constructor(userDao, adminDao, companyDao) {
@@ -192,7 +198,8 @@ export class AdminService {
     };
   }
 
-  async getAuditLogs(req, res) {
+  // Get audit logs
+  async getAuditLogs(query) {
     const {
       targetId,
       action,
@@ -200,32 +207,56 @@ export class AdminService {
       page = 1,
       limit = 20,
       sortBy,
-      sortOrder,
-    } = req.query;
+      sortOrder = 'desc',
+    } = query;
 
     const filter = {};
-    if (targetId) {
-      filter.targetId = targetId;
-    }
-    if (action) {
-      filter.action = action;
-    }
+
     if (actorId) {
-      filter['actor._id'] = actorId;
+      if (!mongoose.Types.ObjectId.isValid(actorId)) {
+        throw new Error('Invalid actorId format');
+      }
+      filter['actor._id'] = new mongoose.Types.ObjectId(actorId);
+    }
+
+    if (targetId) {
+      if (!mongoose.Types.ObjectId.isValid(targetId)) {
+        throw new Error('Invalid targetId format');
+      }
+      filter['targetId'] = new mongoose.Types.ObjectId(targetId);
+    }
+
+    if (action) {
+      const safeAction = ALLOWED_ACTIONS.find((a) => a === action);
+      if (!safeAction) {
+        throw new Error(`Invalid action value: ${action}`);
+      }
+      filter.action = safeAction;
+    }
+
+    if (sortOrder && !ALLOWED_SORT_ORDERS.includes(sortOrder)) {
+      throw new Error(`Invalid sortOrder value: ${sortOrder}`);
     }
 
     const sort = {};
     if (sortBy) {
-      sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+      const safeSortBy = ALLOWED_SORT_FIELDS.find((f) => f === sortBy);
+      if (!safeSortBy) {
+        throw new Error(`Invalid sortBy field: ${sortBy}`);
+      }
+      sort[safeSortBy] = sortOrder === 'desc' ? -1 : 1;
     } else {
       sort.createdAt = -1;
     }
 
+    const safePage = Math.max(1, parseInt(page, 10) || 1);
+    const safeLimit = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+
     const logs = await AuditLog.find(filter)
       .sort(sort)
-      .skip((page - 1) * limit)
-      .limit(Number(limit));
+      .skip((safePage - 1) * safeLimit)
+      .limit(safeLimit);
 
-    res.json({ success: true, data: logs });
+    return logs;
   }
 }

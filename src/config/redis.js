@@ -20,7 +20,7 @@ redis.on('connect', () => {
 });
 
 redis.on('error', (err) => {
-  logger.error('Redis client error', err);
+  logger.error('Redis client error', { message: err.message });
 });
 
 export default redis;

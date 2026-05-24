@@ -1,5 +1,6 @@
 import { CompanyResponseDto } from '../dtos/company/company-response.dto.js';
 import { CloudinaryUtils } from '../utils/cloudinary.util.js';
+import { ALLOWED_ACTIONS } from '../utils/constants.js';
 import { MSG } from '../utils/messages.js';
 import { AuditService } from './audit.service.js';
 
@@ -17,10 +18,13 @@ export class CompanyService {
 
       await AuditService.log({
         actor: { _id: user._id, email: user.email, role: user.role },
-        action: 'CREATE_COMPANY',
+        action: ALLOWED_ACTIONS.COMPANY_CREATED,
         targetModel: 'Company',
         targetId: company._id,
-        metadata: meta,
+        metadata: {
+          requestId: meta.requestId,
+          ip: meta.ip,
+        },
       });
 
       return {
@@ -58,7 +62,7 @@ export class CompanyService {
 
       await AuditService.log({
         actor: { _id: user._id, email: user.email, role: user.role },
-        action: 'UPDATE_COMPANY',
+        action: ALLOWED_ACTIONS.COMPANY_UPDATED,
         targetModel: 'Company',
         targetId: company._id,
         metadata: meta,
@@ -87,7 +91,7 @@ export class CompanyService {
 
     await AuditService.log({
       actor: { _id: user._id, email: user.email, role: user.role },
-      action: 'DELETE_COMPANY',
+      action: ALLOWED_ACTIONS.COMPANY_DELETED,
       targetModel: 'Company',
       targetId: company._id,
       metadata: meta,
