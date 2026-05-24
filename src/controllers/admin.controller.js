@@ -111,8 +111,8 @@ export class AdminController {
 
   async getAuditLogs(req, res, next) {
     try {
-      const logs = await this.adminService.getAuditLogs(req, res);
-      res.json(logs);
+      const logs = await this.adminService.getAuditLogs(req.query);
+      res.json({ success: true, data: logs });
     } catch (error) {
       next(error);
     }

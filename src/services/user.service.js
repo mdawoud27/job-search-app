@@ -23,9 +23,11 @@ export class UserService {
       action: 'UPDATE_ACCOUNT',
       targetModel: 'User',
       targetId: userId,
-      metadata: { ...updateDto },
-      requestId: meta.requestId,
-      ip: meta.ip,
+      metadata: {
+        requestId: meta.requestId,
+        ip: meta.ip,
+        updatedFields: Object.keys(updateDto),
+      },
     });
 
     return {

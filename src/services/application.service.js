@@ -108,8 +108,9 @@ export class ApplicationService {
     const totalCount =
       await this.applicationRepository.countApplications(jobId);
 
+    const user = await this.userRepository.findById(userId);
     await AuditService.log({
-      actor: { _id: userId, email: 'User', role: 'user' },
+      actor: { _id: userId, email: user?.email, role: user?.role },
       action: 'GET_APPLICATIONS',
       targetModel: 'Application',
       targetId: jobId,
@@ -216,7 +217,7 @@ export class ApplicationService {
     }
 
     await AuditService.log({
-      actor: hrUser,
+      actor: { _id: hrUser._id, email: hrUser.email, role: hrUser.role },
       action: 'APPLICATION_STATUS_CHANGED',
       targetModel: 'Application',
       targetId: applicationId,
@@ -279,8 +280,10 @@ export class ApplicationService {
       date,
     );
 
+    const hrUser = await this.userRepository.findById(hrUserId);
+
     await AuditService.log({
-      actor: { _id: hrUserId, email: 'HR', role: 'hr' },
+      actor: { _id: hrUserId, email: hrUser?.email, role: hrUser?.role },
       action: 'APPLICATIONS_EXPORTED',
       targetModel: 'Application',
       targetId: companyId,

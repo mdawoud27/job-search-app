@@ -20,7 +20,10 @@ export class CompanyService {
         action: 'CREATE_COMPANY',
         targetModel: 'Company',
         targetId: company._id,
-        metadata: meta,
+        metadata: {
+          requestId: meta.requestId,
+          ip: meta.ip,
+        },
       });
 
       return {
