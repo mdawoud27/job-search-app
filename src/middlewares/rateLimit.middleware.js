@@ -24,9 +24,9 @@ export const rateLimiter = ({
       const windowStart = now - windowSeconds * 1000;
 
       const pipeline = redis.multi();
-      pipeline.zRemRangeByScore(key, 0, windowStart);
-      pipeline.zAdd(key, { score: now, value: `${now}-${Math.random()}` });
-      pipeline.zCard(key);
+      pipeline.zremrangebyscore(key, 0, windowStart);
+      pipeline.zadd(key, now, `${now}-${Math.random()}`);
+      pipeline.zcard(key);
       pipeline.expire(key, windowSeconds);
       const results = await pipeline.exec();
 
