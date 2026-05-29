@@ -8,6 +8,8 @@ import {
   ALLOWED_SORT_ORDERS,
 } from '../utils/constants.js';
 
+const allowedActionValues = Object.values(ALLOWED_ACTIONS);
+
 export class AdminService {
   constructor(userDao, adminDao, companyDao) {
     this.userDao = userDao;
@@ -225,15 +227,18 @@ export class AdminService {
       if (!mongoose.Types.ObjectId.isValid(targetId)) {
         throw new Error('Invalid targetId format');
       }
-      filter['targetId'] = new mongoose.Types.ObjectId(targetId);
+      const targetObjectId = new mongoose.Types.ObjectId(targetId);
+      filter.$or = [
+        { targetId: targetObjectId },
+        { targetIds: targetObjectId },
+      ];
     }
 
     if (action) {
-      const safeAction = ALLOWED_ACTIONS.find((a) => a === action);
-      if (!safeAction) {
+      if (!allowedActionValues.includes(action)) {
         throw new Error(`Invalid action value: ${action}`);
       }
-      filter.action = safeAction;
+      filter.action = action;
     }
 
     if (sortOrder && !ALLOWED_SORT_ORDERS.includes(sortOrder)) {

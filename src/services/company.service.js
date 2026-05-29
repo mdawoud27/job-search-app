@@ -107,16 +107,18 @@ export class CompanyService {
 
   // get specific company with jobs
   async getSpecificCompanyWithJobs(companyId, meta = {}) {
+    const { actor, ...auditMeta } = meta;
     const company = await this.companyDao.findByIdWithJobs(companyId);
     if (!company) {
       throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
     }
 
     await AuditService.log({
-      action: 'VIEW_COMPANY',
+      actor,
+      action: ALLOWED_ACTIONS.VIEW_COMPANY,
       targetModel: 'Company',
       targetId: company._id,
-      metadata: meta,
+      metadata: auditMeta,
     });
 
     return {
@@ -132,6 +134,7 @@ export class CompanyService {
 
   // search company with name
   async searchCompanywithName(companyName, meta = {}) {
+    const { actor, ...auditMeta } = meta;
     const companies = await this.companyDao.findByCompanyName(companyName);
 
     if (!companies || companies.length === 0) {
@@ -140,10 +143,15 @@ export class CompanyService {
       throw error;
     }
     await AuditService.log({
-      action: 'VIEW_COMPANY',
+      actor,
+      action: ALLOWED_ACTIONS.VIEW_COMPANY,
       targetModel: 'Company',
-      targetId: companies.map((company) => company._id),
-      metadata: meta,
+      targetIds: companies.map((company) => company._id),
+      metadata: {
+        ...auditMeta,
+        companyName,
+        resultCount: companies.length,
+      },
     });
     return {
       message: MSG.COMPANY.ALL_FOUND,
@@ -181,8 +189,8 @@ export class CompanyService {
     });
 
     await AuditService.log({
-      actor: { _id: user._id, email: user.email, role: user.role },
-      action: 'UPLOAD_COMPANY_LOGO',
+      actor: user,
+      action: ALLOWED_ACTIONS.UPLOAD_COMPANY_LOGO,
       targetModel: 'Company',
       targetId: companyId,
       metadata: meta,
@@ -212,8 +220,8 @@ export class CompanyService {
       await company.save();
 
       await AuditService.log({
-        actor: { _id: user._id, email: user.email, role: user.role },
-        action: 'DELETE_COMPANY_LOGO',
+        actor: user,
+        action: ALLOWED_ACTIONS.DELETE_COMPANY_LOGO,
         targetModel: 'Company',
         targetId: companyId,
         metadata: meta,
@@ -255,8 +263,8 @@ export class CompanyService {
     });
 
     await AuditService.log({
-      actor: { _id: user._id, email: user.email, role: user.role },
-      action: 'UPLOAD_COMPANY_COVER',
+      actor: user,
+      action: ALLOWED_ACTIONS.UPLOAD_COMPANY_COVER,
       targetModel: 'Company',
       targetId: companyId,
       metadata: meta,
@@ -287,8 +295,8 @@ export class CompanyService {
       await company.save();
 
       await AuditService.log({
-        actor: { _id: user._id, email: user.email, role: user.role },
-        action: 'DELETE_COMPANY_COVER',
+        actor: user,
+        action: ALLOWED_ACTIONS.DELETE_COMPANY_COVER,
         targetModel: 'Company',
         targetId: companyId,
         metadata: meta,
@@ -310,7 +318,7 @@ export class CompanyService {
   }
 
   // add HR
-  async addHR(companyId, userId, meta = {}) {
+  async addHR(companyId, userId, actor, meta = {}) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
       throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
@@ -324,11 +332,15 @@ export class CompanyService {
     await user.save();
 
     await AuditService.log({
-      actor: { _id: user._id, email: user.email, role: user.role },
-      action: 'ADD_HR',
+      actor,
+      action: ALLOWED_ACTIONS.ADD_HR_TO_COMPANY,
       targetModel: 'Company',
       targetId: companyId,
-      metadata: meta,
+      metadata: {
+        ...meta,
+        affectedUserId: user._id,
+        affectedUserEmail: user.email,
+      },
     });
 
     return {
@@ -340,7 +352,7 @@ export class CompanyService {
   }
 
   // remove HR
-  async removeHR(companyId, userId, meta = {}) {
+  async removeHR(companyId, userId, actor, meta = {}) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
       throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
@@ -352,11 +364,15 @@ export class CompanyService {
     const updatedCompany = await this.companyDao.removeHR(companyId, userId);
 
     await AuditService.log({
-      actor: { _id: user._id, email: user.email, role: user.role },
-      action: 'REMOVE_HR',
+      actor,
+      action: ALLOWED_ACTIONS.REMOVE_HR_FROM_COMPANY,
       targetModel: 'Company',
       targetId: companyId,
-      metadata: meta,
+      metadata: {
+        ...meta,
+        affectedUserId: user._id,
+        affectedUserEmail: user.email,
+      },
     });
 
     return {
