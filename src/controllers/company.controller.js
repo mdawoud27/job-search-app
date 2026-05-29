@@ -63,7 +63,7 @@ export class CompanyController {
     try {
       const company = await this.companyService.getSpecificCompanyWithJobs(
         req.params.id,
-        { requestId: req.requestId, ip: req.ip },
+        { actor: req.user, requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);
     } catch (error) {
@@ -76,7 +76,7 @@ export class CompanyController {
     try {
       const company = await this.companyService.searchCompanywithName(
         req.params.name,
-        { requestId: req.requestId, ip: req.ip },
+        { actor: req.user, requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);
     } catch (error) {
@@ -156,6 +156,7 @@ export class CompanyController {
       const company = await this.companyService.addHR(
         req.params.id,
         req.body.userId,
+        req.user,
         { requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);
@@ -170,6 +171,7 @@ export class CompanyController {
       const company = await this.companyService.removeHR(
         req.params.id,
         req.body.userId,
+        req.user,
         { requestId: req.requestId, ip: req.ip },
       );
       res.status(200).json(company);

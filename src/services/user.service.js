@@ -68,20 +68,18 @@ export class UserService {
 
   // Get another user's profile
   async getPublicProfile(userId, meta = {}) {
+    const { actor, ...auditMeta } = meta;
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
     await AuditService.log({
-      actor: { _id: userId, email: user.email, role: user.role },
-      action: 'GET_PUBLIC_PROFILE',
+      actor,
+      action: ALLOWED_ACTIONS.GET_PUBLIC_PROFILE,
       targetModel: 'User',
       targetId: userId,
-      metadata: {
-        requestId: meta.requestId,
-        ip: meta.ip,
-      },
+      metadata: auditMeta,
     });
 
     return {
@@ -161,9 +159,9 @@ export class UserService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     // Delete old image
     if (user.profilePic?.public_id) {
@@ -179,7 +177,7 @@ export class UserService {
 
     await AuditService.log({
       actor: { _id: userId, email: user.email, role: user.role },
-      action: 'UPLOAD_PROFILE_PIC',
+      action: ALLOWED_ACTIONS.UPLOAD_PROFILE_PICTURE,
       targetModel: 'User',
       targetId: userId,
       metadata: {
@@ -204,9 +202,9 @@ export class UserService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     if (user.coverPic?.public_id) {
       await CloudinaryUtils.deleteCloudinaryFile(user.coverPic.public_id);
@@ -221,7 +219,7 @@ export class UserService {
 
     await AuditService.log({
       actor: { _id: userId, email: user.email, role: user.role },
-      action: 'UPLOAD_COVER_PIC',
+      action: ALLOWED_ACTIONS.UPLOAD_COVER_PICTURE,
       targetModel: 'User',
       targetId: userId,
       metadata: {
@@ -246,9 +244,9 @@ export class UserService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     if (user.profilePic?.public_id) {
       // Delete from Cloudinary
@@ -258,7 +256,7 @@ export class UserService {
 
       await AuditService.log({
         actor: { _id: userId, email: user.email, role: user.role },
-        action: 'DELETE_PROFILE_PIC',
+        action: ALLOWED_ACTIONS.DELETE_PROFILE_PICTURE,
         targetModel: 'User',
         targetId: userId,
         metadata: {
@@ -285,9 +283,9 @@ export class UserService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     if (user.coverPic?.public_id) {
       // Delete from Cloudinary
@@ -297,7 +295,7 @@ export class UserService {
 
       await AuditService.log({
         actor: { _id: userId, email: user.email, role: user.role },
-        action: 'DELETE_COVER_PIC',
+        action: ALLOWED_ACTIONS.DELETE_COVER_PICTURE,
         targetModel: 'User',
         targetId: userId,
         metadata: {
@@ -316,7 +314,7 @@ export class UserService {
 
     await AuditService.log({
       actor: { _id: userId, email: user.email, role: user.role },
-      action: 'DELETE_COVER_PIC',
+      action: ALLOWED_ACTIONS.DELETE_COVER_PICTURE,
       targetModel: 'User',
       targetId: userId,
       metadata: {
@@ -335,9 +333,9 @@ export class UserService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     if (user.deletedAt) {
       throw new Error(MSG.USER.ALREADY_DELETED);

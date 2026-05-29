@@ -4,6 +4,7 @@ import { MSG } from '../utils/messages.js';
 import { getOrSet, invalidate, CacheKeys, TTL } from '../utils/cache.utils.js';
 import { AuditService } from './audit.service.js';
 import logger from '../config/logger.js';
+import { ALLOWED_ACTIONS } from '../utils/constants.js';
 
 export class JobService {
   constructor(userDao, companyDao, jobDao) {
@@ -42,7 +43,7 @@ export class JobService {
         email: user.email,
         role: user.role,
       },
-      action: 'JOB_CREATED',
+      action: ALLOWED_ACTIONS.JOB_CREATED,
       targetModel: 'Job',
       targetId: job.id,
       metadata: { companyName: company.companyName },
@@ -67,9 +68,9 @@ export class JobService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     const company = await this.companyDao.isActive(companyId);
     const isOwner = await this.companyDao.isOwner(companyId, userId);
@@ -92,7 +93,7 @@ export class JobService {
 
     await AuditService.log({
       actor: { _id: user.id, email: user.email, role: user.role },
-      action: 'JOB_UPDATED',
+      action: ALLOWED_ACTIONS.JOB_UPDATED,
       targetModel: 'Job',
       targetId: job.id,
       metadata: { companyName: company.companyName },
@@ -118,9 +119,9 @@ export class JobService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     const company = await this.companyDao.isActive(companyId);
     const canManage = await this.companyDao.canManage(companyId, userId);
@@ -143,7 +144,7 @@ export class JobService {
 
     await AuditService.log({
       actor: { _id: user.id, email: user.email, role: user.role },
-      action: 'JOB_DELETED',
+      action: ALLOWED_ACTIONS.JOB_DELETED,
       targetModel: 'Job',
       targetId: job.id,
       metadata: { companyName: company.companyName },
@@ -163,6 +164,7 @@ export class JobService {
 
   // get all jobs
   async getJobs(query, meta = {}) {
+    const { actor, ...auditMeta } = meta;
     const {
       page = 1,
       limit = 10,
@@ -176,8 +178,7 @@ export class JobService {
       technicalSkills,
     } = query;
 
-    // The entire method body becomes the fetcher — cache wraps it cleanly
-    return getOrSet(
+    const result = await getOrSet(
       CacheKeys.jobList(query),
       async () => {
         const skip = (page - 1) * limit;
@@ -234,15 +235,6 @@ export class JobService {
           sortOptions,
         );
 
-        await AuditService.log({
-          action: 'GET_JOBS',
-          targetModel: 'Job',
-          targetId: jobs?.map((job) => job._id),
-          metadata: { filter, skip, limit, sortOptions },
-          requestId: meta.requestId,
-          ip: meta.ip,
-        });
-
         return {
           jobs: jobs.map((job) => JobResponseDto.toResponse(job)),
           totalCount,
@@ -252,11 +244,25 @@ export class JobService {
       },
       TTL.JOB_LIST,
     );
+
+    await AuditService.log({
+      actor,
+      action: ALLOWED_ACTIONS.GET_JOBS,
+      targetModel: 'Job',
+      metadata: {
+        ...auditMeta,
+        query,
+        resultCount: result.jobs?.length || 0,
+      },
+    });
+
+    return result;
   }
 
   // get specific job
   async getJob(jobId, meta = {}) {
-    return getOrSet(
+    const { actor, ...auditMeta } = meta;
+    const job = await getOrSet(
       CacheKeys.job(jobId),
       async () => {
         const job = await this.jobDao.findById(jobId);
@@ -264,18 +270,19 @@ export class JobService {
           throw new Error(MSG.JOB.NOT_FOUND);
         }
 
-        await AuditService.log({
-          action: 'GET_JOB',
-          targetModel: 'Job',
-          targetId: jobId,
-          metadata: { jobId },
-          requestId: meta.requestId,
-          ip: meta.ip,
-        });
-
         return JobResponseDto.toResponse(job);
       },
       TTL.JOB_ITEM,
     );
+
+    await AuditService.log({
+      actor,
+      action: ALLOWED_ACTIONS.GET_JOB,
+      targetModel: 'Job',
+      targetId: jobId,
+      metadata: { ...auditMeta, jobId },
+    });
+
+    return job;
   }
 }

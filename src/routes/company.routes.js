@@ -13,7 +13,6 @@ const router = Router();
  */
 router.post(
   '/company/create',
-  Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.createCompany(req, res, next);
@@ -27,7 +26,6 @@ router.post(
  */
 router.put(
   '/company/:id',
-  Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.updateCompany(req, res, next);
@@ -41,7 +39,6 @@ router.put(
  */
 router.delete(
   '/company/:id',
-  Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.softDeleteCompany(req, res, next);
@@ -53,27 +50,18 @@ router.delete(
  * @desc Search company by name
  * @access Private
  */
-router.get(
-  '/company/search/:name',
-  Authorization.verifyToken,
-  (req, res, next) => {
-    companyController.searchCompanywithName(req, res, next);
-  },
-);
+router.get('/company/search/:name', (req, res, next) => {
+  companyController.searchCompanywithName(req, res, next);
+});
 
 /**
  * @route GET /api/v1/company/:id
  * @desc Get company with jobs
  * @access Private
  */
-router.get(
-  '/company/:id',
-  Authorization.verifyToken,
-  cahceMiddleware(6000),
-  (req, res, next) => {
-    companyController.getSpecificCompanyWithJobs(req, res, next);
-  },
-);
+router.get('/company/:id', cahceMiddleware(6000), (req, res, next) => {
+  companyController.getSpecificCompanyWithJobs(req, res, next);
+});
 
 /**
  * @route PATCH /api/v1/company/:id/logo
@@ -82,7 +70,6 @@ router.get(
  */
 router.patch(
   '/company/:id/logo',
-  Authorization.verifyToken,
   Authorization.verifyHRPermission,
   uploadImage.single('image'),
   (req, res, next) => {
@@ -97,7 +84,6 @@ router.patch(
  */
 router.delete(
   '/company/:id/logo',
-  Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.deleteCompanyLogo(req, res, next);
@@ -111,7 +97,6 @@ router.delete(
  */
 router.patch(
   '/company/:id/cover',
-  Authorization.verifyToken,
   Authorization.verifyHRPermission,
   uploadImage.single('image'),
   (req, res, next) => {
@@ -126,7 +111,6 @@ router.patch(
  */
 router.delete(
   '/company/:id/cover',
-  Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.deleteCompanyCover(req, res, next);
@@ -140,7 +124,6 @@ router.delete(
  */
 router.post(
   '/company/:id/hr',
-  Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.addHR(req, res, next);
@@ -154,7 +137,6 @@ router.post(
  */
 router.delete(
   '/company/:id/hr',
-  Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.removeHR(req, res, next);

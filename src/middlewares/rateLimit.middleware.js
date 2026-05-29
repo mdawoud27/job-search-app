@@ -2,14 +2,15 @@ import redis from '../config/redis.js';
 import logger from '../config/logger.js';
 import crypto from 'crypto';
 
-export const rateLimiter = ({
+export const rateLimiterMiddleware = ({
   maxRequests = 10,
   windowSeconds = 60,
   message = 'Too many requests. Try again later.',
 } = {}) => {
   return async (req, res, next) => {
     try {
-      const identifier = req.user?._id?.toString() || req.ip;
+      const identifier =
+        req.user?.id?.toString() || req.user?._id?.toString() || req.ip;
 
       const hashedId = crypto
         .createHash('sha256')
@@ -23,9 +24,9 @@ export const rateLimiter = ({
       const windowStart = now - windowSeconds * 1000;
 
       const pipeline = redis.multi();
-      pipeline.zRemRangeByScore(key, 0, windowStart);
-      pipeline.zAdd(key, { score: now, value: `${now}-${Math.random()}` });
-      pipeline.zCard(key);
+      pipeline.zremrangebyscore(key, 0, windowStart);
+      pipeline.zadd(key, now, `${now}-${Math.random()}`);
+      pipeline.zcard(key);
       pipeline.expire(key, windowSeconds);
       const results = await pipeline.exec();
 

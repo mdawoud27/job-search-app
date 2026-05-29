@@ -9,10 +9,8 @@ const router = Router({ mergeParams: true });
  * @desc Create job
  * @access Private
  */
-router.post(
-  '/job/create/:companyId',
-  Authorization.verifyToken,
-  (req, res, next) => jobController.createJob(req, res, next),
+router.post('/job/create/:companyId', (req, res, next) =>
+  jobController.createJob(req, res, next),
 );
 
 /**
@@ -20,10 +18,8 @@ router.post(
  * @desc Update job
  * @access Private
  */
-router.put(
-  '/job/:companyId/:jobId',
-  Authorization.verifyToken,
-  (req, res, next) => jobController.updateJob(req, res, next),
+router.put('/job/:companyId/:jobId', (req, res, next) =>
+  jobController.updateJob(req, res, next),
 );
 
 /**
@@ -33,7 +29,6 @@ router.put(
  */
 router.delete(
   '/job/:companyId/delete/:jobId',
-  Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => jobController.deleteJob(req, res, next),
 );
@@ -43,19 +38,15 @@ router.delete(
  * @desc Get all jobs
  * @access Private
  */
-router.get('/job', Authorization.verifyToken, (req, res, next) =>
-  jobController.getJobs(req, res, next),
-);
+router.get('/job', (req, res, next) => jobController.getJobs(req, res, next));
 
 /**
  * @route GET /api/v1/job/specific/:jobId
  * @desc Get specific job
  * @access Private
  */
-router.get(
-  '/job/specific/:jobId',
-  Authorization.verifyToken,
-  (req, res, next) => jobController.getJob(req, res, next),
+router.get('/job/specific/:jobId', (req, res, next) =>
+  jobController.getJob(req, res, next),
 );
 
 /**
@@ -63,7 +54,7 @@ router.get(
  * @desc Get jobs by company
  * @access Private
  */
-router.get('/job/:companyId', Authorization.verifyToken, (req, res, next) =>
+router.get('/job/:companyId', (req, res, next) =>
   jobController.getJobs(req, res, next),
 );
 

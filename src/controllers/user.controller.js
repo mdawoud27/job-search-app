@@ -46,6 +46,7 @@ export class UserController {
   async getProfile(req, res, next) {
     try {
       const data = await this.userService.getPublicProfile(req.params.id, {
+        actor: req.user,
         requestId: req.requestId,
         ip: req.ip,
       });

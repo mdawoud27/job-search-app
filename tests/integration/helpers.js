@@ -68,7 +68,7 @@ export const createAuthUser = async (role = 'User', overrides = {}) => {
 
   // Save refresh token to user
   user.refreshToken = refreshToken;
-  user.changeCredentialTime = Date.now();
+  user.changeCredentialTime = new Date(Date.now() - 1000);
   await user.save();
 
   // Reload to get updated user

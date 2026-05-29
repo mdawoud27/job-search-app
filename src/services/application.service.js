@@ -112,8 +112,8 @@ export class ApplicationService {
     const user = await this.userRepository.findById(userId);
     await AuditService.log({
       actor: { _id: userId, email: user?.email, role: user?.role },
-      action: 'GET_APPLICATIONS',
-      targetModel: 'Application',
+      action: ALLOWED_ACTIONS.GET_APPLICATIONS,
+      targetModel: 'Job',
       targetId: jobId,
       metadata: { jobId, page, limit, sort },
       requestId: meta.requestId,
@@ -219,7 +219,7 @@ export class ApplicationService {
 
     await AuditService.log({
       actor: { _id: hrUser._id, email: hrUser.email, role: hrUser.role },
-      action: 'APPLICATION_STATUS_CHANGED',
+      action: ALLOWED_ACTIONS.APPLICATION_STATUS_CHANGED,
       targetModel: 'Application',
       targetId: applicationId,
       metadata: {
@@ -285,8 +285,8 @@ export class ApplicationService {
 
     await AuditService.log({
       actor: { _id: hrUserId, email: hrUser?.email, role: hrUser?.role },
-      action: 'APPLICATIONS_EXPORTED',
-      targetModel: 'Application',
+      action: ALLOWED_ACTIONS.APPLICATIONS_EXPORTED,
+      targetModel: 'Company',
       targetId: companyId,
       metadata: { companyId, date },
       requestId: meta.requestId,

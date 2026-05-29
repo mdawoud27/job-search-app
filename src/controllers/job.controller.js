@@ -74,6 +74,7 @@ export class JobController {
     try {
       const query = { ...req.query, ...req.params };
       const result = await this.jobService.getJobs(query, {
+        actor: req.user,
         requestId: req.requestId,
         ip: req.ip,
       });
@@ -87,6 +88,7 @@ export class JobController {
   async getJob(req, res, next) {
     try {
       const job = await this.jobService.getJob(req.params.jobId, {
+        actor: req.user,
         requestId: req.requestId,
         ip: req.ip,
       });

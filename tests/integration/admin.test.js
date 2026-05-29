@@ -40,8 +40,9 @@ describe('Admin Integration Tests', () => {
       const response = await request(app)
         .patch('/api/v1/admin/ban-user')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ userId: targetUser._id.toString() })
-        .expect(200);
+        .send({ userId: targetUser._id.toString() });
+
+      expect(response.status).toBe(200);
 
       expect(response.body).toHaveProperty('message');
       expect(response.body.message).toContain('banned');
