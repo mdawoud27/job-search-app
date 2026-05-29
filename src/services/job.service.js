@@ -68,9 +68,9 @@ export class JobService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     const company = await this.companyDao.isActive(companyId);
     const isOwner = await this.companyDao.isOwner(companyId, userId);
@@ -119,9 +119,9 @@ export class JobService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     const company = await this.companyDao.isActive(companyId);
     const canManage = await this.companyDao.canManage(companyId, userId);

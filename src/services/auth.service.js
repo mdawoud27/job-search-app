@@ -155,7 +155,7 @@ export class AuthService {
 
     const accessToken = TokenUtils.genAccessToken(user);
     const refreshToken = TokenUtils.genRefreshToken(user);
-    await this.userRepository.updateRefreshToken(user._id, refreshToken);
+    // await this.userRepository.updateRefreshToken(user._id, refreshToken);
 
     await AuditService.log({
       actor: { _id: user._id, email: user.email, role: user.role },

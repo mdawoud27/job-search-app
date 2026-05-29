@@ -159,9 +159,9 @@ export class UserService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     // Delete old image
     if (user.profilePic?.public_id) {
@@ -202,9 +202,9 @@ export class UserService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     if (user.coverPic?.public_id) {
       await CloudinaryUtils.deleteCloudinaryFile(user.coverPic.public_id);
@@ -244,9 +244,9 @@ export class UserService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     if (user.profilePic?.public_id) {
       // Delete from Cloudinary
@@ -283,9 +283,9 @@ export class UserService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     if (user.coverPic?.public_id) {
       // Delete from Cloudinary
@@ -333,9 +333,9 @@ export class UserService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (!user.refreshToken) {
-      throw new Error(MSG.USER.NOT_LOGGED_IN);
-    }
+    // if (!user.refreshToken) {
+    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
+    // }
 
     if (user.deletedAt) {
       throw new Error(MSG.USER.ALREADY_DELETED);
