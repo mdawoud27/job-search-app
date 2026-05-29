@@ -38,18 +38,17 @@ const graphqlLimiter = rateLimiter({
 
 router.use('/api', authLimiter, authRouter);
 
-router.use('/api/v1', Authorization.verifyToken, v1Limiter);
-router.use('/api/v1', userRouter);
-router.use('/api/v1', adminRouter);
-router.use('/api/v1', companyRouter);
-router.use('/api/v1', jobRouter);
-router.use('/api/v1', applicationRouter);
-router.use('/api/v1', chatRouter);
+router.use('/api/v1', v1Limiter, Authorization.verifyToken, userRouter);
+router.use('/api/v1', v1Limiter, Authorization.verifyToken, adminRouter);
+router.use('/api/v1', v1Limiter, Authorization.verifyToken, companyRouter);
+router.use('/api/v1', v1Limiter, Authorization.verifyToken, jobRouter);
+router.use('/api/v1', v1Limiter, Authorization.verifyToken, applicationRouter);
+router.use('/api/v1', v1Limiter, Authorization.verifyToken, chatRouter);
 
 router.use(
   '/graphql',
-  Authorization.verifyToken,
   graphqlLimiter,
+  Authorization.verifyToken,
   graphqlRouter,
 );
 
