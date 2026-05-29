@@ -9,7 +9,8 @@ export const rateLimiter = ({
 } = {}) => {
   return async (req, res, next) => {
     try {
-      const identifier = req.user?._id?.toString() || req.ip;
+      const identifier =
+        req.user?.id?.toString() || req.user?._id?.toString() || req.ip;
 
       const hashedId = crypto
         .createHash('sha256')
