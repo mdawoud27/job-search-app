@@ -12,7 +12,6 @@ const router = Router();
  */
 router.post(
   '/jobs/:jobId/application',
-  Authorization.verifyToken,
   Authorization.verifyUserRole,
   uploadCV.single('cv'),
   (req, res, next) => {
@@ -27,7 +26,6 @@ router.post(
  */
 router.get(
   '/jobs/:jobId/applications',
-  Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     applicationController.getAllApplicationsForSpecificJob(req, res, next);
@@ -41,7 +39,6 @@ router.get(
  */
 router.patch(
   '/applications/:applicationId/status',
-  Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     applicationController.updateApplicationStatus(req, res, next);
@@ -55,7 +52,6 @@ router.patch(
  */
 router.get(
   '/companies/:companyId/applications/export',
-  Authorization.verifyToken,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     applicationController.exportApplicationsByDate(req, res, next);

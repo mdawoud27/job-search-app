@@ -10,11 +10,8 @@ const router = Router();
  * @desc Get user profile
  * @access Private
  */
-router.get(
-  '/users/:id',
-  Authorization.verifyToken,
-  Authorization.verifyUserPermission,
-  (req, res, next) => userController.getProfile(req, res, next),
+router.get('/users/:id', Authorization.verifyUserPermission, (req, res, next) =>
+  userController.getProfile(req, res, next),
 );
 
 /**
@@ -22,7 +19,7 @@ router.get(
  * @desc Get user profile
  * @access Private
  */
-router.get('/user/profile', Authorization.verifyToken, (req, res, next) =>
+router.get('/user/profile', (req, res, next) =>
   userController.getLoggedUser(req, res, next),
 );
 
@@ -33,7 +30,6 @@ router.get('/user/profile', Authorization.verifyToken, (req, res, next) =>
  */
 router.put(
   '/user/profile',
-  Authorization.verifyToken,
   // Authorization.onlySelf,
   (req, res, next) => userController.updateAccount(req, res, next),
 );
@@ -45,7 +41,6 @@ router.put(
  */
 router.patch(
   '/user/profile/password',
-  Authorization.verifyToken,
   // Authorization.onlySelf,
   (req, res, next) => userController.updatePassword(req, res, next),
 );
@@ -57,7 +52,7 @@ router.patch(
  */
 router.patch(
   '/user/profile/profile-pic',
-  Authorization.verifyToken,
+
   uploadImage.single('image'),
   (req, res, next) => userController.uploadProfilePic(req, res, next),
 );
@@ -69,7 +64,6 @@ router.patch(
  */
 router.patch(
   '/user/profile/cover-pic',
-  Authorization.verifyToken,
   uploadImage.single('image'),
   (req, res, next) => userController.uploadCoverPic(req, res, next),
 );
@@ -79,10 +73,8 @@ router.patch(
  * @desc Delete user profile picture
  * @access Private
  */
-router.delete(
-  '/user/profile/profile-pic',
-  Authorization.verifyToken,
-  (req, res, next) => userController.deleteProfilePic(req, res, next),
+router.delete('/user/profile/profile-pic', (req, res, next) =>
+  userController.deleteProfilePic(req, res, next),
 );
 
 /**
@@ -90,10 +82,8 @@ router.delete(
  * @desc Delete user cover picture
  * @access Private
  */
-router.delete(
-  '/user/profile/cover-pic',
-  Authorization.verifyToken,
-  (req, res, next) => userController.deleteCoverPic(req, res, next),
+router.delete('/user/profile/cover-pic', (req, res, next) =>
+  userController.deleteCoverPic(req, res, next),
 );
 
 /**
@@ -101,7 +91,7 @@ router.delete(
  * @desc Delete user
  * @access Private
  */
-router.delete('/user/delete', Authorization.verifyToken, (req, res, next) =>
+router.delete('/user/delete', (req, res, next) =>
   userController.softDelete(req, res, next),
 );
 
@@ -112,7 +102,6 @@ router.delete('/user/delete', Authorization.verifyToken, (req, res, next) =>
  */
 router.delete(
   '/user/:id/delete',
-  Authorization.verifyToken,
   Authorization.verifyAdminPermission,
   (req, res, next) => userController.softDelete(req, res, next),
 );
@@ -124,7 +113,6 @@ router.delete(
  */
 router.post(
   '/user/:id/restore',
-  Authorization.verifyToken,
   Authorization.verifyAdminPermission,
   (req, res, next) => userController.restore(req, res, next),
 );
