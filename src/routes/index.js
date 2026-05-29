@@ -36,7 +36,7 @@ const graphqlLimiter = rateLimiter({
   message: 'Too many GraphQL requests, try again later',
 });
 
-router.use('/api/auth', authLimiter, authRouter);
+router.use('/api', authLimiter, authRouter);
 
 router.use('/api/v1', Authorization.verifyToken, v1Limiter);
 router.use('/api/v1', userRouter);
