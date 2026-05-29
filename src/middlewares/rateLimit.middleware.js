@@ -2,7 +2,7 @@ import redis from '../config/redis.js';
 import logger from '../config/logger.js';
 import crypto from 'crypto';
 
-export const rateLimiter = ({
+export const rateLimiterMiddleware = ({
   maxRequests = 10,
   windowSeconds = 60,
   message = 'Too many requests. Try again later.',

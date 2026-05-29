@@ -8,7 +8,7 @@ import jobRouter from './job.routes.js';
 import applicationRouter from './application.routes.js';
 import chatRouter from './chat.routes.js';
 import graphqlRouter from './graphql.routes.js';
-import { rateLimiter } from '../middlewares/rateLimit.middleware.js';
+import { rateLimiterMiddleware } from '../middlewares/rateLimit.middleware.js';
 import { Authorization } from '../middlewares/auth.middleware.js';
 
 const router = Router();
@@ -19,18 +19,18 @@ const { version } = JSON.parse(
 
 router.get('/api/version', (req, res) => res.json({ version }));
 
-const authLimiter = rateLimiter({
+const authLimiter = rateLimiterMiddleware({
   maxRequests: 5,
   windowSeconds: 60,
   message: 'Too many auth attempts, try again later',
 });
 
-const v1Limiter = rateLimiter({
+const v1Limiter = rateLimiterMiddleware({
   maxRequests: 100,
   windowSeconds: 60,
 });
 
-const graphqlLimiter = rateLimiter({
+const graphqlLimiter = rateLimiterMiddleware({
   maxRequests: 20,
   windowSeconds: 60,
   message: 'Too many GraphQL requests, try again later',
