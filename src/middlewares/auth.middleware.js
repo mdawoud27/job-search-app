@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { MSG } from '../utils/messages.js';
+import { userRepository } from '../container.js';
 
 /* eslint no-undef: off */
 export class Authorization {
@@ -33,6 +34,7 @@ export class Authorization {
 
       const tokenIssuedAt = new Date(decoded.iat * 1000);
 
+      // TODO: may be move this logic to services
       const user = await userRepository.findById(decoded.id);
       if (!user) {
         return res
