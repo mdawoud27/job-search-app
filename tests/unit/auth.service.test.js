@@ -8,6 +8,7 @@ import * as TokenUtilsModule from '../../src/utils/tokens.utils.js';
 import bcrypt from 'bcrypt';
 import { createMockUser, createOtp } from './helper.js';
 import { MSG } from '../../src/utils/messages.js';
+import redis from '../../src/config/redis.js';
 
 let authService;
 let mockUserRepository;
@@ -70,6 +71,12 @@ beforeEach(() => {
     genSalt: jest.spyOn(bcrypt, 'genSalt').mockImplementation(() => {}),
     hash: jest.spyOn(bcrypt, 'hash').mockImplementation(() => {}),
   };
+
+  // Mock Redis methods
+  jest.spyOn(redis, 'get').mockResolvedValue(null);
+  jest.spyOn(redis, 'setex').mockResolvedValue('OK');
+  jest.spyOn(redis, 'del').mockResolvedValue(1);
+  jest.spyOn(redis, 'ttl').mockResolvedValue(-2);
 
   jest.clearAllMocks();
 });
@@ -159,21 +166,21 @@ describe('signup', () => {
     expect(mockUserRepository.create).not.toHaveBeenCalled();
   });
 
-  it('should set OTP expiration to 10 minutes', async () => {
+  it('should store OTP in Redis with 10 minutes TTL', async () => {
     const dto = { email: 'test@example.com', password: 'Pass123!' };
-    setupSuccessfulSignup();
+    const hashedOtp = 'hashed_123456';
+    setupSuccessfulSignup('123456', hashedOtp);
 
     await authService.signup(dto);
 
-    const createCall = mockUserRepository.create.mock.calls[0][0];
-    const otpExpiration = createCall.OTP[0].expiresIn.getTime();
-    const expected = Date.now() + 10 * 60 * 1000;
-
-    expect(otpExpiration).toBeGreaterThanOrEqual(expected - 1000);
-    expect(otpExpiration).toBeLessThanOrEqual(expected + 1000);
+    expect(redis.setex).toHaveBeenCalledWith(
+      `otp:confirmEmail:${dto.email}`,
+      600,
+      hashedOtp,
+    );
   });
 
-  it('should send plain OTP in email but store hashed in DB', async () => {
+  it('should send plain OTP in email but store hashed in Redis', async () => {
     const dto = { email: 'test@example.com', password: 'Pass123!' };
     const plainOtp = '123456';
     const hashedOtp = 'hashed_123456';
@@ -182,8 +189,11 @@ describe('signup', () => {
     await authService.signup(dto);
 
     expect(emailSpy).toHaveBeenCalledWith(dto.email, plainOtp);
-    const createCall = mockUserRepository.create.mock.calls[0][0];
-    expect(createCall.OTP[0].code).toBe(hashedOtp);
+    expect(redis.setex).toHaveBeenCalledWith(
+      `otp:confirmEmail:${dto.email}`,
+      600,
+      hashedOtp,
+    );
   });
 });
 
@@ -193,16 +203,19 @@ describe('signup', () => {
 describe('confirmEmail', () => {
   it('should confirm email successfully with valid OTP', async () => {
     const dto = { email: 'test@example.com', OTP: '123456' };
-    const mockUser = createMockUser({ OTP: [createOtp('confirmEmail')] });
+    const mockUser = createMockUser();
     mockUserRepository.findByEmail.mockResolvedValue(mockUser);
+    redis.get.mockResolvedValue('hashed_123456');
     otpSpies.validate.mockResolvedValue(true);
     dtoSpies.confirmOtp.mockReturnValue({ id: 'user_123', isConfirmed: true });
 
     const result = await authService.confirmEmail(dto);
 
+    expect(redis.get).toHaveBeenCalledWith(`otp:confirmEmail:${dto.email}`);
     expect(otpSpies.validate).toHaveBeenCalledWith(dto.OTP, 'hashed_123456');
     expect(mockUser.isConfirmed).toBe(true);
     expect(mockUser.save).toHaveBeenCalled();
+    expect(redis.del).toHaveBeenCalledWith(`otp:confirmEmail:${dto.email}`);
     expect(result).toBeDefined();
   });
 
@@ -216,32 +229,27 @@ describe('confirmEmail', () => {
     expect(otpSpies.validate).not.toHaveBeenCalled();
   });
 
-  it('should throw error when no OTP found', async () => {
+  it('should throw error when OTP expired (not found in Redis)', async () => {
     const dto = { email: 'test@example.com', OTP: '123456' };
-    mockUserRepository.findByEmail.mockResolvedValue(
-      createMockUser({ OTP: [] }),
-    );
+    mockUserRepository.findByEmail.mockResolvedValue(createMockUser());
+    redis.get.mockResolvedValue(null);
 
-    await expect(authService.confirmEmail(dto)).rejects.toThrow('No OTP found');
+    await expect(authService.confirmEmail(dto)).rejects.toThrow(
+      MSG.AUTH.OTP_EXPIRED,
+    );
   });
 
   it('should throw error when OTP is invalid', async () => {
     const dto = { email: 'test@example.com', OTP: '999999' };
-    const mockUser = createMockUser({ OTP: [createOtp('confirmEmail')] });
+    const mockUser = createMockUser();
     mockUserRepository.findByEmail.mockResolvedValue(mockUser);
+    redis.get.mockResolvedValue('hashed_123456');
     otpSpies.validate.mockResolvedValue(false);
 
-    await expect(authService.confirmEmail(dto)).rejects.toThrow('Invalid OTP');
+    await expect(authService.confirmEmail(dto)).rejects.toThrow(
+      MSG.AUTH.INVALID_OTP,
+    );
     expect(mockUser.save).not.toHaveBeenCalled();
-  });
-
-  it('should throw error when OTP is expired', async () => {
-    const dto = { email: 'test@example.com', OTP: '123456' };
-    const mockUser = createMockUser({ OTP: [createOtp('confirmEmail', true)] });
-    mockUserRepository.findByEmail.mockResolvedValue(mockUser);
-    otpSpies.validate.mockResolvedValue(true);
-
-    await expect(authService.confirmEmail(dto)).rejects.toThrow('OTP expired');
   });
 });
 
@@ -253,14 +261,18 @@ describe('resendOtpCode', () => {
     const dto = { email: 'test@example.com' };
     const mockUser = createMockUser();
     mockUserRepository.findByEmail.mockResolvedValue(mockUser);
+    redis.ttl.mockResolvedValue(-2);
     otpSpies.generateOTP.mockReturnValue('654321');
     otpSpies.hashOTP.mockResolvedValue('hashed_654321');
-    mockUserRepository.updateOtp.mockResolvedValue(mockUser);
     emailSpy.mockResolvedValue(true);
 
     const result = await authService.resendOtpCode(dto);
 
-    expect(mockUserRepository.updateOtp).toHaveBeenCalled();
+    expect(redis.setex).toHaveBeenCalledWith(
+      `otp:confirmEmail:${dto.email}`,
+      600,
+      'hashed_654321',
+    );
     expect(emailSpy).toHaveBeenCalledWith(dto.email, '654321');
     expect(result.message).toBe('New OTP sent successfully');
   });
@@ -287,14 +299,9 @@ describe('resendOtpCode', () => {
 
   it('should enforce rate limiting (1 minute)', async () => {
     const dto = { email: 'test@example.com' };
-    const recentOtp = {
-      code: 'old',
-      type: 'confirmEmail',
-      expiresIn: new Date(Date.now() + 9.5 * 60 * 1000), // 30 seconds ago
-    };
-    mockUserRepository.findByEmail.mockResolvedValue(
-      createMockUser({ OTP: [recentOtp] }),
-    );
+    mockUserRepository.findByEmail.mockResolvedValue(createMockUser());
+    // TTL > 540 means OTP was sent less than 1 minute ago
+    redis.ttl.mockResolvedValue(570);
 
     await expect(authService.resendOtpCode(dto)).rejects.toThrow(
       /Please wait \d+ seconds/,
@@ -456,16 +463,17 @@ describe('forgotPassword', () => {
     const dto = { email: 'test@example.com' };
     const mockUser = createMockUser();
     mockUserRepository.findByEmail.mockResolvedValue(mockUser);
+    redis.ttl.mockResolvedValue(-2);
     otpSpies.generateOTP.mockReturnValue('789012');
     otpSpies.hashOTP.mockResolvedValue('hashed_789012');
-    mockUserRepository.updateOtp.mockResolvedValue(mockUser);
     emailSpy.mockResolvedValue(true);
 
     const result = await authService.forgotPassword(dto);
 
-    expect(mockUserRepository.updateOtp).toHaveBeenCalledWith(
-      dto.email,
-      expect.objectContaining({ type: 'forgetPassword' }),
+    expect(redis.setex).toHaveBeenCalledWith(
+      `otp:forgetPassword:${dto.email}`,
+      600,
+      'hashed_789012',
     );
     expect(emailSpy).toHaveBeenCalledWith(
       dto.email,
@@ -486,14 +494,9 @@ describe('forgotPassword', () => {
 
   it('should enforce rate limiting', async () => {
     const dto = { email: 'test@example.com' };
-    const recentOtp = {
-      code: 'old',
-      type: 'forgetPassword',
-      expiresIn: new Date(Date.now() + 9.5 * 60 * 1000),
-    };
-    mockUserRepository.findByEmail.mockResolvedValue(
-      createMockUser({ OTP: [recentOtp] }),
-    );
+    mockUserRepository.findByEmail.mockResolvedValue(createMockUser());
+    // TTL > 540 means OTP was sent less than 1 minute ago
+    redis.ttl.mockResolvedValue(570);
 
     await expect(authService.forgotPassword(dto)).rejects.toThrow(
       /Please wait \d+ seconds/,
@@ -511,11 +514,9 @@ describe('resetPassword', () => {
       OTP: '123456',
       password: 'NewPass123!',
     };
-    const mockUser = createMockUser({
-      OTP: [createOtp('forgetPassword')],
-      refreshToken: 'old_token',
-    });
+    const mockUser = createMockUser({ refreshToken: 'old_token' });
     mockUserRepository.findByEmail.mockResolvedValue(mockUser);
+    redis.get.mockResolvedValue('hashed_123456');
     otpSpies.validate.mockResolvedValue(true);
     bcryptSpies.genSalt.mockResolvedValue('salt');
     bcryptSpies.hash.mockResolvedValue('new_hashed_password');
@@ -523,8 +524,10 @@ describe('resetPassword', () => {
 
     const result = await authService.resetPassword(dto);
 
+    expect(redis.get).toHaveBeenCalledWith(`otp:forgetPassword:${dto.email}`);
     expect(otpSpies.validate).toHaveBeenCalledWith(dto.OTP, 'hashed_123456');
     expect(bcryptSpies.hash).toHaveBeenCalledWith(dto.password, 'salt');
+    expect(redis.del).toHaveBeenCalledWith(`otp:forgetPassword:${dto.email}`);
     expect(mockUser.refreshToken).toBeNull();
     expect(result.message).toBe('Password reset successful. Please login.');
   });
@@ -542,18 +545,17 @@ describe('resetPassword', () => {
     );
   });
 
-  it('should throw error when no OTP found', async () => {
+  it('should throw error when OTP expired (not found in Redis)', async () => {
     const dto = {
       email: 'test@example.com',
       OTP: '123456',
       password: 'NewPass123!',
     };
-    mockUserRepository.findByEmail.mockResolvedValue(
-      createMockUser({ OTP: [] }),
-    );
+    mockUserRepository.findByEmail.mockResolvedValue(createMockUser());
+    redis.get.mockResolvedValue(null);
 
     await expect(authService.resetPassword(dto)).rejects.toThrow(
-      'No OTP found',
+      MSG.AUTH.OTP_EXPIRED,
     );
   });
 
@@ -563,26 +565,13 @@ describe('resetPassword', () => {
       OTP: '999999',
       password: 'NewPass123!',
     };
-    const mockUser = createMockUser({ OTP: [createOtp('forgetPassword')] });
-    mockUserRepository.findByEmail.mockResolvedValue(mockUser);
+    mockUserRepository.findByEmail.mockResolvedValue(createMockUser());
+    redis.get.mockResolvedValue('hashed_123456');
     otpSpies.validate.mockResolvedValue(false);
 
-    await expect(authService.resetPassword(dto)).rejects.toThrow('Invalid OTP');
-  });
-
-  it('should throw error when OTP is expired', async () => {
-    const dto = {
-      email: 'test@example.com',
-      OTP: '123456',
-      password: 'NewPass123!',
-    };
-    const mockUser = createMockUser({
-      OTP: [createOtp('forgetPassword', true)],
-    });
-    mockUserRepository.findByEmail.mockResolvedValue(mockUser);
-    otpSpies.validate.mockResolvedValue(true);
-
-    await expect(authService.resetPassword(dto)).rejects.toThrow('OTP expired');
+    await expect(authService.resetPassword(dto)).rejects.toThrow(
+      MSG.AUTH.INVALID_OTP,
+    );
   });
 });
 

@@ -3,6 +3,7 @@ import { JobService } from '../../src/services/job.service.js';
 import * as JobResponseDtoModule from '../../src/dtos/job/job-response.dto.js';
 import { MSG } from '../../src/utils/messages.js';
 import { createMockJob } from './helper.js';
+import redis from '../../src/config/redis.js';
 
 let jobService;
 let mockUserDao;
@@ -37,6 +38,12 @@ beforeEach(() => {
       .spyOn(JobResponseDtoModule.JobResponseDto, 'toResponse')
       .mockImplementation(() => {}),
   };
+
+  // Mock Redis methods to prevent real cache interactions
+  jest.spyOn(redis, 'get').mockResolvedValue(null);
+  jest.spyOn(redis, 'setex').mockResolvedValue('OK');
+  jest.spyOn(redis, 'scan').mockResolvedValue(['0', []]);
+  jest.spyOn(redis, 'del').mockResolvedValue(0);
 
   jest.clearAllMocks();
 });

@@ -137,15 +137,20 @@ describe('getLoggedUser', () => {
     expect(cryptoSpies.decrypt).not.toHaveBeenCalled();
   });
 
-  it('should throw NOT_LOGGED_IN when user has no refreshToken', async () => {
+  it('should return profile even when user has no refreshToken', async () => {
     const userId = 'user_123';
-    mockUserRepository.findById.mockResolvedValue(
-      createMockUser({ refreshToken: null }),
-    );
+    const mockUser = createMockUser({ refreshToken: null });
+    mockUserRepository.findById.mockResolvedValue(mockUser);
+    cryptoSpies.decrypt.mockReturnValue('123456789');
+    dtoSpies.userResponse.mockReturnValue({
+      id: userId,
+      email: 'test@example.com',
+    });
 
-    await expect(userService.getLoggedUser(userId)).rejects.toThrow(
-      MSG.USER.NOT_LOGGED_IN,
-    );
+    const result = await userService.getLoggedUser(userId);
+
+    expect(result.message).toBe(MSG.USER.PROFILE_RETRIEVED);
+    expect(result.data).toBeDefined();
   });
 });
 
@@ -245,15 +250,16 @@ describe('changePassword', () => {
     );
   });
 
-  it('should throw NOT_LOGGED_IN_ALT when user has no refreshToken', async () => {
+  it('should throw DELETED_OR_BANNED when user has no refreshToken and is not active', async () => {
     const userId = 'user_123';
     const dto = { oldPassword: 'OldPass!', newPassword: 'NewPass!' };
     mockUserRepository.findById.mockResolvedValue(
       createMockUser({ refreshToken: null }),
     );
+    mockUserRepository.isActive.mockResolvedValue(false);
 
     await expect(userService.changePassword(userId, dto)).rejects.toThrow(
-      MSG.USER.NOT_LOGGED_IN_ALT,
+      MSG.USER.DELETED_OR_BANNED,
     );
   });
 
