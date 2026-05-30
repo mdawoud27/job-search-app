@@ -81,7 +81,11 @@ app.use(
         return callback(null, true);
       }
 
-      if (allowedOrigins.includes(origin) || origin.includes('localhost')) {
+      const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(
+        origin,
+      );
+
+      if (allowedOrigins.includes(origin) || isLocalhost) {
         callback(null, true);
       } else {
         callback(new Error(MSG.MIDDLEWARE.CORS_ERROR));
