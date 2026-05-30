@@ -4,8 +4,6 @@ dotenv.config();
 import logger from './logger.js';
 
 /* eslint no-undef: off */
-// const url = process.env.MONGO_URL;
-// const dbName = process.env.DB_NAME;
 const mongodb_url = process.env.MONGODB_URL; // mongodb atlas
 
 const connectToDB = async () => {
