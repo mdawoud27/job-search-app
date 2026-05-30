@@ -186,16 +186,20 @@ export class ApplicationService {
       logger.error('Failed to emit status update:', error.message);
     }
 
-    await emailQueue.add('status-email', {
-      type: status === 'accepted' ? 'acceptance' : 'rejection',
-      payload: {
-        emailFrom: company.companyEmail || hrUser.email,
-        applicantEmail: application.userId.email,
-        applicantName: `${application.userId.firstName} ${application.userId.lastName}`,
-        jobTitle: application.jobId.jobTitle,
-        companyName: company.companyName,
-      },
-    });
+    try {
+      await emailQueue.add('status-email', {
+        type: status === 'accepted' ? 'acceptance' : 'rejection',
+        payload: {
+          emailFrom: company.companyEmail || hrUser.email,
+          applicantEmail: application.userId.email,
+          applicantName: `${application.userId.firstName} ${application.userId.lastName}`,
+          jobTitle: application.jobId.jobTitle,
+          companyName: company.companyName,
+        },
+      });
+    } catch (error) {
+      logger.error('Failed to enqueue status-email job:', error.message);
+    }
 
     await AuditService.log({
       actor: { _id: hrUser._id, email: hrUser.email, role: hrUser.role },
