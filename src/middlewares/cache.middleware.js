@@ -1,6 +1,6 @@
 import redis from '../config/redis.js';
 
-export const cahceMiddleware =
+export const cacheMiddleware =
   (ttl = 300) =>
   async (req, res, next) => {
     const key = `route:${req.originalUrl}`;
