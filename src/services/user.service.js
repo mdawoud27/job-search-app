@@ -6,6 +6,8 @@ import { MSG } from '../utils/messages.js';
 import { AuditService } from './audit.service.js';
 import { ALLOWED_ACTIONS } from '../utils/constants.js';
 
+// TODO: remove refreshToken check in methods
+
 export class UserService {
   constructor(userRepository) {
     this.userRepository = userRepository;
