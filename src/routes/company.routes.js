@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { Authorization } from '../middlewares/auth.middleware.js';
 import { companyController } from '../container.js';
 import { uploadImage } from '../utils/multer.js';
-import { cahceMiddleware } from '../middlewares/cache.middleware.js';
+import { cacheMiddleware } from '../middlewares/cache.middleware.js';
 
 const router = Router();
 
@@ -59,7 +59,7 @@ router.get('/company/search/:name', (req, res, next) => {
  * @desc Get company with jobs
  * @access Private
  */
-router.get('/company/:id', cahceMiddleware(6000), (req, res, next) => {
+router.get('/company/:id', cacheMiddleware(6000), (req, res, next) => {
   companyController.getSpecificCompanyWithJobs(req, res, next);
 });
 
