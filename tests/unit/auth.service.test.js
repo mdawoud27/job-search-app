@@ -5,7 +5,7 @@ import * as EmailUtilsModule from '../../src/utils/email.utils.js';
 import * as UserResponseDtoModule from '../../src/dtos/auth/user-response.dto.js';
 import * as ConfirmOtpDtoModule from '../../src/dtos/auth/confirm-opt.dto.js';
 import * as TokenUtilsModule from '../../src/utils/tokens.utils.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { createMockUser, createOtp } from './helper.js';
 import { MSG } from '../../src/utils/messages.js';
 import redis from '../../src/config/redis.js';

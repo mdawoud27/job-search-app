@@ -108,7 +108,7 @@ describe('Auth Integration Tests', () => {
     it('should login with valid credentials', async () => {
       // Create a confirmed user with known password
       const password = 'Test@1234';
-      const bcrypt = await import('bcrypt');
+      const bcrypt = await import('bcryptjs');
       const hashedPassword = await bcrypt.hash(password, 10);
 
       await createTestUser({
@@ -149,7 +149,7 @@ describe('Auth Integration Tests', () => {
 
     it('should return error for unconfirmed user', async () => {
       const password = 'Test@1234';
-      const bcrypt = await import('bcrypt');
+      const bcrypt = await import('bcryptjs');
       const hashedPassword = await bcrypt.hash(password, 10);
 
       await createTestUser({

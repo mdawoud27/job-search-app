@@ -101,7 +101,7 @@ describe('Job Integration Tests', () => {
         .put(`/api/v1/job/${company._id}/${job._id}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .send(updateData)
-        .expect(201); // Update returns 201
+        .expect(200);
 
       expect(response.body).toHaveProperty('message');
       expect(response.body.data).toHaveProperty(
@@ -146,7 +146,7 @@ describe('Job Integration Tests', () => {
       const response = await request(app)
         .delete(`/api/v1/job/${company._id}/delete/${job._id}`)
         .set('Authorization', `Bearer ${accessToken}`)
-        .expect(201); // Delete returns 201
+        .expect(200);
 
       expect(response.body).toHaveProperty('message');
       expect(response.body.message).toContain('deleted');

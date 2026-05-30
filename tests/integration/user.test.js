@@ -126,7 +126,7 @@ describe('User Integration Tests', () => {
   describe('PATCH /api/v1/user/profile/password', () => {
     it('should change password successfully', async () => {
       const password = 'Test@1234';
-      const bcrypt = await import('bcrypt');
+      const bcrypt = await import('bcryptjs');
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const { user, accessToken } = await createAuthUser('User', {
