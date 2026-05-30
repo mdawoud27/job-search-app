@@ -9,8 +9,10 @@ const router = Router({ mergeParams: true });
  * @desc Create job
  * @access Private
  */
-router.post('/job/create/:companyId', (req, res, next) =>
-  jobController.createJob(req, res, next),
+router.post(
+  '/job/create/:companyId',
+  Authorization.verifyHRPermission,
+  (req, res, next) => jobController.createJob(req, res, next),
 );
 
 /**
@@ -18,8 +20,10 @@ router.post('/job/create/:companyId', (req, res, next) =>
  * @desc Update job
  * @access Private
  */
-router.put('/job/:companyId/:jobId', (req, res, next) =>
-  jobController.updateJob(req, res, next),
+router.put(
+  '/job/:companyId/:jobId',
+  Authorization.verifyHRPermission,
+  (req, res, next) => jobController.updateJob(req, res, next),
 );
 
 /**
