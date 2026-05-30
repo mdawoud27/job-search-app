@@ -64,7 +64,6 @@ const userSchema = new mongoose.Schema(
     changeCredentialTime: { type: Date, default: Date.now },
     profilePic: { type: imageSchema, default: null },
     coverPic: { type: imageSchema, default: null },
-    refreshToken: { type: String, default: null }, // TODO: we use redis now , we don't need to update refresh token in DB
   },
   {
     timestamps: true,
@@ -72,7 +71,6 @@ const userSchema = new mongoose.Schema(
       virtuals: true,
       transform: function (doc, ret) {
         delete ret.password;
-        delete ret.refreshToken; // TODO: we use redis now , we don't need to update refresh token in DB
         delete ret.__v;
         return ret;
       },

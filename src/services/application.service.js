@@ -4,7 +4,7 @@ import { ALLOWED_ACTIONS } from '../utils/constants.js';
 import { generateApplicationsExcel } from '../utils/excel.utils.js';
 import { MSG } from '../utils/messages.js';
 import { AuditService } from './audit.service.js';
-import { emailQueue } from '../jobs/email.worker.js';
+import { emailQueue } from '../jobs/index.js';
 
 /* eslint no-console: off */
 export class ApplicationService {
