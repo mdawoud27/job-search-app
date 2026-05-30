@@ -7,7 +7,7 @@ import { rateLimiterMiddleware } from '../middlewares/rateLimit.middleware.js';
 
 const router = Router();
 
-const v1Limiter = rateLimiterMiddleware({
+const companyLimiter = rateLimiterMiddleware({
   maxRequests: 100,
   windowSeconds: 60,
 });
@@ -19,6 +19,7 @@ const v1Limiter = rateLimiterMiddleware({
  */
 router.post(
   '/company/create',
+  companyLimiter,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.createCompany(req, res, next);
@@ -32,7 +33,7 @@ router.post(
  */
 router.put(
   '/company/:id',
-  v1Limiter,
+  companyLimiter,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.updateCompany(req, res, next);
@@ -46,7 +47,7 @@ router.put(
  */
 router.delete(
   '/company/:id',
-  v1Limiter,
+  companyLimiter,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.softDeleteCompany(req, res, next);
@@ -58,7 +59,7 @@ router.delete(
  * @desc Search company by name
  * @access Private
  */
-router.get('/company/search/:name', v1Limiter, (req, res, next) => {
+router.get('/company/search/:name', companyLimiter, (req, res, next) => {
   companyController.searchCompanywithName(req, res, next);
 });
 
@@ -69,8 +70,8 @@ router.get('/company/search/:name', v1Limiter, (req, res, next) => {
  */
 router.get(
   '/company/:id',
-  v1Limiter,
-  cacheMiddleware(6000),
+  companyLimiter,
+  cacheMiddleware(600),
   (req, res, next) => {
     companyController.getSpecificCompanyWithJobs(req, res, next);
   },
@@ -83,7 +84,7 @@ router.get(
  */
 router.patch(
   '/company/:id/logo',
-  v1Limiter,
+  companyLimiter,
   Authorization.verifyHRPermission,
   uploadImage.single('image'),
   (req, res, next) => {
@@ -98,7 +99,7 @@ router.patch(
  */
 router.delete(
   '/company/:id/logo',
-  v1Limiter,
+  companyLimiter,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.deleteCompanyLogo(req, res, next);
@@ -112,7 +113,7 @@ router.delete(
  */
 router.patch(
   '/company/:id/cover',
-  v1Limiter,
+  companyLimiter,
   Authorization.verifyHRPermission,
   uploadImage.single('image'),
   (req, res, next) => {
@@ -127,7 +128,7 @@ router.patch(
  */
 router.delete(
   '/company/:id/cover',
-  v1Limiter,
+  companyLimiter,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.deleteCompanyCover(req, res, next);
@@ -141,7 +142,7 @@ router.delete(
  */
 router.post(
   '/company/:id/hr',
-  v1Limiter,
+  companyLimiter,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.addHR(req, res, next);
@@ -155,7 +156,7 @@ router.post(
  */
 router.delete(
   '/company/:id/hr',
-  v1Limiter,
+  companyLimiter,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.removeHR(req, res, next);

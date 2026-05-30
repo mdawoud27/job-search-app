@@ -19,12 +19,6 @@ const { version } = JSON.parse(
 
 router.get('/api/version', (req, res) => res.json({ version }));
 
-const authLimiter = rateLimiterMiddleware({
-  maxRequests: 5,
-  windowSeconds: 60,
-  message: 'Too many auth attempts, try again later',
-});
-
 const v1Limiter = rateLimiterMiddleware({
   maxRequests: 100,
   windowSeconds: 60,
@@ -36,11 +30,11 @@ const graphqlLimiter = rateLimiterMiddleware({
   message: 'Too many GraphQL requests, try again later',
 });
 
-router.use('/api', authLimiter, authRouter);
+router.use('/api', authRouter);
 
 router.use('/api/v1', v1Limiter, Authorization.verifyToken, userRouter);
 router.use('/api/v1', v1Limiter, Authorization.verifyToken, adminRouter);
-router.use('/api/v1', v1Limiter, Authorization.verifyToken, companyRouter);
+router.use('/api/v1', Authorization.verifyToken, companyRouter);
 router.use('/api/v1', v1Limiter, Authorization.verifyToken, jobRouter);
 router.use('/api/v1', v1Limiter, Authorization.verifyToken, applicationRouter);
 router.use('/api/v1', v1Limiter, Authorization.verifyToken, chatRouter);

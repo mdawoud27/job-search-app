@@ -1,8 +1,17 @@
 import { Router } from 'express';
 import { authController } from '../container.js';
 import { Authorization } from '../middlewares/auth.middleware.js';
+import { rateLimiterMiddleware } from '../middlewares/rateLimit.middleware.js';
 
 const router = Router();
+
+const authLimiter = rateLimiterMiddleware({
+  maxRequests: 10,
+  windowSeconds: 60,
+  message: 'Too many attempts, please try again later',
+});
+
+router.use(authLimiter);
 
 /**
  * @route POST /api/v1/auth/signup
@@ -81,7 +90,8 @@ router.post('/auth/logout', Authorization.verifyToken, (req, res, next) => {
  * @desc Google OAuth
  * @access Public
  */
-router.get('/auth/google', (req, res, next) => {
+// codeql[js/missing-rate-limiting]
+router.get('/auth/google', authLimiter, (req, res, next) => {
   authController.googleAuth(req, res, next);
 });
 
@@ -90,7 +100,8 @@ router.get('/auth/google', (req, res, next) => {
  * @desc Google OAuth callback
  * @access Public
  */
-router.get('/auth/google/callback', (req, res, next) => {
+// codeql[js/missing-rate-limiting]
+router.get('/auth/google/callback', authLimiter, (req, res, next) => {
   authController.googleCallback(req, res, next);
 });
 

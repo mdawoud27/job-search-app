@@ -28,10 +28,8 @@ router.get('/user/profile', (req, res, next) =>
  * @desc Update user profile
  * @access Private
  */
-router.put(
-  '/user/profile',
-  // Authorization.onlySelf,
-  (req, res, next) => userController.updateAccount(req, res, next),
+router.put('/user/profile', Authorization.onlySelf, (req, res, next) =>
+  userController.updateAccount(req, res, next),
 );
 
 /**
@@ -41,7 +39,7 @@ router.put(
  */
 router.patch(
   '/user/profile/password',
-  // Authorization.onlySelf,
+  Authorization.onlySelf,
   (req, res, next) => userController.updatePassword(req, res, next),
 );
 
@@ -52,7 +50,6 @@ router.patch(
  */
 router.patch(
   '/user/profile/profile-pic',
-
   uploadImage.single('image'),
   (req, res, next) => userController.uploadProfilePic(req, res, next),
 );
