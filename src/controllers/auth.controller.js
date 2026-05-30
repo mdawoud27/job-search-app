@@ -37,7 +37,7 @@ export class AuthController {
     try {
       const { error } = ConfirmOtpDto.validate(req.body);
       if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+        return res.status(400).json({ message: error.details[0].message });
       }
       const dto = ConfirmOtpDto.fromRequest(req.body);
       const result = await this.authService.confirmEmail(dto, {
@@ -76,7 +76,7 @@ export class AuthController {
     try {
       const { error } = LoginDto.validate(req.body);
       if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+        return res.status(400).json({ message: error.details[0].message });
       }
 
       const dto = LoginDto.fromRequest(req.body);
@@ -96,7 +96,7 @@ export class AuthController {
     try {
       const { error } = ForgotPasswordDto.validate(req.body);
       if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+        return res.status(400).json({ message: error.details[0].message });
       }
       const dto = ForgotPasswordDto.fromRequest(req.body);
       const result = await this.authService.forgotPassword(dto, {
@@ -115,7 +115,7 @@ export class AuthController {
     try {
       const { error } = ResetPasswordDto.validate(req.body);
       if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+        return res.status(400).json({ message: error.details[0].message });
       }
 
       const dto = ResetPasswordDto.fromRequest(req.body);
@@ -184,18 +184,14 @@ export class AuthController {
         return '/';
       }
       try {
-        // Parse relative to a known safe origin; replace example.com with your real domain if needed.
         const base = new URL('https://example.com');
         const url = new URL(trimmed, base);
-        // Disallow protocol-relative or absolute URLs that change origin.
         if (url.origin !== base.origin) {
           return '/';
         }
-        // Only allow paths that start with a single '/' (no '//').
         if (!url.pathname.startsWith('/') || url.pathname.startsWith('//')) {
           return '/';
         }
-        // Preserve any query string on the safe, same-origin path.
         return url.pathname + (url.search || '');
       } catch {
         return '/';
@@ -208,7 +204,6 @@ export class AuthController {
       // eslint-disable-next-line
       async (err, user, info) => {
         try {
-          // Extract state for redirection
           let redirectTo = '/';
           if (req.query.state) {
             try {
