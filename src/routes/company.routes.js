@@ -3,8 +3,14 @@ import { Authorization } from '../middlewares/auth.middleware.js';
 import { companyController } from '../container.js';
 import { uploadImage } from '../utils/multer.js';
 import { cacheMiddleware } from '../middlewares/cache.middleware.js';
+import { rateLimiterMiddleware } from '../middlewares/rateLimit.middleware.js';
 
 const router = Router();
+
+const v1Limiter = rateLimiterMiddleware({
+  maxRequests: 100,
+  windowSeconds: 60,
+});
 
 /**
  * @route POST /api/v1/company/create
@@ -59,9 +65,14 @@ router.get('/company/search/:name', (req, res, next) => {
  * @desc Get company with jobs
  * @access Private
  */
-router.get('/company/:id', cacheMiddleware(6000), (req, res, next) => {
-  companyController.getSpecificCompanyWithJobs(req, res, next);
-});
+router.get(
+  '/company/:id',
+  v1Limiter,
+  cacheMiddleware(6000),
+  (req, res, next) => {
+    companyController.getSpecificCompanyWithJobs(req, res, next);
+  },
+);
 
 /**
  * @route PATCH /api/v1/company/:id/logo
