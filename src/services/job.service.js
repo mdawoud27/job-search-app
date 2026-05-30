@@ -4,7 +4,10 @@ import { MSG } from '../utils/messages.js';
 import { getOrSet, invalidate, CacheKeys, TTL } from '../utils/cache.utils.js';
 import { AuditService } from './audit.service.js';
 import logger from '../config/logger.js';
-import { ALLOWED_ACTIONS } from '../utils/constants.js';
+import {
+  ALLOWED_ACTIONS,
+  ALLOWED_JOB_SORT_FIELDS,
+} from '../utils/constants.js';
 
 export class JobService {
   constructor(userDao, companyDao, jobDao) {
@@ -224,8 +227,14 @@ export class JobService {
         if (sort) {
           sort.split(',').forEach((part) => {
             const field = part.startsWith('-') ? part.substring(1) : part;
-            sortOptions[field] = part.startsWith('-') ? -1 : 1;
+            if (ALLOWED_JOB_SORT_FIELDS.has(field)) {
+              sortOptions[field] = part.startsWith('-') ? -1 : 1;
+            }
           });
+        }
+        // fallback so we always have at least one sort key
+        if (Object.keys(sortOptions).length === 0) {
+          sortOptions.createdAt = -1;
         }
 
         const { jobs, totalCount } = await this.jobDao.findAll(
