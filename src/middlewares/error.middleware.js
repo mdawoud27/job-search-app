@@ -9,7 +9,10 @@ export class ErrorHandler {
   /* eslint no-unused-vars: off */
   // global error handler
   static errorHandler(err, req, res, next) {
-    const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+    const statusCode =
+      err.statusCode ||
+      err.status ||
+      (res.statusCode === 200 ? 500 : res.statusCode);
     res.status(statusCode).json({
       success: false,
       message: err.message,
