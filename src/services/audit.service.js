@@ -67,9 +67,7 @@ export class AuditService {
       // Audit failure must NEVER crash the main request
       logger.error('Audit log write failed', {
         error: err.message,
-        action,
         targetModel,
-        targetId,
         requestId,
       });
     }
