@@ -45,7 +45,7 @@ export class JobController {
           ip: req.ip,
         },
       );
-      res.status(201).json(job);
+      res.status(200).json(job);
     } catch (error) {
       next(error);
     }
@@ -63,7 +63,7 @@ export class JobController {
           ip: req.ip,
         },
       );
-      res.status(201).json(job);
+      res.status(200).json(job);
     } catch (error) {
       next(error);
     }
