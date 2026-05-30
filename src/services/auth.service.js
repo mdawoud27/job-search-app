@@ -7,7 +7,7 @@ import { MSG } from '../utils/messages.js';
 import redis from '../config/redis.js';
 import { AuditService } from './audit.service.js';
 import { ALLOWED_ACTIONS } from '../utils/constants.js';
-import { emailQueue } from '../jobs/email.worker.js';
+import { emailQueue } from '../jobs/index.js';
 
 export class AuthService {
   constructor(userRepository) {
@@ -161,7 +161,7 @@ export class AuthService {
 
     const accessToken = TokenUtils.genAccessToken(user);
     const refreshToken = TokenUtils.genRefreshToken(user);
-    await this.userRepository.updateRefreshToken(user._id, refreshToken);
+    await redis.setex(`refresh:${user._id}`, 60 * 60 * 24 * 7, refreshToken);
 
     await AuditService.log({
       actor: { _id: user._id, email: user.email, role: user.role },
@@ -211,7 +211,7 @@ export class AuthService {
         ip: meta.ip,
       },
     });
-    return { user, message: MSG.AUTH.OTP_SENT };
+    return { message: MSG.AUTH.OTP_SENT };
   }
 
   // reset password
@@ -237,7 +237,7 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.password, salt);
 
     await this.userRepository.updatePassword(user._id, hashedPassword);
-    user.refreshToken = null;
+    await redis.del(`refresh:${user._id}`);
     user.changeCredentialTime = new Date();
     await user.save();
 
@@ -251,7 +251,7 @@ export class AuthService {
         ip: meta.ip,
       },
     });
-    return { user, message: MSG.AUTH.PASSWORD_RESET_SUCCESS };
+    return { message: MSG.AUTH.PASSWORD_RESET_SUCCESS };
   }
 
   // refresh tokens
@@ -263,7 +263,8 @@ export class AuthService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    if (user.refreshToken !== refreshToken) {
+    const stored = await redis.get(`refresh:${payload.id}`);
+    if (!stored || stored !== refreshToken) {
       throw new Error(MSG.AUTH.INVALID_REFRESH_TOKEN);
     }
 
@@ -271,13 +272,13 @@ export class AuthService {
     const credentialChangedAt = user.changeCredentialTime;
 
     if (credentialChangedAt && tokenIssuedAt < credentialChangedAt) {
-      // Credentials were changed after this token was issued
-      // Invalidate the refresh token for security
-      user.refreshToken = null;
-      await user.save();
-
+      await redis.del(`refresh:${payload.id}`);
       throw new Error(MSG.AUTH.CREDENTIALS_CHANGED);
     }
+
+    await redis.del(`refresh:${payload.id}`);
+    const newRefreshToken = TokenUtils.genRefreshToken(user);
+    await redis.setex(`refresh:${user._id}`, 60 * 60 * 24 * 7, newRefreshToken);
 
     const accessToken = TokenUtils.genAccessToken(user);
 
@@ -293,7 +294,7 @@ export class AuthService {
     });
 
     return {
-      refreshToken,
+      refreshToken: newRefreshToken,
       accessToken,
       message: MSG.AUTH.TOKEN_REFRESHED,
     };
@@ -310,8 +311,7 @@ export class AuthService {
     const refreshToken = TokenUtils.genRefreshToken(user);
 
     // Save refresh token
-    user.refreshToken = refreshToken;
-    await user.save();
+    await redis.setex(`refresh:${user._id}`, 60 * 60 * 24 * 7, refreshToken);
 
     return {
       user: {
@@ -338,7 +338,7 @@ export class AuthService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    user.refreshToken = null;
+    await redis.del(`refresh:${user._id}`);
     user.changeCredentialTime = new Date();
     await user.save();
 

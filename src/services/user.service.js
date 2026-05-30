@@ -5,8 +5,7 @@ import { UpdateUserDto } from '../dtos/user/update-user.dto.js';
 import { MSG } from '../utils/messages.js';
 import { AuditService } from './audit.service.js';
 import { ALLOWED_ACTIONS } from '../utils/constants.js';
-
-// TODO: remove refreshToken check in methods
+import redis from '../config/redis.js';
 
 export class UserService {
   constructor(userRepository) {
@@ -131,9 +130,8 @@ export class UserService {
 
     // Update credential change time
     user.changeCredentialTime = new Date();
-    user.refreshToken = null;
-
     await user.save();
+    await redis.del(`refresh:${user._id}`);
 
     await AuditService.log({
       actor: { _id: userId, email: user.email, role: user.role },
@@ -160,10 +158,6 @@ export class UserService {
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
     }
-
-    // if (!user.refreshToken) {
-    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
-    // }
 
     // Delete old image
     if (user.profilePic?.public_id) {
@@ -204,10 +198,6 @@ export class UserService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    // if (!user.refreshToken) {
-    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
-    // }
-
     if (user.coverPic?.public_id) {
       await CloudinaryUtils.deleteCloudinaryFile(user.coverPic.public_id);
     }
@@ -246,10 +236,6 @@ export class UserService {
       throw new Error(MSG.USER.NOT_FOUND);
     }
 
-    // if (!user.refreshToken) {
-    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
-    // }
-
     if (user.profilePic?.public_id) {
       // Delete from Cloudinary
       await CloudinaryUtils.deleteCloudinaryFile(user.profilePic.public_id);
@@ -284,10 +270,6 @@ export class UserService {
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
     }
-
-    // if (!user.refreshToken) {
-    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
-    // }
 
     if (user.coverPic?.public_id) {
       // Delete from Cloudinary
@@ -334,10 +316,6 @@ export class UserService {
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
     }
-
-    // if (!user.refreshToken) {
-    //   throw new Error(MSG.USER.NOT_LOGGED_IN);
-    // }
 
     if (user.deletedAt) {
       throw new Error(MSG.USER.ALREADY_DELETED);

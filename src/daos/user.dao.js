@@ -98,13 +98,4 @@ export class UserDAO {
       { new: true },
     );
   }
-
-  // TODO: we use redis now , we don't need to update refresh token in DB
-  async updateRefreshToken(userId, token) {
-    return User.findOneAndUpdate(
-      { _id: { $eq: userId } },
-      { refreshToken: token },
-      { new: true },
-    );
-  }
 }
