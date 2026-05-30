@@ -18,15 +18,20 @@ export const sendOTPEmail = async (email, otp, subject = '') => {
   });
 };
 
-export const sendEmail = async ({ from, to, subject, html }) => {
-  const mailOptions = {
+export const sendEmail = async ({
+  from,
+  to,
+  subject,
+  html,
+  attachments = [],
+}) => {
+  return transporter.sendMail({
     from: from || process.env.USER_EMAIL,
     to,
     subject,
     html,
-  };
-
-  return transporter.sendMail(mailOptions);
+    attachments,
+  });
 };
 
 export const sendAcceptanceEmail = async (
