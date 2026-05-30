@@ -1,13 +1,13 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { OtpUtils } from '../utils/otpUtils.js';
 import { UserResponseDto } from '../dtos/auth/user-response.dto.js';
 import { ConfirmOtpDto } from '../dtos/auth/confirm-opt.dto.js';
 import { TokenUtils } from '../utils/tokens.utils.js';
-import { sendOTPEmail } from '../utils/email.utils.js';
 import { MSG } from '../utils/messages.js';
 import redis from '../config/redis.js';
 import { AuditService } from './audit.service.js';
 import { ALLOWED_ACTIONS } from '../utils/constants.js';
+import { emailQueue } from '../jobs/email.worker.js';
 
 export class AuthService {
   constructor(userRepository) {
@@ -40,7 +40,10 @@ export class AuthService {
     //TODO: if user role is HR then companyId or companyCode is required
 
     // Send OTP email
-    await sendOTPEmail(dto.email, otpCode);
+    await emailQueue.add('send-otp', {
+      type: 'otp',
+      payload: { email: dto.email, otp: otpCode },
+    });
 
     await AuditService.log({
       actor: { _id: user._id, email: user.email, role: user.role },
@@ -115,7 +118,10 @@ export class AuthService {
     const hashedOtp = await OtpUtils.hashOTP(otpCode);
 
     await redis.setex(`otp:confirmEmail:${dto.email}`, 600, hashedOtp);
-    await sendOTPEmail(dto.email, otpCode);
+    await emailQueue.add('resend-otp', {
+      type: 'otp',
+      payload: { email: dto.email, otp: otpCode },
+    });
 
     await AuditService.log({
       actor: { _id: user._id, email: user.email, role: user.role },
@@ -155,7 +161,7 @@ export class AuthService {
 
     const accessToken = TokenUtils.genAccessToken(user);
     const refreshToken = TokenUtils.genRefreshToken(user);
-    // await this.userRepository.updateRefreshToken(user._id, refreshToken);
+    await this.userRepository.updateRefreshToken(user._id, refreshToken);
 
     await AuditService.log({
       actor: { _id: user._id, email: user.email, role: user.role },
@@ -190,7 +196,10 @@ export class AuthService {
 
     await redis.setex(`otp:forgetPassword:${dto.email}`, 600, hashed);
 
-    await sendOTPEmail(dto.email, otp, 'Reset your password');
+    await emailQueue.add('forgot-otp', {
+      type: 'otp',
+      payload: { email: dto.email, otp, subject: 'Reset your password' },
+    });
 
     await AuditService.log({
       actor: { _id: user._id, email: user.email, role: user.role },
