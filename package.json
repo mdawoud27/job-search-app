@@ -1,6 +1,6 @@
 {
   "name": "job-search-app",
-  "version": "2.2.18",
+  "version": "2.2.21",
   "description": "This is a job search app",
   "type": "module",
   "main": "src/index.js",
@@ -54,11 +54,11 @@
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "exceljs": "^4.4.0",
+    "exceljs": "^3.4.0",
     "express": "^4.22.2",
     "express-graphql": "^0.12.0",
     "express-jsdoc-swagger": "^1.8.0",
-    "google-auth-library": "^9.15.1",
+    "google-auth-library": "^10.6.2",
     "graphql": "^15.10.2",
     "graphql-http": "^1.22.4",
     "helmet": "^8.0.0",
@@ -72,8 +72,6 @@
     "mongoose": "^8.11.0",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
-    "node-cron": "^3.0.3",
-    "node-schedule": "^2.1.1",
     "nodemailer": "^8.0.7",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
@@ -83,5 +81,10 @@
     "swagger-ui-express": "^5.0.1",
     "uuid": "^14.0.0",
     "winston": "^3.19.0"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "^11.1.1"
+    }
   }
 }

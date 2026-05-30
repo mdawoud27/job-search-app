@@ -16,7 +16,7 @@ export const rateLimiterMiddleware = ({
         .createHash('sha256')
         .update(identifier)
         .digest('hex');
-      const routeKey = req.baseUrl || req.path;
+      const routeKey = req.baseUrl + req.path;
       const type = req.user ? 'user' : 'ip';
       const key = `rateLimit:${routeKey}:${type}:${hashedId}`;
 
@@ -36,7 +36,7 @@ export const rateLimiterMiddleware = ({
       res.set({
         'X-RateLimit-Limit': maxRequests,
         'X-RateLimit-Remaining': remainingRequests,
-        'X-RateLimit-Reset': windowSeconds,
+        'X-RateLimit-Reset': Math.ceil((now + windowSeconds * 1000) / 1000),
       });
 
       if (requestsCount > maxRequests) {
@@ -53,7 +53,7 @@ export const rateLimiterMiddleware = ({
       next();
     } catch (error) {
       logger.error('Rate limiter error:', error);
-      next(error);
+      next();
     }
   };
 };
