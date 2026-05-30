@@ -52,23 +52,20 @@ export class UserDAO {
     return User.findOneAndDelete({ _id: { $eq: userId } });
   }
 
-  async isActive(userId) {
+  async isActive(identifier) {
     let user;
-    if (mongoose.isValidObjectId(userId)) {
-      user = await this.findById(userId);
-    }
 
-    if (!user) {
-      user = await this.findByEmail(userId);
+    if (mongoose.isValidObjectId(identifier)) {
+      user = await this.findById(identifier);
+    } else {
+      user = await this.findByEmail(identifier);
     }
 
     if (!user) {
       throw new Error(MSG.USER.NOT_FOUND);
     }
-    if (user.deletedAt === null && user.bannedAt === null) {
-      return true;
-    }
-    return false;
+
+    return user.deletedAt === null && user.bannedAt === null;
   }
 
   async isDeleted(userId) {
