@@ -1,13 +1,10 @@
 import logger from '../config/logger.js';
 import { getIO } from '../config/socket.js';
 import { ALLOWED_ACTIONS } from '../utils/constants.js';
-import {
-  sendAcceptanceEmail,
-  sendRejectionEmail,
-} from '../utils/email.utils.js';
 import { generateApplicationsExcel } from '../utils/excel.utils.js';
 import { MSG } from '../utils/messages.js';
 import { AuditService } from './audit.service.js';
+import { emailQueue } from '../jobs/email.worker.js';
 
 /* eslint no-console: off */
 export class ApplicationService {
@@ -190,31 +187,18 @@ export class ApplicationService {
     }
 
     try {
-      const applicantName = `${application.userId.firstName} ${application.userId.lastName}`;
-      const applicantEmail = application.userId.email;
-      const jobTitle = application.jobId.jobTitle;
-      const companyName = company.companyName;
-
-      if (status === 'accepted') {
-        await sendAcceptanceEmail(
-          company.companyEmail || hrUser.email,
-          applicantEmail,
-          applicantName,
-          jobTitle,
-          companyName,
-        );
-      } else {
-        await sendRejectionEmail(
-          company.companyEmail || hrUser.email,
-          applicantEmail,
-          applicantName,
-          jobTitle,
-          companyName,
-        );
-      }
-      logger.info(`${status} email sent to ${applicantEmail}`);
+      await emailQueue.add('status-email', {
+        type: status === 'accepted' ? 'acceptance' : 'rejection',
+        payload: {
+          emailFrom: company.companyEmail || hrUser.email,
+          applicantEmail: application.userId.email,
+          applicantName: `${application.userId.firstName} ${application.userId.lastName}`,
+          jobTitle: application.jobId.jobTitle,
+          companyName: company.companyName,
+        },
+      });
     } catch (error) {
-      logger.error('Failed to send email:', error.message);
+      logger.error('Failed to enqueue status-email job:', error.message);
     }
 
     await AuditService.log({

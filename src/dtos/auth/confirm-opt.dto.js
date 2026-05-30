@@ -26,10 +26,16 @@ export class ConfirmOtpDto {
         'string.empty': 'Email is required.',
         'string.email': 'Please enter a valid email address.',
       }),
-      OTP: Joi.string().required().trim().max(6).messages({
-        'string.empty': 'OTP is required.',
-        'string.max': 'OTP must be 6 characters long.',
-      }),
+      OTP: Joi.string()
+        .required()
+        .trim()
+        .length(6)
+        .pattern(/^\d{6}$/)
+        .messages({
+          'string.empty': 'OTP is required.',
+          'string.length': 'OTP must be exactly 6 characters.',
+          'string.pattern.base': 'OTP must be 6 digits.',
+        }),
     });
     return schema.validate(body);
   }

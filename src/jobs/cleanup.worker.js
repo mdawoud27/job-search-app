@@ -1,65 +1,63 @@
 import { createQueue, createWorker } from '../config/bullmq.js';
 import logger from '../config/logger.js';
 import { Job } from '../models/Job.js';
+import mongoose from 'mongoose';
 
 export const CLEANUP_QUEUE_NAME = 'cleanup-jobs';
 
-// 1. Create the Queue
+// Queues
 export const cleanupQueue = createQueue(CLEANUP_QUEUE_NAME);
 
-// 2. Schedule the repeatable job
+// Schedule recurring jobs
 export const scheduleCleanupJobs = async () => {
-  // Add a repeatable job that runs every day at midnight
+  // 1. daily cleanup
   await cleanupQueue.add(
     'delete-old-jobs',
     {},
-    {
-      repeat: {
-        pattern: '0 0 * * *', // Every day at midnight
-      },
-      jobId: 'daily-old-jobs-cleanup', // Ensure it is not added multiple times
-    },
+    { repeat: { pattern: '0 0 * * *' }, jobId: 'daily-old-jobs-cleanup' },
   );
-  logger.info('✅ BullMQ: Cleanup jobs scheduled');
+
+  logger.info('✅ BullMQ: all jobs scheduled (cleanup)');
 };
 
-// 3. Define the Worker
+// Cleanup worker
 export const cleanupWorker = createWorker(
   CLEANUP_QUEUE_NAME,
   async (job) => {
-    if (job.name === 'delete-old-jobs') {
-      logger.info('🧹 [BullMQ] Starting daily cleanup job...');
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-      try {
-        // Delete jobs that have been closed or invisible for more than 30 days
-        const result = await Job.deleteMany({
-          $or: [{ closed: true }, { isVisible: false }],
-          updatedAt: { $lt: thirtyDaysAgo },
-        });
-
-        logger.info(
-          `✅ [BullMQ] Cleanup complete: ${result.deletedCount} old jobs removed.`,
-        );
-        return { deletedCount: result.deletedCount };
-      } catch (error) {
-        logger.error('❌ [BullMQ] Error during job cleanup:', error);
-        throw error; // BullMQ will handle retries or mark as failed
-      }
+    if (job.name !== 'delete-old-jobs') {
+      return;
     }
+
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error('MongoDB not ready — will retry');
+    }
+
+    logger.info('🧹 [BullMQ] Starting daily cleanup...');
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const result = await Job.deleteMany({
+      $or: [{ closed: true }, { isVisible: false }],
+      updatedAt: { $lt: thirtyDaysAgo },
+    });
+
+    logger.info(
+      `✅ [BullMQ] Cleanup done: ${result.deletedCount} old jobs removed`,
+    );
+    return { deletedCount: result.deletedCount };
   },
   {
-    // Worker options
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 5000 },
     removeOnComplete: { count: 100 },
     removeOnFail: { count: 500 },
   },
 );
 
-cleanupWorker.on('completed', (job) => {
-  logger.info(`Job ${job.id} has completed!`);
-});
-
-cleanupWorker.on('failed', (job, err) => {
-  logger.error(`Job ${job.id} has failed with ${err.message}`);
-});
+// Event listeners
+cleanupWorker.on('completed', (job) =>
+  logger.info(`[cleanup] job ${job.id} done`),
+);
+cleanupWorker.on('failed', (job, err) =>
+  logger.error(`[cleanup] job ${job.id} failed: ${err.message}`),
+);

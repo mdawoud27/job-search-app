@@ -3,19 +3,16 @@ import jwt from 'jsonwebtoken';
 import { createAdapter } from '@socket.io/redis-adapter';
 import redisClient from './redis.js';
 import logger from './logger.js';
-import { ChatDAO } from '../daos/chat.dao.js';
-import { UserDAO } from '../daos/user.dao.js';
-import { ApplicationDAO } from '../daos/application.dao.js';
-import { JobDao } from '../daos/job.dao.js';
-import { CompanyDAO } from '../daos/company.dao.js';
 import { MSG } from '../utils/messages.js';
+import {
+  chatRepository as chatDAO,
+  userRepository as userDAO,
+  applicationRepository as applicationDAO,
+  jobRepository as jobDAO,
+  companyRepository as companyDAO,
+} from '../container.js';
 
 let io;
-const chatDAO = new ChatDAO();
-const userDAO = new UserDAO();
-const applicationDAO = new ApplicationDAO();
-const jobDAO = new JobDao();
-const companyDAO = new CompanyDAO();
 
 /* eslint no-console: off */
 export const initSocket = (server) => {

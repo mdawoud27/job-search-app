@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '../../src/models/User.js';
 import { Company } from '../../src/models/Company.js';
 import { Job } from '../../src/models/Job.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 /**
  * Generate JWT access token for testing

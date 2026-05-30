@@ -1,4 +1,5 @@
 import { Application } from '../models/Application.js';
+import { Job } from '../models/Job.js';
 
 export class ApplicationDAO {
   async createApplication(userId, jobId, cv) {
@@ -39,19 +40,15 @@ export class ApplicationDAO {
   }
 
   async findByCompanyAndDate(companyId, startDate, endDate) {
+    const jobs = await Job.find({ companyId }).select('_id');
+    const jobIds = jobs.map((j) => j._id);
+
     return Application.find({
-      createdAt: {
-        $gte: startDate,
-        $lte: endDate,
-      },
+      jobId: { $in: jobIds },
+      createdAt: { $gte: startDate, $lte: endDate },
     })
       .populate('userId', 'firstName lastName email')
-      .populate({
-        path: 'jobId',
-        match: { companyId },
-        select: 'jobTitle companyId',
-      })
-      .sort('createdAt')
-      .then((applications) => applications.filter((app) => app.jobId !== null));
+      .populate('jobId', 'jobTitle companyId')
+      .sort('createdAt');
   }
 }

@@ -77,8 +77,7 @@ export class Authorization {
 
   // ensure user is updating his own account
   static onlySelf(req, res, next) {
-    // if (req.user.id !== req.params.id) {
-    if (!req.user.id) {
+    if (req.user.id !== req.params.id) {
       return res.status(403).json({
         success: false,
         message: MSG.MIDDLEWARE.CANNOT_MODIFY_OTHER_USER,

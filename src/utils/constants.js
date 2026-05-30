@@ -75,4 +75,12 @@ export const ALLOWED_ACTIONS = {
 };
 
 export const ALLOWED_SORT_FIELDS = ['createdAt', 'action'];
+export const ALLOWED_JOB_SORT_FIELDS = new Set([
+  'createdAt',
+  'updatedAt',
+  'jobTitle',
+  'seniorityLevel',
+  'views',
+  'applications',
+]);
 export const ALLOWED_SORT_ORDERS = ['asc', 'desc'];
