@@ -238,7 +238,7 @@ export class AdminService {
       if (!allowedActionValues.includes(action)) {
         throw new Error(`Invalid action value: ${action}`);
       }
-      filter.action = action;
+      filter.action = { $eq: action };
     }
 
     if (sortOrder && !ALLOWED_SORT_ORDERS.includes(sortOrder)) {
