@@ -32,6 +32,7 @@ router.post(
  */
 router.put(
   '/company/:id',
+  v1Limiter,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.updateCompany(req, res, next);
@@ -45,6 +46,7 @@ router.put(
  */
 router.delete(
   '/company/:id',
+  v1Limiter,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.softDeleteCompany(req, res, next);
@@ -56,7 +58,7 @@ router.delete(
  * @desc Search company by name
  * @access Private
  */
-router.get('/company/search/:name', (req, res, next) => {
+router.get('/company/search/:name', v1Limiter, (req, res, next) => {
   companyController.searchCompanywithName(req, res, next);
 });
 
@@ -81,6 +83,7 @@ router.get(
  */
 router.patch(
   '/company/:id/logo',
+  v1Limiter,
   Authorization.verifyHRPermission,
   uploadImage.single('image'),
   (req, res, next) => {
@@ -95,6 +98,7 @@ router.patch(
  */
 router.delete(
   '/company/:id/logo',
+  v1Limiter,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.deleteCompanyLogo(req, res, next);
@@ -108,6 +112,7 @@ router.delete(
  */
 router.patch(
   '/company/:id/cover',
+  v1Limiter,
   Authorization.verifyHRPermission,
   uploadImage.single('image'),
   (req, res, next) => {
@@ -122,6 +127,7 @@ router.patch(
  */
 router.delete(
   '/company/:id/cover',
+  v1Limiter,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.deleteCompanyCover(req, res, next);
@@ -135,6 +141,7 @@ router.delete(
  */
 router.post(
   '/company/:id/hr',
+  v1Limiter,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.addHR(req, res, next);
@@ -148,6 +155,7 @@ router.post(
  */
 router.delete(
   '/company/:id/hr',
+  v1Limiter,
   Authorization.verifyHRPermission,
   (req, res, next) => {
     companyController.removeHR(req, res, next);
