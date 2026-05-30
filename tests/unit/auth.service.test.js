@@ -1,19 +1,19 @@
 import { jest } from '@jest/globals';
 import { AuthService } from '../../src/services/auth.service.js';
 import * as OtpUtilsModule from '../../src/utils/otpUtils.js';
-import * as EmailUtilsModule from '../../src/utils/email.utils.js';
 import * as UserResponseDtoModule from '../../src/dtos/auth/user-response.dto.js';
 import * as ConfirmOtpDtoModule from '../../src/dtos/auth/confirm-opt.dto.js';
 import * as TokenUtilsModule from '../../src/utils/tokens.utils.js';
 import bcrypt from 'bcryptjs';
-import { createMockUser, createOtp } from './helper.js';
+import { createMockUser } from './helper.js';
 import { MSG } from '../../src/utils/messages.js';
 import redis from '../../src/config/redis.js';
+import { emailQueue } from '../../src/jobs/index.js';
 
 let authService;
 let mockUserRepository;
 let otpSpies = {};
-let emailSpy;
+let emailQueueSpy;
 let dtoSpies = {};
 let tokenSpies = {};
 let bcryptSpies = {};
@@ -42,9 +42,10 @@ beforeEach(() => {
       .mockImplementation(() => {}),
   };
 
-  emailSpy = jest
-    .spyOn(EmailUtilsModule, 'sendOTPEmail')
-    .mockImplementation(() => {});
+  // Mock emailQueue.add instead of sendOTPEmail directly
+  emailQueueSpy = jest
+    .spyOn(emailQueue, 'add')
+    .mockResolvedValue({ id: 'job_123' });
 
   dtoSpies = {
     userResponse: jest
@@ -96,7 +97,7 @@ const setupSuccessfulSignup = (
   otpSpies.generateOTP.mockReturnValue(otpCode);
   otpSpies.hashOTP.mockResolvedValue(hashedOtp);
   mockUserRepository.create.mockResolvedValue(createMockUser());
-  emailSpy.mockResolvedValue(true);
+  emailQueueSpy.mockResolvedValue({ id: 'job_123' });
   dtoSpies.userResponse.mockReturnValue({
     id: 'user_123',
     email: 'test@example.com',
@@ -117,7 +118,8 @@ describe('signup', () => {
     expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(dto.email);
     expect(otpSpies.generateOTP).toHaveBeenCalled();
     expect(mockUserRepository.create).toHaveBeenCalled();
-    expect(emailSpy).toHaveBeenCalled();
+    // Service now uses emailQueue.add instead of sendOTPEmail directly
+    expect(emailQueueSpy).toHaveBeenCalled();
     expect(result).toBeDefined();
   });
 
@@ -180,7 +182,7 @@ describe('signup', () => {
     );
   });
 
-  it('should send plain OTP in email but store hashed in Redis', async () => {
+  it('should enqueue OTP email job with plain OTP but store hashed in Redis', async () => {
     const dto = { email: 'test@example.com', password: 'Pass123!' };
     const plainOtp = '123456';
     const hashedOtp = 'hashed_123456';
@@ -188,7 +190,18 @@ describe('signup', () => {
 
     await authService.signup(dto);
 
-    expect(emailSpy).toHaveBeenCalledWith(dto.email, plainOtp);
+    // Service enqueues a job with the plain OTP
+    expect(emailQueueSpy).toHaveBeenCalledWith(
+      'send-otp',
+      expect.objectContaining({
+        type: 'otp',
+        payload: expect.objectContaining({
+          email: dto.email,
+          otp: plainOtp,
+        }),
+      }),
+    );
+    // Hashed OTP goes to Redis
     expect(redis.setex).toHaveBeenCalledWith(
       `otp:confirmEmail:${dto.email}`,
       600,
@@ -264,7 +277,7 @@ describe('resendOtpCode', () => {
     redis.ttl.mockResolvedValue(-2);
     otpSpies.generateOTP.mockReturnValue('654321');
     otpSpies.hashOTP.mockResolvedValue('hashed_654321');
-    emailSpy.mockResolvedValue(true);
+    emailQueueSpy.mockResolvedValue({ id: 'job_456' });
 
     const result = await authService.resendOtpCode(dto);
 
@@ -273,7 +286,17 @@ describe('resendOtpCode', () => {
       600,
       'hashed_654321',
     );
-    expect(emailSpy).toHaveBeenCalledWith(dto.email, '654321');
+    // Service enqueues the resend job with the plain OTP
+    expect(emailQueueSpy).toHaveBeenCalledWith(
+      'resend-otp',
+      expect.objectContaining({
+        type: 'otp',
+        payload: expect.objectContaining({
+          email: dto.email,
+          otp: '654321',
+        }),
+      }),
+    );
     expect(result.message).toBe('New OTP sent successfully');
   });
 
@@ -320,7 +343,8 @@ describe('login', () => {
     otpSpies.validate.mockResolvedValue(true);
     tokenSpies.genAccessToken.mockReturnValue('access_token');
     tokenSpies.genRefreshToken.mockReturnValue('refresh_token');
-    mockUserRepository.updateRefreshToken.mockResolvedValue(mockUser);
+    // login now stores refresh token in Redis, not via updateRefreshToken
+    redis.setex.mockResolvedValue('OK');
 
     const result = await authService.login(dto);
 
@@ -329,6 +353,12 @@ describe('login', () => {
       mockUser.password,
     );
     expect(tokenSpies.genAccessToken).toHaveBeenCalled();
+    // Refresh token is stored in Redis
+    expect(redis.setex).toHaveBeenCalledWith(
+      `refresh:${mockUser._id}`,
+      expect.any(Number),
+      'refresh_token',
+    );
     expect(result).toEqual({
       email: dto.email,
       accessToken: 'access_token',
@@ -380,7 +410,7 @@ describe('login', () => {
  * googleCallback tests
  */
 describe('googleCallback', () => {
-  it('should generate tokens and save refresh token on success', async () => {
+  it('should generate tokens and save refresh token in Redis on success', async () => {
     const mockUser = createMockUser({
       name: null,
       firstName: 'Jane',
@@ -392,13 +422,18 @@ describe('googleCallback', () => {
     });
     tokenSpies.genAccessToken.mockReturnValue('google_access_token');
     tokenSpies.genRefreshToken.mockReturnValue('google_refresh_token');
+    redis.setex.mockResolvedValue('OK');
 
     const result = await authService.googleCallback(mockUser);
 
     expect(tokenSpies.genAccessToken).toHaveBeenCalledWith(mockUser);
     expect(tokenSpies.genRefreshToken).toHaveBeenCalledWith(mockUser);
-    expect(mockUser.refreshToken).toBe('google_refresh_token');
-    expect(mockUser.save).toHaveBeenCalled();
+    // Service stores refresh token in Redis, not on the user model
+    expect(redis.setex).toHaveBeenCalledWith(
+      `refresh:${mockUser._id}`,
+      expect.any(Number),
+      'google_refresh_token',
+    );
     expect(result.accessToken).toBe('google_access_token');
     expect(result.refreshToken).toBe('google_refresh_token');
     expect(result.message).toBe(MSG.AUTH.GOOGLE_LOGIN_SUCCESS);
@@ -421,6 +456,7 @@ describe('googleCallback', () => {
     });
     tokenSpies.genAccessToken.mockReturnValue('at');
     tokenSpies.genRefreshToken.mockReturnValue('rt');
+    redis.setex.mockResolvedValue('OK');
 
     const result = await authService.googleCallback(mockUser);
 
@@ -432,15 +468,17 @@ describe('googleCallback', () => {
  * logout tests
  */
 describe('logout', () => {
-  it('should clear refreshToken and set changeCredentialTime on success', async () => {
+  it('should delete Redis refresh token and set changeCredentialTime on success', async () => {
     const userId = 'user_123';
     const mockUser = createMockUser();
     mockUserRepository.findById.mockResolvedValue(mockUser);
+    redis.del.mockResolvedValue(1);
 
     const result = await authService.logout(userId);
 
     expect(mockUserRepository.findById).toHaveBeenCalledWith(userId);
-    expect(mockUser.refreshToken).toBeNull();
+    // Service deletes the refresh token from Redis (not from user model)
+    expect(redis.del).toHaveBeenCalledWith(`refresh:${mockUser._id}`);
     expect(mockUser.changeCredentialTime).toBeInstanceOf(Date);
     expect(mockUser.save).toHaveBeenCalled();
     expect(result.message).toBe(MSG.AUTH.LOGOUT_SUCCESS);
@@ -466,7 +504,7 @@ describe('forgotPassword', () => {
     redis.ttl.mockResolvedValue(-2);
     otpSpies.generateOTP.mockReturnValue('789012');
     otpSpies.hashOTP.mockResolvedValue('hashed_789012');
-    emailSpy.mockResolvedValue(true);
+    emailQueueSpy.mockResolvedValue({ id: 'job_789' });
 
     const result = await authService.forgotPassword(dto);
 
@@ -475,10 +513,17 @@ describe('forgotPassword', () => {
       600,
       'hashed_789012',
     );
-    expect(emailSpy).toHaveBeenCalledWith(
-      dto.email,
-      '789012',
-      'Reset your password',
+    // Service enqueues the forgot-password OTP job
+    expect(emailQueueSpy).toHaveBeenCalledWith(
+      'forgot-otp',
+      expect.objectContaining({
+        type: 'otp',
+        payload: expect.objectContaining({
+          email: dto.email,
+          otp: '789012',
+          subject: 'Reset your password',
+        }),
+      }),
     );
     expect(result.message).toBe('OTP sent to email');
   });
@@ -521,6 +566,7 @@ describe('resetPassword', () => {
     bcryptSpies.genSalt.mockResolvedValue('salt');
     bcryptSpies.hash.mockResolvedValue('new_hashed_password');
     mockUserRepository.updatePassword.mockResolvedValue(mockUser);
+    redis.del.mockResolvedValue(1);
 
     const result = await authService.resetPassword(dto);
 
@@ -528,7 +574,8 @@ describe('resetPassword', () => {
     expect(otpSpies.validate).toHaveBeenCalledWith(dto.OTP, 'hashed_123456');
     expect(bcryptSpies.hash).toHaveBeenCalledWith(dto.password, 'salt');
     expect(redis.del).toHaveBeenCalledWith(`otp:forgetPassword:${dto.email}`);
-    expect(mockUser.refreshToken).toBeNull();
+    // Service deletes the refresh token from Redis (not sets user.refreshToken = null)
+    expect(redis.del).toHaveBeenCalledWith(`refresh:${mockUser._id}`);
     expect(result.message).toBe('Password reset successful. Please login.');
   });
 
@@ -581,44 +628,46 @@ describe('resetPassword', () => {
 describe('refresh', () => {
   it('should refresh access token successfully', async () => {
     const refreshToken = 'valid_refresh_token';
-    const mockUser = createMockUser({ refreshToken, isConfirmed: true });
+    const mockUser = createMockUser({ isConfirmed: true });
     const payload = {
       id: 'user_123',
       iat: Math.floor(Date.now() / 1000) - 3600,
     };
     tokenSpies.verifyRefreshToken.mockReturnValue(payload);
     mockUserRepository.findById.mockResolvedValue(mockUser);
+    // Service checks Redis for the stored refresh token
+    redis.get.mockResolvedValue(refreshToken);
     tokenSpies.genAccessToken.mockReturnValue('new_access_token');
+    tokenSpies.genRefreshToken.mockReturnValue('new_refresh_token');
 
     const result = await authService.refresh(refreshToken);
 
     expect(tokenSpies.verifyRefreshToken).toHaveBeenCalledWith(refreshToken);
+    expect(redis.get).toHaveBeenCalledWith(`refresh:${payload.id}`);
     expect(result.accessToken).toBe('new_access_token');
     expect(result.message).toBe('Access token has been generated');
   });
 
   it('should throw error when user not found', async () => {
     const refreshToken = 'valid_refresh_token';
-    tokenSpies.verifyRefreshToken.mockReturnValue({
-      id: 'user_123',
-      iat: Date.now() / 1000,
-    });
+    const payload = { id: 'user_123', iat: Math.floor(Date.now() / 1000) };
+    tokenSpies.verifyRefreshToken.mockReturnValue(payload);
     mockUserRepository.findById.mockResolvedValue(null);
+    // Token is in Redis but user doesn't exist
+    redis.get.mockResolvedValue(refreshToken);
 
     await expect(authService.refresh(refreshToken)).rejects.toThrow(
       'User not found',
     );
   });
 
-  it('should throw error when refresh token does not match', async () => {
+  it('should throw error when refresh token does not match Redis', async () => {
     const refreshToken = 'mismatched_token';
-    tokenSpies.verifyRefreshToken.mockReturnValue({
-      id: 'user_123',
-      iat: Date.now() / 1000,
-    });
-    mockUserRepository.findById.mockResolvedValue(
-      createMockUser({ refreshToken: 'different_token' }),
-    );
+    const payload = { id: 'user_123', iat: Math.floor(Date.now() / 1000) };
+    tokenSpies.verifyRefreshToken.mockReturnValue(payload);
+    mockUserRepository.findById.mockResolvedValue(createMockUser());
+    // Redis returns a different token than what was provided
+    redis.get.mockResolvedValue('different_token');
 
     await expect(authService.refresh(refreshToken)).rejects.toThrow(
       'Invalid refresh token',
@@ -638,11 +687,14 @@ describe('refresh', () => {
       iat: Math.floor(tokenIssuedAt.getTime() / 1000),
     });
     mockUserRepository.findById.mockResolvedValue(mockUser);
+    // Token matches Redis
+    redis.get.mockResolvedValue(refreshToken);
 
     await expect(authService.refresh(refreshToken)).rejects.toThrow(
       'Credentials have been changed. Please login again',
     );
-    expect(mockUser.refreshToken).toBeNull();
+    // Service deletes the token from Redis on credential mismatch
+    expect(redis.del).toHaveBeenCalledWith(`refresh:${mockUser._id}`);
   });
 
   it('should allow refresh when credentials changed before token issuance', async () => {
@@ -658,7 +710,10 @@ describe('refresh', () => {
       iat: Math.floor(tokenIssuedAt.getTime() / 1000),
     });
     mockUserRepository.findById.mockResolvedValue(mockUser);
+    // Token matches Redis
+    redis.get.mockResolvedValue(refreshToken);
     tokenSpies.genAccessToken.mockReturnValue('new_access_token');
+    tokenSpies.genRefreshToken.mockReturnValue('new_refresh_token');
 
     const result = await authService.refresh(refreshToken);
 

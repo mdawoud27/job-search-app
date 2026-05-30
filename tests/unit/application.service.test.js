@@ -1,3 +1,23 @@
+jest.mock('../../src/config/socket.js', () => ({
+  getIO: jest.fn(() => ({
+    to: jest.fn().mockReturnThis(),
+    emit: jest.fn(),
+  })),
+  initSocket: jest.fn(),
+}));
+
+jest.mock('../../src/jobs/index.js', () => ({
+  emailQueue: {
+    add: jest.fn().mockResolvedValue({ id: 'job_mock' }),
+  },
+}));
+
+jest.mock('../../src/services/audit.service.js', () => ({
+  AuditService: {
+    log: jest.fn().mockResolvedValue(undefined),
+  },
+}));
+
 import { jest } from '@jest/globals';
 import { ApplicationService } from '../../src/services/application.service.js';
 import * as SocketModule from '../../src/config/socket.js';
@@ -10,6 +30,7 @@ import {
   createMockCompany,
 } from './helper.js';
 import { MSG } from '../../src/utils/messages.js';
+import { emailQueue } from '../../src/jobs/index.js';
 
 let applicationService;
 let mockUserRepository;
@@ -52,7 +73,6 @@ beforeEach(() => {
     mockCompanyRepository,
   );
 
-  // Mock socket.io
   const mockIo = {
     to: jest.fn().mockReturnThis(),
     emit: jest.fn(),
@@ -179,7 +199,7 @@ describe('createApplication', () => {
       throw new Error('Socket connection failed');
     });
 
-    // Should not throw error even if socket fails
+    // Should not throw even if socket fails
     const result = await applicationService.createApplication(
       userId,
       jobId,
@@ -324,7 +344,7 @@ describe('getAllApplicationsForSpecificJob', () => {
  * Update Application Status tests
  */
 describe('updateApplicationStatus', () => {
-  it('should update status to accepted and send acceptance email', async () => {
+  it('should update status to accepted and enqueue acceptance email job', async () => {
     const applicationId = 'application_123';
     const status = 'accepted';
     const hrUserId = 'hr_123';
@@ -360,17 +380,23 @@ describe('updateApplicationStatus', () => {
       applicationId,
       status,
     );
-    expect(emailSpies.sendAcceptanceEmail).toHaveBeenCalledWith(
-      mockCompany.companyEmail || mockHrUser.email,
-      mockApplication.userId.email,
-      `${mockApplication.userId.firstName} ${mockApplication.userId.lastName}`,
-      mockApplication.jobId.jobTitle,
-      mockCompany.companyName,
+    // Service now uses emailQueue.add, not sendAcceptanceEmail directly
+    expect(emailQueue.add).toHaveBeenCalledWith(
+      'status-email',
+      expect.objectContaining({
+        type: 'acceptance',
+        payload: expect.objectContaining({
+          emailFrom: mockCompany.companyEmail || mockHrUser.email,
+          applicantEmail: mockApplication.userId.email,
+          jobTitle: mockApplication.jobId.jobTitle,
+          companyName: mockCompany.companyName,
+        }),
+      }),
     );
     expect(result.message).toBe('Application accepted successfully');
   });
 
-  it('should update status to rejected and send rejection email', async () => {
+  it('should update status to rejected and enqueue rejection email job', async () => {
     const applicationId = 'application_123';
     const status = 'rejected';
     const hrUserId = 'hr_123';
@@ -396,7 +422,10 @@ describe('updateApplicationStatus', () => {
       hrUserId,
     );
 
-    expect(emailSpies.sendRejectionEmail).toHaveBeenCalled();
+    expect(emailQueue.add).toHaveBeenCalledWith(
+      'status-email',
+      expect.objectContaining({ type: 'rejection' }),
+    );
     expect(result.message).toBe('Application rejected successfully');
   });
 
@@ -483,7 +512,7 @@ describe('updateApplicationStatus', () => {
     ).rejects.toThrow('Company not found');
   });
 
-  it('should handle email sending errors gracefully', async () => {
+  it('should handle email queue errors gracefully', async () => {
     const applicationId = 'application_123';
     const status = 'accepted';
     const hrUserId = 'hr_123';
@@ -502,11 +531,10 @@ describe('updateApplicationStatus', () => {
     mockApplicationRepository.updateStatus.mockResolvedValue(
       updatedApplication,
     );
-    emailSpies.sendAcceptanceEmail.mockRejectedValue(
-      new Error('Email service unavailable'),
-    );
 
-    // Should not throw error even if email fails
+    emailQueue.add.mockRejectedValue(new Error('Queue unavailable'));
+
+    // Should not throw even if the email queue fails
     const result = await applicationService.updateApplicationStatus(
       applicationId,
       status,

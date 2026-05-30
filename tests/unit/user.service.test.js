@@ -212,7 +212,6 @@ describe('changePassword', () => {
     expect(bcryptSpies.hash).toHaveBeenCalledWith(dto.newPassword, 'salt');
     expect(mockUser.password).toBe('new_hashed_password');
     expect(mockUser.changeCredentialTime).toBeInstanceOf(Date);
-    expect(mockUser.refreshToken).toBeNull();
     expect(mockUser.save).toHaveBeenCalled();
     expect(result.message).toBe(MSG.USER.PASSWORD_CHANGED);
   });
