@@ -2,7 +2,7 @@
 
 Please check if your PR fulfills the following requirements:
 
-- [ ] The commit message follows our [guidelines](../commitlint.config.js)
+- [ ] The commit message follows our [guidelines](../docs/GITHUB_FLOW.md)
 
 - [ ] Tests for the changes have been added (for bug fixes / features)
 

@@ -72,9 +72,9 @@ export class JobService {
     }
 
     const company = await this.companyDao.isActive(companyId);
-    const isOwner = await this.companyDao.isOwner(companyId, userId);
+    const canManage = await this.companyDao.canManage(companyId, userId);
 
-    if (!isOwner) {
+    if (!canManage) {
       throw new Error(MSG.JOB.NOT_AUTHORIZED('update'));
     }
 

@@ -12,7 +12,7 @@ export class CompanyController {
     try {
       const { error, value } = CreateCompanyDto.validate(req.body);
       if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+        return res.status(400).json({ message: error.details[0].message });
       }
       const company = await this.companyService.createCompany(
         value,
@@ -30,7 +30,7 @@ export class CompanyController {
     try {
       const { error, value } = UpdateCompanyDto.validate(req.body);
       if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+        return res.status(400).json({ message: error.details[0].message });
       }
       const company = await this.companyService.updateCompany(
         req.params.id,

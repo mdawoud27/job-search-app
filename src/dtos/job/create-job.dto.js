@@ -54,13 +54,15 @@ export class CreateJobDto {
         }),
       closed: Joi.boolean().default(false),
       salary: Joi.object({
-        from: Joi.number(),
-        to: Joi.number(),
-      }),
+        from: Joi.number().min(0).optional().messages({
+          'number.min': 'Salary must be a positive number',
+        }),
+        to: Joi.number().min(Joi.ref('from')).optional().messages({
+          'number.min': 'Salary "to" must be greater than or equal to "from"',
+        }),
+      }).optional(),
       currency: Joi.string().default('USD'),
       isVisible: Joi.boolean().default(true),
-      views: Joi.number().default(0),
-      applications: Joi.number().default(0),
     });
 
     return JobSchema.validate(body);

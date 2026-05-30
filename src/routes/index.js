@@ -34,7 +34,7 @@ router.use('/api', authRouter);
 
 router.use('/api/v1', v1Limiter, Authorization.verifyToken, userRouter);
 router.use('/api/v1', v1Limiter, Authorization.verifyToken, adminRouter);
-router.use('/api/v1', Authorization.verifyToken, companyRouter);
+router.use('/api/v1', v1Limiter, Authorization.verifyToken, companyRouter);
 router.use('/api/v1', v1Limiter, Authorization.verifyToken, jobRouter);
 router.use('/api/v1', v1Limiter, Authorization.verifyToken, applicationRouter);
 router.use('/api/v1', v1Limiter, Authorization.verifyToken, chatRouter);

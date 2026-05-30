@@ -180,7 +180,7 @@ export class AuthService {
   async forgotPassword(dto, meta = {}) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      return { message: MSG.AUTH.OTP_SENT };
     }
 
     const ttl = await redis.ttl(`otp:forgetPassword:${dto.email}`);
@@ -238,8 +238,6 @@ export class AuthService {
 
     await this.userRepository.updatePassword(user._id, hashedPassword);
     await redis.del(`refresh:${user._id}`);
-    user.changeCredentialTime = new Date();
-    await user.save();
 
     await AuditService.log({
       actor: { _id: user._id, email: user.email, role: user.role },
