@@ -9,12 +9,8 @@ import { ErrorHandler } from '../../src/middlewares/error.middleware.js';
 import * as EmailUtilsModule from '../../src/utils/email.utils.js';
 import { OtpUtils } from '../../src/utils/otpUtils.js';
 import { closeWorkers, emailQueue } from '../../src/jobs/index.js';
-jest.mock('../../src/jobs/index.js', () => ({
-  emailQueue: {
-    add: jest.fn().mockResolvedValue(true),
-  },
-  closeWorkers: jest.fn().mockResolvedValue(undefined),
-}));
+
+jest.mock('../../src/jobs/index.js');
 
 const app = express();
 app.use(express.json());

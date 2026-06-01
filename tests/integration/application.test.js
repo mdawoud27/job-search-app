@@ -9,6 +9,8 @@ import { Application } from '../../src/models/Application.js';
 import { closeWorkers } from '../../src/jobs/index.js';
 import redis from '../../src/config/redis.js';
 
+jest.mock('../../src/jobs/index.js');
+
 // Create Express app for testing
 const app = express();
 app.use(express.json());

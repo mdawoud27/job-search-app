@@ -7,6 +7,8 @@ import { ErrorHandler } from '../../src/middlewares/error.middleware.js';
 import redis from '../../src/config/redis.js';
 import { closeWorkers } from '../../src/jobs/index.js';
 
+jest.mock('../../src/jobs/index.js');
+
 const app = express();
 app.use(express.json());
 app.use(routes);

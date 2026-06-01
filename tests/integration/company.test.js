@@ -9,6 +9,8 @@ import * as CloudinaryUtilsModule from '../../src/utils/cloudinary.util.js';
 import redis from '../../src/config/redis.js';
 import { closeWorkers } from '../../src/jobs/index.js';
 
+jest.mock('../../src/jobs/index.js');
+
 const app = express();
 app.use(express.json());
 app.use(routes);

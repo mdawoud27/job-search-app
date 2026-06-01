@@ -8,6 +8,8 @@ import routes from '../../src/routes/index.js';
 import { ErrorHandler } from '../../src/middlewares/error.middleware.js';
 import * as CloudinaryUtilsModule from '../../src/utils/cloudinary.util.js';
 
+jest.mock('../../src/jobs/index.js');
+
 const app = express();
 app.use(express.json());
 app.use(routes);
