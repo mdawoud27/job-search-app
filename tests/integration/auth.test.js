@@ -13,6 +13,7 @@ jest.mock('../../src/jobs/index.js', () => ({
   emailQueue: {
     add: jest.fn().mockResolvedValue(true),
   },
+  closeWorkers: jest.fn().mockResolvedValue(undefined),
 }));
 
 const app = express();
