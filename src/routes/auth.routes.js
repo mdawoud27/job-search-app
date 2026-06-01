@@ -105,4 +105,13 @@ router.get('/auth/google/callback', authLimiter, (req, res, next) => {
   authController.googleCallback(req, res, next);
 });
 
+/**
+ * @route GET /api/v1/auth/exchange-token
+ * @desc Exchange token
+ * @access Public
+ */
+router.get('/auth/exchange-token', (req, res, next) => {
+  authController.exchangeToken(req, res, next);
+});
+
 export default router;

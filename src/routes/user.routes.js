@@ -28,7 +28,7 @@ router.get('/user/profile', (req, res, next) =>
  * @desc Update user profile
  * @access Private
  */
-router.put('/user/profile', Authorization.onlySelf, (req, res, next) =>
+router.put('/user/profile', (req, res, next) =>
   userController.updateAccount(req, res, next),
 );
 
@@ -37,10 +37,8 @@ router.put('/user/profile', Authorization.onlySelf, (req, res, next) =>
  * @desc Update user password
  * @access Private
  */
-router.patch(
-  '/user/profile/password',
-  Authorization.onlySelf,
-  (req, res, next) => userController.updatePassword(req, res, next),
+router.patch('/user/profile/password', (req, res, next) =>
+  userController.updatePassword(req, res, next),
 );
 
 /**
