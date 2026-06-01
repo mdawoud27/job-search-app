@@ -299,14 +299,18 @@ describe('searchCompanywithName', () => {
     expect(result.data).toHaveLength(2);
   });
 
-  it('should throw error when no companies found', async () => {
+  it('should return empty array when no companies found', async () => {
     const companyName = 'Nonexistent';
 
     mockCompanyDao.findByCompanyName.mockResolvedValue([]);
 
     await expect(
       companyService.searchCompanywithName(companyName),
-    ).rejects.toThrow(MSG.COMPANY.NO_COMPANIES_FOUND);
+    ).resolves.toEqual({
+      message: MSG.COMPANY.ALL_FOUND,
+      count: 0,
+      data: [],
+    });
   });
 
   it('should throw error when companies is null', async () => {
@@ -316,7 +320,11 @@ describe('searchCompanywithName', () => {
 
     await expect(
       companyService.searchCompanywithName(companyName),
-    ).rejects.toThrow(MSG.COMPANY.NO_COMPANIES_FOUND);
+    ).resolves.toEqual({
+      message: MSG.COMPANY.ALL_FOUND,
+      count: 0,
+      data: [],
+    });
   });
 });
 
