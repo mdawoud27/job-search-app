@@ -37,7 +37,7 @@ jobs:
       - name: Check PR title format
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
-          TITLE_PATTERN: '^(feat|fix|build|chore|refactor|docs|perf|test): .+'
+          TITLE_PATTERN: '^(feat|fix|build|chore|refactor|docs|perf|test|ci): .+'
         run: |
           CLEAN_TITLE=$(echo "$PR_TITLE" | tr -d '\r' | sed 's/[[:space:]]\+/ /g' | sed 's/^ *//;s/ *$//')
 
