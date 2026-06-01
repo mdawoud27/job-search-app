@@ -20,6 +20,13 @@ const config = {
   // The test environment that will be used for testing
   testEnvironment: 'node',
 
+  testTimeout: 15000,
+
+  globalSetup: './tests/integration/globalSetup.js',
+  globalTeardown: './tests/integration/globalTeardown.js',
+
+  setupFiles: ['./tests/jest.env.setup.js'],
+
   // Transform files with babel-jest
   transform: {
     '^.+\\.js$': 'babel-jest',

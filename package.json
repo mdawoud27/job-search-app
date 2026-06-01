@@ -1,6 +1,6 @@
 {
   "name": "job-search-app",
-  "version": "2.4.4",
+  "version": "2.4.9",
   "description": "This is a job search app",
   "type": "module",
   "main": "src/index.js",
@@ -14,7 +14,7 @@
     "format:check": "prettier --check \"**/*.js\"",
     "test": "jest",
     "test:unit": "jest --testPathPatterns=\"unit\"",
-    "test:integration": "jest --testPathPatterns=\"integration\"",
+    "test:integration": "jest --testPathPatterns=\"integration\" --runInBand --forceExit",
     "test:watch": "jest --watchAll",
     "test:coverage": "jest --coverage"
   },
