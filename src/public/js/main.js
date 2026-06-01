@@ -23,7 +23,7 @@ if (versionElement) {
 
   if (code) {
     try {
-      const res = await fetch(`/api/auth/token-exchange?code=${code}`);
+      const res = await fetch(`/api/auth/exchange-token?code=${code}`);
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem('accessToken', data.accessToken);
@@ -39,6 +39,11 @@ if (versionElement) {
           statusBadge.appendChild(indicatorSpan);
           statusBadge.appendChild(textSpan);
         }
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
       }
     } catch {
       window.history.replaceState({}, document.title, window.location.pathname);
