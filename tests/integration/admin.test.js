@@ -4,6 +4,10 @@ import { connect, closeDatabase, clearDatabase } from './setup.js';
 import { createAuthUser, createTestCompany } from './helpers.js';
 import routes from '../../src/routes/index.js';
 import { ErrorHandler } from '../../src/middlewares/error.middleware.js';
+import redis from '../../src/config/redis.js';
+import { closeWorkers } from '../../src/jobs/index.js';
+
+jest.mock('../../src/jobs/index.js');
 
 const app = express();
 app.use(express.json());
@@ -23,6 +27,8 @@ describe('Admin Integration Tests', () => {
 
   afterAll(async () => {
     await closeDatabase();
+    await closeWorkers();
+    await redis.quit();
   });
 
   describe('PATCH /api/v1/admin/ban-user', () => {

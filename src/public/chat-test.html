@@ -537,7 +537,7 @@
       </div>
 
       <!-- Active Chats -->
-      <div id="myChatsSection" class="section hidden" style="display: none">
+      <div id="myChatsSection" class="section hidden">
         <h2 class="section-title">
           <svg class="section-icon" viewBox="0 0 24 24">
             <path
@@ -805,7 +805,7 @@
 
           if (response.ok) {
             chatBox.innerHTML = '';
-            const messages = result.data.messages.reverse();
+            const messages = result.data.messages.toReversed();
 
             messages.forEach((msg) => {
               const isMe = msg.senderId._id !== userId;
@@ -1077,14 +1077,21 @@
       }
 
       // Typing indicator
+      let typingTimeout = null;
+
       document.getElementById('messageInput').addEventListener('input', (e) => {
         const receiverId = document.getElementById('receiverId').value;
-        if (socket && receiverId) {
-          if (e.target.value.length > 0) {
-            socket.emit('typing', { receiverId });
-          } else {
+        if (!socket || !receiverId) return;
+
+        if (e.target.value.length > 0) {
+          socket.emit('typing', { receiverId });
+          clearTimeout(typingTimeout);
+          typingTimeout = setTimeout(() => {
             socket.emit('stopTyping', { receiverId });
-          }
+          }, 2000);
+        } else {
+          clearTimeout(typingTimeout);
+          socket.emit('stopTyping', { receiverId });
         }
       });
 
@@ -1100,7 +1107,6 @@
 
         const myChatsSection = document.getElementById('myChatsSection');
         myChatsSection.classList.remove('hidden');
-        myChatsSection.style.display = 'block';
         document.getElementById('myChatsList').innerHTML = '<p>Loading...</p>';
 
         try {

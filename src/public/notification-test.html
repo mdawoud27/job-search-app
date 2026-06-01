@@ -575,12 +575,13 @@
           console.log('Connected to socket server with ID:', socket.id);
           updateStatus('Connected to server', 'connected');
           socket.emit('joinCompany', companyId);
-          setTimeout(() => {
-            updateStatus(
-              `Connected to server | Joined company room: ${companyId}`,
-              'connected',
-            );
-          }, 500);
+        });
+
+        socket.on('joinCompanySuccess', ({ companyId }) => {
+          updateStatus(
+            `Connected | Joined company room: ${companyId}`,
+            'connected',
+          );
         });
 
         socket.on('newApplication', (data) => {
@@ -681,6 +682,10 @@
           console.error('Socket connection error:', error);
           updateStatus(`Connection Error: ${error.message}`, 'error');
           alert(`Socket connection failed: ${error.message}`);
+        });
+
+        socket.on('error', (data) => {
+          updateStatus(`Server error: ${data.message}`, 'error');
         });
       }
 

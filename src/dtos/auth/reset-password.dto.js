@@ -12,9 +12,6 @@ export class ResetPasswordDto {
   static toResponse(result) {
     return {
       message: result.message,
-      data: {
-        email: result.user.email,
-      },
     };
   }
 

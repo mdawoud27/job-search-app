@@ -1,10 +1,14 @@
 import request from 'supertest';
 import express from 'express';
 import { connect, closeDatabase, clearDatabase } from './setup.js';
+import redis from '../../src/config/redis.js';
+import { closeWorkers } from '../../src/jobs/index.js';
 import { createAuthUser } from './helpers.js';
 import routes from '../../src/routes/index.js';
 import { ErrorHandler } from '../../src/middlewares/error.middleware.js';
 import * as CloudinaryUtilsModule from '../../src/utils/cloudinary.util.js';
+
+jest.mock('../../src/jobs/index.js');
 
 const app = express();
 app.use(express.json());
@@ -26,6 +30,8 @@ describe('User Integration Tests', () => {
 
   afterAll(async () => {
     await closeDatabase();
+    await closeWorkers();
+    await redis.quit();
   });
 
   describe('GET /api/v1/user/profile', () => {

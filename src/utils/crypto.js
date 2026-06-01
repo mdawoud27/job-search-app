@@ -1,12 +1,23 @@
 import crypto from 'crypto';
 import dotenv from 'dotenv';
+import { AppError } from './AppError.js';
+import { MSG } from './messages.js';
+import logger from '../config/logger.js';
 
 dotenv.config();
 
 const getEncryptionKey = () => {
-  const envKey = process.env.envKey;
+  const envKey = process.env.ENCRYPTION_KEY;
 
   if (!envKey) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new AppError(MSG.AUTH.ENCRYPTION_KEY_REQUIRED, 500);
+    }
+
+    logger.warn(
+      'WARNING: Using insecure fallback encryption key for development',
+    );
+
     return crypto
       .createHash('sha256')
       .update('development-fallback-key')
@@ -26,11 +37,12 @@ const getEncryptionKey = () => {
 };
 
 // Create a 32-byte key (256 bits)
-const ENCRYPTION_KEY = getEncryptionKey();
 const IV_LENGTH = 16;
 
 // Encrept
 export function encrypt(text) {
+  const ENCRYPTION_KEY = getEncryptionKey();
+
   try {
     if (!text) {
       return text;
@@ -50,6 +62,8 @@ export function encrypt(text) {
 
 // decrept
 export function decrypt(encryptedText) {
+  const ENCRYPTION_KEY = getEncryptionKey();
+
   try {
     if (!encryptedText || !encryptedText.includes(':')) {
       return encryptedText;

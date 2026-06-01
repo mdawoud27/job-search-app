@@ -4,17 +4,17 @@ import { createAdapter } from '@socket.io/redis-adapter';
 import redisClient from './redis.js';
 import logger from './logger.js';
 import { MSG } from '../utils/messages.js';
+import mongoose from 'mongoose';
 import {
-  chatRepository as chatDAO,
-  userRepository as userDAO,
-  applicationRepository as applicationDAO,
-  jobRepository as jobDAO,
+  chatService,
+  applicationService,
+  jobService,
   companyRepository as companyDAO,
 } from '../container.js';
 
 let io;
 
-/* eslint no-console: off */
+/* eslint no-undef: off */
 export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
@@ -32,138 +32,88 @@ export const initSocket = (server) => {
   // Authentication middleware
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
-
     if (!token) {
       return next(
         new Error(`${MSG.MIDDLEWARE.AUTH_ERROR}: ${MSG.MIDDLEWARE.NO_TOKEN}`),
       );
     }
-
     try {
-      /* eslint no-undef: off */
       const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
       socket.userId = decoded.id;
       socket.userRole = decoded.role;
       next();
-    } catch (err) {
+    } catch {
       next(
         new Error(
           `${MSG.MIDDLEWARE.AUTH_ERROR}: ${MSG.MIDDLEWARE.INVALID_TOKEN}`,
-          err,
         ),
       );
     }
   });
 
   io.on('connection', (socket) => {
-    // Join user to their personal room
     socket.join(`user:${socket.userId}`);
 
-    // Listen for joining company rooms (for HRs)
+    // Join company room
     socket.on('joinCompany', async (companyId) => {
       try {
-        if (!companyId) {
-          socket.emit('error', { message: MSG.CHAT.COMPANY_ID_REQUIRED });
-          return;
+        if (!companyId || !mongoose.isValidObjectId(companyId)) {
+          return socket.emit('error', {
+            message: MSG.CHAT.COMPANY_ID_REQUIRED,
+          });
         }
-        if (socket.userRole === 'HR' || socket.userRole === 'Admin') {
-          // Verify user belongs to this company
-          const canManage = await companyDAO.canManage(
-            companyId,
-            socket.userId,
-          );
-
-          if (canManage) {
-            socket.join(`company:${companyId}`);
-            logger.info(
-              `User ${socket.userId} joined company room: ${companyId}`,
-            );
-          } else {
-            socket.emit('error', {
-              message: MSG.JOB.NOT_AUTHORIZED('join company room for'),
-            });
-          }
-        } else {
-          socket.emit('error', {
+        if (socket.userRole !== 'HR' && socket.userRole !== 'Admin') {
+          return socket.emit('error', {
             message: MSG.JOB.NOT_AUTHORIZED('join company rooms'),
           });
         }
+        const canManage = await companyDAO.canManage(companyId, socket.userId);
+        if (!canManage) {
+          return socket.emit('error', {
+            message: MSG.JOB.NOT_AUTHORIZED('join company room for'),
+          });
+        }
+        socket.join(`company:${companyId}`);
+        socket.emit('joinCompanySuccess', { companyId });
+        logger.info(`User ${socket.userId} joined company room: ${companyId}`);
       } catch (error) {
-        logger.error('Error joining company room:', error.message);
+        logger.error('joinCompany error:', error.message);
         socket.emit('error', {
           message: MSG.JOB.NOT_AUTHORIZED('join company room for'),
-          error: error.message,
         });
       }
     });
 
-    // Handle sending messages
+    // Send message
     socket.on('sendMessage', async ({ receiverId, message }) => {
       try {
-        if (!receiverId || !message) {
-          socket.emit('error', {
+        if (!receiverId || !message?.trim()) {
+          return socket.emit('error', {
             message: MSG.CHAT.RECEIVER_AND_MESSAGE_REQUIRED,
           });
-          return;
+        }
+        if (!mongoose.isValidObjectId(receiverId)) {
+          return socket.emit('error', {
+            message: 'Invalid receiver ID format',
+          });
         }
 
-        // Verify receiver exists
-        const receiver = await userDAO.findById(receiverId);
-        if (!receiver) {
-          socket.emit('error', { message: MSG.CHAT.RECEIVER_NOT_FOUND });
-          return;
-        }
-
-        // Check if chat exists and validate initiation
-        const sender = await userDAO.findById(socket.userId);
-        const existingChat = await chatDAO.getOrCreateChat(
-          socket.userId,
-          receiverId,
-        );
-
-        // If no messages exist, only HR/Admin/Owner can initiate
-        if (existingChat.messages.length === 0) {
-          const isOwner = await companyDAO.isAnyCompanyOwner(socket.userId);
-          if (sender.role !== 'HR' && sender.role !== 'Admin' && !isOwner) {
-            socket.emit('error', {
-              message: MSG.JOB.NOT_AUTHORIZED('initiate chat'),
-            });
-            return;
-          }
-        }
-
-        // Add message to database
-        const result = await chatDAO.addMessage(
+        const result = await chatService.sendMessage(
           socket.userId,
           receiverId,
           message,
-          socket.userId,
         );
 
-        // Emit message to receiver
-        io.to(`user:${receiverId}`).emit('receiveMessage', {
-          senderId: socket.userId,
-          senderName: `${sender.firstName} ${sender.lastName}`,
-          senderProfilePic: sender.profilePic?.secure_url,
-          message: result.message.message,
-          timestamp: result.message.timestamp,
-        });
-
-        // Confirm sent to sender
-        socket.emit('messageSent', {
-          receiverId,
-          message: result.message.message,
-          timestamp: result.message.timestamp,
-        });
-
+        io.to(`user:${receiverId}`).emit('receiveMessage', result.forReceiver);
+        socket.emit('messageSent', result.forSender);
         logger.info(`Message from ${socket.userId} to ${receiverId}`);
       } catch (error) {
-        logger.error('Error sending message:', error.message);
+        logger.error('sendMessage error:', error.message);
         socket.emit('error', { message: MSG.CHAT.FAILED_SEND_MESSAGE });
       }
     });
 
-    // Handle typing indicator
+    // Typing indicators
     socket.on('typing', ({ receiverId }) => {
       if (receiverId) {
         io.to(`user:${receiverId}`).emit('userTyping', {
@@ -172,7 +122,6 @@ export const initSocket = (server) => {
       }
     });
 
-    // Handle stop typing
     socket.on('stopTyping', ({ receiverId }) => {
       if (receiverId) {
         io.to(`user:${receiverId}`).emit('userStoppedTyping', {
@@ -181,165 +130,100 @@ export const initSocket = (server) => {
       }
     });
 
-    // Handle getting job applicants (HR/Admin only)
+    // HR: get job applicants
     socket.on('getJobApplicants', async ({ jobId }) => {
       try {
-        // Check if user is HR or Admin
         if (socket.userRole !== 'HR' && socket.userRole !== 'Admin') {
-          socket.emit('error', {
+          return socket.emit('error', {
             message: MSG.CHAT.ONLY_HR_CAN_VIEW_APPLICANTS,
           });
-          return;
+        }
+        if (!jobId || !mongoose.isValidObjectId(jobId)) {
+          return socket.emit('error', { message: MSG.CHAT.JOB_ID_REQUIRED });
         }
 
-        if (!jobId) {
-          socket.emit('error', { message: MSG.CHAT.JOB_ID_REQUIRED });
-          return;
-        }
+        const job = await jobService.getJob(jobId);
+        const result =
+          await applicationService.getAllApplicationsForSpecificJob(
+            jobId,
+            socket.userId,
+            { limit: 100 },
+            { actor: { id: socket.userId, role: socket.userRole } },
+          );
 
-        // Fetch job to get company
-        const job = await jobDAO.findById(jobId);
-        if (!job) {
-          socket.emit('error', { message: MSG.JOB.NOT_FOUND });
-          return;
-        }
-
-        // Verify HR can manage this job's company
-        const canManage = await companyDAO.canManage(
-          job.companyId,
-          socket.userId,
-        );
-
-        if (!canManage) {
-          socket.emit('error', {
-            message: MSG.JOB.NOT_AUTHORIZED('view applicants for'),
-          });
-          return;
-        }
-
-        // Fetch job with applicants
-        const jobWithApplicants = await jobDAO.findByIdWithApplications(
-          jobId,
-          0,
-          100,
-          '-createdAt',
-        );
-
-        // Format applicants data
-        const applicants = jobWithApplicants.jobApplications.map((app) => ({
-          applicationId: app._id,
-          applicant: {
-            id: app.userId._id,
-            name: `${app.userId.firstName} ${app.userId.lastName}`,
-            email: app.userId.email,
-          },
-          status: app.status,
-          cvUrl: app.userCV.secure_url,
-          appliedAt: app.createdAt,
-        }));
-
-        // Emit applicants list to HR
         socket.emit('jobApplicants', {
           jobId,
           jobTitle: job.jobTitle,
-          totalApplicants: applicants.length,
-          applicants,
+          totalApplicants: result.data.pagination.total,
+          applicants: result.data.applications.map((app) => ({
+            applicationId: app._id,
+            applicant: {
+              id: app.userId?._id,
+              name: app.userId
+                ? `${app.userId.firstName} ${app.userId.lastName}`
+                : 'Unknown',
+              email: app.userId?.email,
+            },
+            status: app.status,
+            cvUrl: app.userCV?.secure_url,
+            appliedAt: app.createdAt,
+          })),
         });
-
-        logger.info(
-          `Sent ${applicants.length} applicants for job ${jobId} to HR ${socket.userId}`,
-        );
       } catch (error) {
-        logger.error('Error fetching job applicants:', error.message);
+        logger.error('getJobApplicants error:', error.message);
         socket.emit('error', { message: MSG.CHAT.FAILED_FETCH_APPLICANTS });
       }
     });
 
-    // Handle getting company jobs (HR/Admin only)
+    // HR: get company jobs
     socket.on('getCompanyJobs', async ({ companyId }) => {
       try {
         if (socket.userRole !== 'HR' && socket.userRole !== 'Admin') {
-          socket.emit('error', {
+          return socket.emit('error', {
             message: MSG.CHAT.ONLY_HR_CAN_VIEW_COMPANY_JOBS,
           });
-          return;
         }
-
-        if (!companyId) {
-          socket.emit('error', { message: MSG.CHAT.COMPANY_ID_REQUIRED });
-          return;
-        }
-
-        // Verify HR can manage this company
-        const canManage = await companyDAO.canManage(companyId, socket.userId);
-
-        if (!canManage) {
-          socket.emit('error', {
-            message: MSG.CHAT.NO_PERMISSION_VIEW_JOBS,
+        if (!companyId || !mongoose.isValidObjectId(companyId)) {
+          return socket.emit('error', {
+            message: MSG.CHAT.COMPANY_ID_REQUIRED,
           });
-          return;
         }
 
-        // Fetch company jobs
-        const jobs = await jobDAO.getJobByCompany(companyId, 0, 100);
+        const result = await jobService.getJobs(
+          { companyId, limit: 100 },
+          { actor: { id: socket.userId, role: socket.userRole } },
+        );
 
-        // Format jobs data
-        const formattedJobs = jobs.map((job) => ({
-          jobId: job._id,
-          jobTitle: job.jobTitle,
-          jobLocation: job.jobLocation,
-          workingTime: job.workingTime,
-          seniorityLevel: job.seniorityLevel,
-          createdAt: job.createdAt,
-        }));
-
-        // Emit jobs list
         socket.emit('companyJobs', {
           companyId,
-          totalJobs: formattedJobs.length,
-          jobs: formattedJobs,
+          totalJobs: result.totalCount,
+          jobs: result.jobs.map((job) => ({
+            jobId: job.id,
+            jobTitle: job.jobTitle,
+            jobLocation: job.jobLocation,
+            workingTime: job.workingTime,
+            seniorityLevel: job.seniorityLevel,
+            createdAt: job.createdAt,
+          })),
         });
-
-        logger.info(
-          `Sent ${formattedJobs.length} jobs for company ${companyId} to HR ${socket.userId}`,
-        );
       } catch (error) {
-        logger.error('Error fetching company jobs:', error.message);
+        logger.error('getCompanyJobs error:', error.message);
         socket.emit('error', { message: MSG.CHAT.FAILED_FETCH_COMPANY_JOBS });
       }
     });
 
-    // Handle getting user's own applications
+    // User: get own applications
     socket.on('getMyApplications', async () => {
       try {
-        // Find all applications by this user
-        const applications = await applicationDAO.findByUserId(socket.userId);
-
-        // Format applications data
-        const formattedApps = applications.map((app) => ({
-          applicationId: app._id,
-          job: {
-            id: app.jobId._id,
-            title: app.jobId.jobTitle,
-            location: app.jobId.jobLocation,
-            company: app.jobId.companyId,
-          },
-          status: app.status,
-          cvUrl: app.userCV.secure_url,
-          appliedAt: app.createdAt,
-        }));
-
-        // Emit applications to user
-        socket.emit('myApplications', {
-          totalApplications: formattedApps.length,
-          applications: formattedApps,
-        });
-
-        logger.info(
-          `Sent ${formattedApps.length} applications to user ${socket.userId}`,
+        const result = await applicationService.getMyApplications(
+          socket.userId,
         );
+        socket.emit('myApplications', {
+          totalApplications: result.data.length,
+          applications: result.data,
+        });
       } catch (error) {
-        logger.error('Error fetching user applications:', error.message);
+        logger.error('getMyApplications error:', error.message);
         socket.emit('error', { message: MSG.CHAT.FAILED_FETCH_APPLICATIONS });
       }
     });

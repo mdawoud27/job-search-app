@@ -7,6 +7,7 @@ import {
   ALLOWED_SORT_FIELDS,
   ALLOWED_SORT_ORDERS,
 } from '../utils/constants.js';
+import { AppError } from '../utils/AppError.js';
 
 const allowedActionValues = Object.values(ALLOWED_ACTIONS);
 
@@ -21,10 +22,10 @@ export class AdminService {
   async banUser(userId, admin, meta = {}) {
     const user = await this.userDao.findById(userId);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
     if (user.bannedAt !== null) {
-      throw new Error(MSG.ADMIN.USER_ALREADY_BANNED);
+      throw new AppError(MSG.ADMIN.USER_ALREADY_BANNED, 400);
     }
     await this.adminDao.banUser(userId, admin.id);
 
@@ -58,10 +59,10 @@ export class AdminService {
   async unbanUser(userId, admin, meta = {}) {
     const user = await this.userDao.findById(userId);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
     if (user.bannedAt === null) {
-      throw new Error(MSG.ADMIN.USER_ALREADY_UNBANNED);
+      throw new AppError(MSG.ADMIN.USER_ALREADY_UNBANNED, 400);
     }
     await this.adminDao.unbanUser(userId, admin.id);
 
@@ -94,15 +95,15 @@ export class AdminService {
     const company = await this.companyDao.findById(companyId);
 
     if (!company) {
-      throw new Error(MSG.COMPANY.NOT_FOUND_OR_INACTIVE);
+      throw new AppError(MSG.COMPANY.NOT_FOUND_OR_INACTIVE, 404);
     }
 
     if (company.bannedAt !== null) {
-      throw new Error(MSG.COMPANY.ALREADY_BANNED);
+      throw new AppError(MSG.COMPANY.ALREADY_BANNED, 400);
     }
 
     if (!company.approvedByAdmin) {
-      throw new Error(MSG.COMPANY.NOT_APPROVED_YET);
+      throw new AppError(MSG.COMPANY.NOT_APPROVED_YET, 400);
     }
 
     await this.adminDao.banCompany(companyId, admin.id);
@@ -135,10 +136,10 @@ export class AdminService {
   async unbanCompany(companyId, admin, meta = {}) {
     const company = await this.companyDao.findById(companyId);
     if (!company) {
-      throw new Error(MSG.COMPANY.NOT_FOUND_OR_INACTIVE);
+      throw new AppError(MSG.COMPANY.NOT_FOUND_OR_INACTIVE, 404);
     }
     if (company.bannedAt === null) {
-      throw new Error(MSG.COMPANY.ALREADY_UNBANNED);
+      throw new AppError(MSG.COMPANY.ALREADY_UNBANNED, 400);
     }
 
     await this.adminDao.unbanCompany(companyId, admin.id);
@@ -171,10 +172,10 @@ export class AdminService {
   async approveCompany(companyId, admin, meta = {}) {
     const company = await this.companyDao.findById(companyId);
     if (!company) {
-      throw new Error(MSG.COMPANY.NOT_FOUND_OR_INACTIVE);
+      throw new AppError(MSG.COMPANY.NOT_FOUND_OR_INACTIVE, 404);
     }
     if (company.approvedByAdmin) {
-      throw new Error(MSG.COMPANY.ALREADY_APPROVED);
+      throw new AppError(MSG.COMPANY.ALREADY_APPROVED, 400);
     }
     await this.adminDao.approveCompany(companyId, admin.id);
 
@@ -218,14 +219,14 @@ export class AdminService {
 
     if (actorId) {
       if (!mongoose.Types.ObjectId.isValid(actorId)) {
-        throw new Error('Invalid actorId format');
+        throw new AppError('Invalid actorId format', 400);
       }
       filter['actor._id'] = new mongoose.Types.ObjectId(actorId);
     }
 
     if (targetId) {
       if (!mongoose.Types.ObjectId.isValid(targetId)) {
-        throw new Error('Invalid targetId format');
+        throw new AppError('Invalid targetId format', 400);
       }
       const targetObjectId = new mongoose.Types.ObjectId(targetId);
       filter.$or = [
@@ -236,20 +237,20 @@ export class AdminService {
 
     if (action) {
       if (!allowedActionValues.includes(action)) {
-        throw new Error(`Invalid action value: ${action}`);
+        throw new AppError(`Invalid action value: ${action}`, 400);
       }
       filter.action = { $eq: action };
     }
 
     if (sortOrder && !ALLOWED_SORT_ORDERS.includes(sortOrder)) {
-      throw new Error(`Invalid sortOrder value: ${sortOrder}`);
+      throw new AppError(`Invalid sortOrder value: ${sortOrder}`, 400);
     }
 
     const sort = {};
     if (sortBy) {
       const safeSortBy = ALLOWED_SORT_FIELDS.find((f) => f === sortBy);
       if (!safeSortBy) {
-        throw new Error(`Invalid sortBy field: ${sortBy}`);
+        throw new AppError(`Invalid sortBy field: ${sortBy}`, 400);
       }
       sort[safeSortBy] = sortOrder === 'desc' ? -1 : 1;
     } else {

@@ -12,6 +12,8 @@ beforeEach(() => {
     getChatHistory: jest.fn(),
     getOrCreateChat: jest.fn(),
     getUserChats: jest.fn(),
+    findChatOnly: jest.fn(),
+    addMessage: jest.fn(),
   };
 
   mockUserRepository = {
@@ -185,82 +187,130 @@ describe('getChatHistory', () => {
 });
 
 /**
- * validateMessageSend tests
+ * sendMessage tests
  */
-describe('validateMessageSend', () => {
+describe('sendMessage', () => {
+  const addMessageResult = {
+    message: {
+      message: 'Hello',
+      timestamp: new Date(),
+    },
+  };
+
   it('should allow HR sender to initiate a new chat', async () => {
-    const sender = { _id: 'hr_123', role: 'HR' };
-    const receiver = { _id: 'user_456', role: 'User' };
+    const sender = {
+      _id: 'hr_123',
+      role: 'HR',
+      firstName: 'HR',
+      lastName: 'User',
+    };
+    const receiver = {
+      _id: 'user_456',
+      role: 'User',
+      firstName: 'User',
+      lastName: 'HR',
+    };
     const existingChat = { messages: [] };
 
     mockUserRepository.findById
       .mockResolvedValueOnce(sender)
       .mockResolvedValueOnce(receiver);
-    mockChatRepository.getOrCreateChat.mockResolvedValue(existingChat);
+    mockChatRepository.findChatOnly.mockResolvedValue(existingChat);
     mockCompanyRepository.isAnyCompanyOwner.mockResolvedValue(false);
+    mockChatRepository.addMessage.mockResolvedValue(addMessageResult);
 
-    const result = await chatService.validateMessageSend('hr_123', 'user_456');
-    expect(result).toBe(true);
+    const result = await chatService.sendMessage('hr_123', 'user_456');
+    expect(result.forReceiver.message).toBe('Hello');
+    expect(result.forSender.message).toBe('Hello');
   });
 
   it('should allow any sender if chat already has messages', async () => {
-    const sender = { _id: 'user_123', role: 'User' };
-    const receiver = { _id: 'user_456', role: 'HR' };
+    const sender = {
+      _id: 'user_123',
+      role: 'User',
+      firstName: 'User',
+      lastName: 'HR',
+    };
+    const receiver = {
+      _id: 'user_456',
+      role: 'HR',
+      firstName: 'HR',
+      lastName: 'User',
+    };
     const existingChat = { messages: [{ text: 'Hi' }] };
 
     mockUserRepository.findById
       .mockResolvedValueOnce(sender)
       .mockResolvedValueOnce(receiver);
-    mockChatRepository.getOrCreateChat.mockResolvedValue(existingChat);
+    mockChatRepository.findChatOnly.mockResolvedValue(existingChat);
+    mockChatRepository.addMessage.mockResolvedValue(addMessageResult);
 
-    const result = await chatService.validateMessageSend(
-      'user_123',
-      'user_456',
-    );
-    expect(result).toBe(true);
+    const result = await chatService.sendMessage('user_123', 'user_456');
+    expect(result.forReceiver.message).toBe('Hello');
+    expect(result.forSender.message).toBe('Hello');
     expect(mockCompanyRepository.isAnyCompanyOwner).not.toHaveBeenCalled();
   });
 
   it('should allow company owner to initiate a new chat', async () => {
-    const sender = { _id: 'owner_123', role: 'User' };
-    const receiver = { _id: 'user_456', role: 'User' };
+    const sender = {
+      _id: 'owner_123',
+      role: 'User',
+      firstName: 'User',
+      lastName: 'HR',
+    };
+    const receiver = {
+      _id: 'user_456',
+      role: 'User',
+      firstName: 'HR',
+      lastName: 'User',
+    };
     const existingChat = { messages: [] };
 
     mockUserRepository.findById
       .mockResolvedValueOnce(sender)
       .mockResolvedValueOnce(receiver);
-    mockChatRepository.getOrCreateChat.mockResolvedValue(existingChat);
+    mockChatRepository.findChatOnly.mockResolvedValue(existingChat);
     mockCompanyRepository.isAnyCompanyOwner.mockResolvedValue(true);
+    mockChatRepository.addMessage.mockResolvedValue(addMessageResult);
 
-    const result = await chatService.validateMessageSend(
-      'owner_123',
-      'user_456',
-    );
-    expect(result).toBe(true);
+    const result = await chatService.sendMessage('owner_123', 'user_456');
+    expect(result.forReceiver.message).toBe('Hello');
+    expect(result.forSender.message).toBe('Hello');
   });
 
   it('should throw when non-HR/non-owner tries to initiate new chat', async () => {
-    const sender = { _id: 'user_123', role: 'User' };
-    const receiver = { _id: 'user_456', role: 'User' };
+    const sender = {
+      _id: 'user_123',
+      role: 'User',
+      firstName: 'User',
+      lastName: 'HR',
+    };
+    const receiver = {
+      _id: 'user_456',
+      role: 'User',
+      firstName: 'HR',
+      lastName: 'User',
+    };
     const existingChat = { messages: [] };
 
     mockUserRepository.findById
       .mockResolvedValueOnce(sender)
       .mockResolvedValueOnce(receiver);
-    mockChatRepository.getOrCreateChat.mockResolvedValue(existingChat);
+    mockChatRepository.findChatOnly.mockResolvedValue(existingChat);
     mockCompanyRepository.isAnyCompanyOwner.mockResolvedValue(false);
+    mockChatRepository.addMessage.mockResolvedValue(addMessageResult);
 
     await expect(
-      chatService.validateMessageSend('user_123', 'user_456'),
+      chatService.sendMessage('user_123', 'user_456'),
     ).rejects.toThrow(MSG.JOB.NOT_AUTHORIZED('initiate chat'));
   });
 
   it('should throw NOT_FOUND when sender is not found', async () => {
     mockUserRepository.findById.mockResolvedValueOnce(null);
 
-    await expect(
-      chatService.validateMessageSend('bad_id', 'user_456'),
-    ).rejects.toThrow(MSG.USER.NOT_FOUND);
+    await expect(chatService.sendMessage('bad_id', 'user_456')).rejects.toThrow(
+      MSG.CHAT.RECEIVER_NOT_FOUND,
+    );
   });
 
   it('should throw NOT_FOUND when receiver is not found', async () => {
@@ -268,28 +318,38 @@ describe('validateMessageSend', () => {
     mockUserRepository.findById
       .mockResolvedValueOnce(sender)
       .mockResolvedValueOnce(null);
+    mockChatRepository.addMessage.mockResolvedValue(addMessageResult);
 
-    await expect(
-      chatService.validateMessageSend('user_123', 'bad_id'),
-    ).rejects.toThrow(MSG.USER.NOT_FOUND);
+    await expect(chatService.sendMessage('user_123', 'bad_id')).rejects.toThrow(
+      MSG.CHAT.RECEIVER_NOT_FOUND,
+    );
   });
 
   it('should allow Admin to initiate a new chat', async () => {
-    const sender = { _id: 'admin_123', role: 'Admin' };
-    const receiver = { _id: 'user_456', role: 'User' };
+    const sender = {
+      _id: 'admin_123',
+      role: 'Admin',
+      firstName: 'Admin',
+      lastName: 'User',
+    };
+    const receiver = {
+      _id: 'user_456',
+      role: 'User',
+      firstName: 'Regular',
+      lastName: 'User',
+    };
     const existingChat = { messages: [] };
 
     mockUserRepository.findById
       .mockResolvedValueOnce(sender)
       .mockResolvedValueOnce(receiver);
-    mockChatRepository.getOrCreateChat.mockResolvedValue(existingChat);
+    mockChatRepository.findChatOnly.mockResolvedValue(existingChat);
     mockCompanyRepository.isAnyCompanyOwner.mockResolvedValue(false);
+    mockChatRepository.addMessage.mockResolvedValue(addMessageResult);
 
-    const result = await chatService.validateMessageSend(
-      'admin_123',
-      'user_456',
-    );
-    expect(result).toBe(true);
+    const result = await chatService.sendMessage('admin_123', 'user_456');
+    expect(result.forReceiver.message).toBe('Hello');
+    expect(result.forSender.message).toBe('Hello');
   });
 });
 

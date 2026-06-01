@@ -2,19 +2,21 @@ import { jest } from '@jest/globals';
 import request from 'supertest';
 import express from 'express';
 import { connect, closeDatabase, clearDatabase } from './setup.js';
+import redis from '../../src/config/redis.js';
 import { createTestUser, createAuthUser } from './helpers.js';
 import routes from '../../src/routes/index.js';
 import { ErrorHandler } from '../../src/middlewares/error.middleware.js';
 import * as EmailUtilsModule from '../../src/utils/email.utils.js';
 import { OtpUtils } from '../../src/utils/otpUtils.js';
+import { closeWorkers, emailQueue } from '../../src/jobs/index.js';
+
+jest.mock('../../src/jobs/index.js');
 
 const app = express();
 app.use(express.json());
 app.use(routes);
 app.use(ErrorHandler.notFound);
 app.use(ErrorHandler.errorHandler);
-
-jest.mock('../../src/utils/email.utils.js');
 
 describe('Auth Integration Tests', () => {
   beforeAll(async () => {
@@ -28,6 +30,8 @@ describe('Auth Integration Tests', () => {
 
   afterAll(async () => {
     await closeDatabase();
+    await closeWorkers();
+    await redis.quit();
   });
 
   describe('POST /api/auth/signup', () => {
@@ -35,7 +39,6 @@ describe('Auth Integration Tests', () => {
       const mockOTP = '123456';
       jest.spyOn(OtpUtils, 'generateOTP').mockReturnValue(mockOTP);
       jest.spyOn(OtpUtils, 'hashOTP').mockResolvedValue('hashed-otp');
-      jest.spyOn(EmailUtilsModule, 'sendOTPEmail').mockResolvedValue(true);
 
       const userData = {
         firstName: 'John',
@@ -55,7 +58,15 @@ describe('Auth Integration Tests', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body.message).toContain('created successfully');
-      expect(EmailUtilsModule.sendOTPEmail).toHaveBeenCalled();
+      expect(emailQueue.add).toHaveBeenCalledWith(
+        'send-otp',
+        expect.objectContaining({
+          type: 'otp',
+          payload: expect.objectContaining({
+            email: userData.email,
+          }),
+        }),
+      );
     });
 
     it('should return 400 for invalid data', async () => {

@@ -7,6 +7,20 @@ import * as CryptoModule from '../../src/utils/crypto.js';
 import bcrypt from 'bcryptjs';
 import { createMockUser } from './helper.js';
 import { MSG } from '../../src/utils/messages.js';
+import redis from '../../src/config/redis.js';
+
+jest.mock('../../src/config/redis.js', () => ({
+  __esModule: true,
+  default: {
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue('OK'),
+    setex: jest.fn().mockResolvedValue('OK'),
+    del: jest.fn().mockResolvedValue(1),
+    ttl: jest.fn().mockResolvedValue(-2),
+    quit: jest.fn().mockResolvedValue(undefined),
+    on: jest.fn(),
+  },
+}));
 
 let userService;
 let mockUserRepository;
@@ -196,15 +210,14 @@ describe('changePassword', () => {
     const dto = { oldPassword: 'OldPass123!', newPassword: 'NewPass123!' };
     const originalPassword = 'hashed_password';
     const mockUser = createMockUser({ password: originalPassword });
-    mockUserRepository.findById.mockResolvedValue(mockUser);
-    mockUserRepository.isActive.mockResolvedValue(true);
+    mockUserRepository.findByIdAndActive.mockResolvedValue(mockUser);
     bcryptSpies.compare.mockResolvedValue(true);
     bcryptSpies.genSalt.mockResolvedValue('salt');
     bcryptSpies.hash.mockResolvedValue('new_hashed_password');
+    jest.spyOn(redis, 'del').mockResolvedValue(1);
 
     const result = await userService.changePassword(userId, dto);
 
-    expect(mockUserRepository.isActive).toHaveBeenCalledWith(userId);
     expect(bcryptSpies.compare).toHaveBeenCalledWith(
       dto.oldPassword,
       originalPassword,
@@ -219,7 +232,9 @@ describe('changePassword', () => {
   it('should throw error when user not found', async () => {
     const userId = 'user_123';
     const dto = { oldPassword: 'OldPass123!', newPassword: 'NewPass123!' };
-    mockUserRepository.findById.mockResolvedValue(null);
+    mockUserRepository.findByIdAndActive.mockRejectedValue(
+      new Error(MSG.USER.NOT_FOUND),
+    );
 
     await expect(userService.changePassword(userId, dto)).rejects.toThrow(
       MSG.USER.NOT_FOUND,
@@ -229,46 +244,49 @@ describe('changePassword', () => {
   it('should throw error when user is deleted or banned', async () => {
     const userId = 'user_123';
     const dto = { oldPassword: 'OldPass123!', newPassword: 'NewPass123!' };
-    mockUserRepository.findById.mockResolvedValue(createMockUser());
-    mockUserRepository.isActive.mockResolvedValue(false);
+
+    mockUserRepository.findByIdAndActive.mockRejectedValue(
+      new Error(MSG.USER.IS_DELETED_OR_BANNED),
+    );
 
     await expect(userService.changePassword(userId, dto)).rejects.toThrow(
-      MSG.USER.DELETED_OR_BANNED,
+      MSG.USER.IS_DELETED_OR_BANNED,
     );
   });
 
   it('should throw error when old password is incorrect', async () => {
     const userId = 'user_123';
     const dto = { oldPassword: 'WrongPass!', newPassword: 'NewPass123!' };
-    mockUserRepository.findById.mockResolvedValue(createMockUser());
-    mockUserRepository.isActive.mockResolvedValue(true);
+    mockUserRepository.findByIdAndActive.mockResolvedValue(createMockUser());
     bcryptSpies.compare.mockResolvedValue(false);
 
     await expect(userService.changePassword(userId, dto)).rejects.toThrow(
-      'Current password is incorrect, reset it if you forgot it',
+      MSG.USER.WRONG_PASSWORD,
     );
   });
 
-  it('should throw DELETED_OR_BANNED when user has no refreshToken and is not active', async () => {
+  it('should throw DELETED_OR_BANNED when repository rejects inactive user', async () => {
     const userId = 'user_123';
-    const dto = { oldPassword: 'OldPass!', newPassword: 'NewPass!' };
-    mockUserRepository.findById.mockResolvedValue(
-      createMockUser({ refreshToken: null }),
+    const dto = {
+      oldPassword: 'OldPass123!',
+      newPassword: 'NewPass123!',
+    };
+
+    mockUserRepository.findByIdAndActive.mockRejectedValue(
+      new Error(MSG.USER.IS_DELETED_OR_BANNED),
     );
-    mockUserRepository.isActive.mockResolvedValue(false);
 
     await expect(userService.changePassword(userId, dto)).rejects.toThrow(
-      MSG.USER.DELETED_OR_BANNED,
+      MSG.USER.IS_DELETED_OR_BANNED,
     );
   });
 
   it('should throw CANNOT_CHANGE_GOOGLE_PASSWORD for google provider', async () => {
     const userId = 'user_123';
     const dto = { oldPassword: 'OldPass!', newPassword: 'NewPass!' };
-    mockUserRepository.findById.mockResolvedValue(
+    mockUserRepository.findByIdAndActive.mockResolvedValue(
       createMockUser({ provider: 'google' }),
     );
-    mockUserRepository.isActive.mockResolvedValue(true);
     bcryptSpies.compare.mockResolvedValue(true);
 
     await expect(userService.changePassword(userId, dto)).rejects.toThrow(
@@ -279,8 +297,7 @@ describe('changePassword', () => {
   it('should throw SAME_PASSWORD when new password equals old password', async () => {
     const userId = 'user_123';
     const dto = { oldPassword: 'SamePass123!', newPassword: 'SamePass123!' };
-    mockUserRepository.findById.mockResolvedValue(createMockUser());
-    mockUserRepository.isActive.mockResolvedValue(true);
+    mockUserRepository.findByIdAndActive.mockResolvedValue(createMockUser());
     bcryptSpies.compare.mockResolvedValue(true);
 
     await expect(userService.changePassword(userId, dto)).rejects.toThrow(
@@ -328,7 +345,7 @@ describe('uploadProfilePic', () => {
     const userId = 'user_123';
     const imageData = { secure_url: 'new_pic.jpg', public_id: 'new_pic_id' };
     mockUserRepository.findByIdAndActive.mockRejectedValue(
-      new Error('User not found'),
+      new Error(MSG.USER.NOT_FOUND),
     );
 
     await expect(

@@ -8,7 +8,27 @@ import bcrypt from 'bcryptjs';
 import { createMockUser } from './helper.js';
 import { MSG } from '../../src/utils/messages.js';
 import redis from '../../src/config/redis.js';
-import { emailQueue } from '../../src/jobs/index.js';
+import { emailQueue, closeWorkers } from '../../src/jobs/index.js';
+
+jest.mock('../../src/config/redis.js', () => ({
+  __esModule: true,
+  default: {
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue('OK'),
+    setex: jest.fn().mockResolvedValue('OK'),
+    del: jest.fn().mockResolvedValue(1),
+    quit: jest.fn().mockResolvedValue(undefined),
+    on: jest.fn(),
+    ttl: jest.fn().mockResolvedValue(-2),
+  },
+}));
+
+jest.mock('../../src/jobs/index.js', () => ({
+  emailQueue: {
+    add: jest.fn(),
+  },
+  closeWorkers: jest.fn(),
+}));
 
 let authService;
 let mockUserRepository;
@@ -37,12 +57,11 @@ beforeEach(() => {
     hashOTP: jest
       .spyOn(OtpUtilsModule.OtpUtils, 'hashOTP')
       .mockImplementation(() => {}),
-    validate: jest
-      .spyOn(OtpUtilsModule.OtpUtils, 'validate')
+    compareHash: jest
+      .spyOn(OtpUtilsModule.OtpUtils, 'compareHash')
       .mockImplementation(() => {}),
   };
 
-  // Mock emailQueue.add instead of sendOTPEmail directly
   emailQueueSpy = jest
     .spyOn(emailQueue, 'add')
     .mockResolvedValue({ id: 'job_123' });
@@ -219,13 +238,13 @@ describe('confirmEmail', () => {
     const mockUser = createMockUser();
     mockUserRepository.findByEmail.mockResolvedValue(mockUser);
     redis.get.mockResolvedValue('hashed_123456');
-    otpSpies.validate.mockResolvedValue(true);
+    otpSpies.compareHash.mockResolvedValue(true);
     dtoSpies.confirmOtp.mockReturnValue({ id: 'user_123', isConfirmed: true });
 
     const result = await authService.confirmEmail(dto);
 
     expect(redis.get).toHaveBeenCalledWith(`otp:confirmEmail:${dto.email}`);
-    expect(otpSpies.validate).toHaveBeenCalledWith(dto.OTP, 'hashed_123456');
+    expect(otpSpies.compareHash).toHaveBeenCalledWith(dto.OTP, 'hashed_123456');
     expect(mockUser.isConfirmed).toBe(true);
     expect(mockUser.save).toHaveBeenCalled();
     expect(redis.del).toHaveBeenCalledWith(`otp:confirmEmail:${dto.email}`);
@@ -239,7 +258,7 @@ describe('confirmEmail', () => {
     await expect(authService.confirmEmail(dto)).rejects.toThrow(
       'User not found',
     );
-    expect(otpSpies.validate).not.toHaveBeenCalled();
+    expect(otpSpies.compareHash).not.toHaveBeenCalled();
   });
 
   it('should throw error when OTP expired (not found in Redis)', async () => {
@@ -257,7 +276,7 @@ describe('confirmEmail', () => {
     const mockUser = createMockUser();
     mockUserRepository.findByEmail.mockResolvedValue(mockUser);
     redis.get.mockResolvedValue('hashed_123456');
-    otpSpies.validate.mockResolvedValue(false);
+    otpSpies.compareHash.mockResolvedValue(false);
 
     await expect(authService.confirmEmail(dto)).rejects.toThrow(
       MSG.AUTH.INVALID_OTP,
@@ -340,7 +359,7 @@ describe('login', () => {
     const dto = { email: 'test@example.com', password: 'Pass123!' };
     const mockUser = createMockUser({ isConfirmed: true });
     mockUserRepository.findByEmail.mockResolvedValue(mockUser);
-    otpSpies.validate.mockResolvedValue(true);
+    otpSpies.compareHash.mockResolvedValue(true);
     tokenSpies.genAccessToken.mockReturnValue('access_token');
     tokenSpies.genRefreshToken.mockReturnValue('refresh_token');
     // login now stores refresh token in Redis, not via updateRefreshToken
@@ -348,7 +367,7 @@ describe('login', () => {
 
     const result = await authService.login(dto);
 
-    expect(otpSpies.validate).toHaveBeenCalledWith(
+    expect(otpSpies.compareHash).toHaveBeenCalledWith(
       dto.password,
       mockUser.password,
     );
@@ -376,7 +395,7 @@ describe('login', () => {
   it('should throw error when password is wrong', async () => {
     const dto = { email: 'test@example.com', password: 'WrongPass!' };
     mockUserRepository.findByEmail.mockResolvedValue(createMockUser());
-    otpSpies.validate.mockResolvedValue(false);
+    otpSpies.compareHash.mockResolvedValue(false);
 
     await expect(authService.login(dto)).rejects.toThrow('Invalid credentials');
   });
@@ -386,7 +405,7 @@ describe('login', () => {
     mockUserRepository.findByEmail.mockResolvedValue(
       createMockUser({ isConfirmed: false }),
     );
-    otpSpies.validate.mockResolvedValue(true);
+    otpSpies.compareHash.mockResolvedValue(true);
 
     await expect(authService.login(dto)).rejects.toThrow(
       'Please confirm your email first',
@@ -402,7 +421,7 @@ describe('login', () => {
     await expect(authService.login(dto)).rejects.toThrow(
       MSG.AUTH.USE_GOOGLE_LOGIN,
     );
-    expect(otpSpies.validate).not.toHaveBeenCalled();
+    expect(otpSpies.compareHash).not.toHaveBeenCalled();
   });
 });
 
@@ -562,7 +581,7 @@ describe('resetPassword', () => {
     const mockUser = createMockUser({ refreshToken: 'old_token' });
     mockUserRepository.findByEmail.mockResolvedValue(mockUser);
     redis.get.mockResolvedValue('hashed_123456');
-    otpSpies.validate.mockResolvedValue(true);
+    otpSpies.compareHash.mockResolvedValue(true);
     bcryptSpies.genSalt.mockResolvedValue('salt');
     bcryptSpies.hash.mockResolvedValue('new_hashed_password');
     mockUserRepository.updatePassword.mockResolvedValue(mockUser);
@@ -571,7 +590,7 @@ describe('resetPassword', () => {
     const result = await authService.resetPassword(dto);
 
     expect(redis.get).toHaveBeenCalledWith(`otp:forgetPassword:${dto.email}`);
-    expect(otpSpies.validate).toHaveBeenCalledWith(dto.OTP, 'hashed_123456');
+    expect(otpSpies.compareHash).toHaveBeenCalledWith(dto.OTP, 'hashed_123456');
     expect(bcryptSpies.hash).toHaveBeenCalledWith(dto.password, 'salt');
     expect(redis.del).toHaveBeenCalledWith(`otp:forgetPassword:${dto.email}`);
     // Service deletes the refresh token from Redis (not sets user.refreshToken = null)
@@ -614,7 +633,7 @@ describe('resetPassword', () => {
     };
     mockUserRepository.findByEmail.mockResolvedValue(createMockUser());
     redis.get.mockResolvedValue('hashed_123456');
-    otpSpies.validate.mockResolvedValue(false);
+    otpSpies.compareHash.mockResolvedValue(false);
 
     await expect(authService.resetPassword(dto)).rejects.toThrow(
       MSG.AUTH.INVALID_OTP,

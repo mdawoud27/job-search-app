@@ -1,0 +1,55 @@
+name: Pull Request Validations
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, ready_for_review]
+    branches: [main]
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  branch-name-validation:
+    if: github.event.pull_request.base.ref == 'dev'
+    name: Validate branch naming convention
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Enforce kebab-case branch name
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+          BRANCH_PATTERN: '^(feat|fix|build|chore|refactor|docs|perf|test|ci)(/[0-9]+)?/[a-z0-9]+(_[a-z0-9]+)*$'
+        run: |
+          echo "Checking branch: $BRANCH_NAME"
+          if ! echo "$BRANCH_NAME" | grep -Eq "$BRANCH_PATTERN"; then
+            echo "Branch name doesn't match the required pattern. Please setup your git hooks locally to avoid this error."
+            exit 1
+          fi
+
+          echo "Branch name passed."
+
+  validate-pr-title:
+    name: Validate PR title format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check PR title format
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          TITLE_PATTERN: '^(feat|fix|build|chore|refactor|docs|perf|test|ci): .+'
+        run: |
+          CLEAN_TITLE=$(echo "$PR_TITLE" | tr -d '\r' | sed 's/[[:space:]]\+/ /g' | sed 's/^ *//;s/ *$//')
+
+          echo "Checking PR title: $CLEAN_TITLE"
+
+          if ! echo "$CLEAN_TITLE" | grep -Eq "$TITLE_PATTERN"; then
+            echo "PR title must follow: <type>: <description>"
+            echo "Examples:"
+            echo "  feat: add user profile endpoint"
+            echo "  fix: resolve login bug"
+            echo "  docs: update API documentation"
+            exit 1
+          fi
+
+          echo "PR title passed."
