@@ -6,6 +6,7 @@ import { ResetPasswordDto } from '../dtos/auth/reset-password.dto.js';
 import { ResendOtpDto } from '../dtos/auth/resend-otp.dto.js';
 import { TokenDto } from '../dtos/auth/token.dto.js';
 import passport from 'passport';
+import redis from '../config/redis.js';
 
 export class AuthController {
   constructor(authService) {
@@ -230,13 +231,15 @@ export class AuthController {
             );
           }
 
-          // Generate tokens and app user data
           const result = await this.authService.googleCallback(user);
+          const code = await this.authService.createTokenExchangeCode(
+            result.accessToken,
+            result.refreshToken,
+          );
 
-          // Redirect to target with tokens
+          // Redirect with only the code
           const separator = redirectTo.includes('?') ? '&' : '?';
-          const redirectUrl = `${redirectTo}${separator}accessToken=${result.accessToken}&refreshToken=${result.refreshToken}&uName=${encodeURIComponent(result.user.name)}`;
-          return res.redirect(redirectUrl);
+          return res.redirect(`${redirectTo}${separator}code=${code}`);
         } catch (error) {
           let state = {};
           if (req.query.state) {
@@ -254,6 +257,24 @@ export class AuthController {
         }
       },
     )(req, res, next);
+  }
+
+  async exchangeToken(req, res, next) {
+    try {
+      const { code } = req.query;
+      if (!code) {
+        return res.status(400).json({ message: 'Code is required' });
+      }
+
+      const stored = await redis.get(`oauth_code:${code}`);
+      if (!stored) {
+        return res.status(400).json({ message: 'Invalid or expired code' });
+      }
+      await redis.del(`oauth_code:${code}`);
+      return res.status(200).json(JSON.parse(stored));
+    } catch (e) {
+      next(e);
+    }
   }
 
   // logout
