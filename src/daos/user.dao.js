@@ -1,6 +1,7 @@
 import { User } from '../models/User.js';
 import mongoose from 'mongoose';
 import { MSG } from '../utils/messages.js';
+import { AppError } from '../utils/AppError.js';
 
 export class UserDAO {
   async findByEmail(email) {
@@ -18,7 +19,7 @@ export class UserDAO {
     const user = await this.findById(id);
 
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     if (user.deletedAt === null && user.bannedAt === null) {

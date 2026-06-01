@@ -29,8 +29,8 @@ describe('Application Integration Tests', () => {
 
   afterAll(async () => {
     await closeDatabase();
-    await redis.quit();
     await closeWorkers();
+    await redis.quit();
   });
 
   describe('POST /api/v1/application/:jobId/apply', () => {

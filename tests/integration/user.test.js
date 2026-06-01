@@ -28,8 +28,8 @@ describe('User Integration Tests', () => {
 
   afterAll(async () => {
     await closeDatabase();
-    await redis.quit();
     await closeWorkers();
+    await redis.quit();
   });
 
   describe('GET /api/v1/user/profile', () => {

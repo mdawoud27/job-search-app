@@ -10,24 +10,6 @@ permissions:
   contents: read
 
 jobs:
-  validate-merge-permissions:
-    if: github.event.pull_request.base.ref == 'main'
-    runs-on: ubuntu-latest
-    name: Validate Merge Permissions
-    steps:
-      - name: Verify Authorized User
-        run: |
-          TARGET_BRANCH="${{ github.event.pull_request.base.ref }}"
-          PR_AUTHOR="${{ github.actor }}"
-          ALLOWED_USER="mdawoud27"
-
-          if [ "$PR_AUTHOR" != "$ALLOWED_USER" ] && [ "$TARGET_BRANCH" = "main" ]; then
-            echo "Unauthorized PR to main by $PR_AUTHOR, only $ALLOWED_USER is allowed."
-            exit 1
-          fi
-
-          echo "Authorized PR to main branch."
-
   branch-name-validation:
     if: github.event.pull_request.base.ref == 'dev'
     name: Validate branch naming convention

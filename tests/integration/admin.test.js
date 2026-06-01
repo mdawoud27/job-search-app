@@ -25,8 +25,8 @@ describe('Admin Integration Tests', () => {
 
   afterAll(async () => {
     await closeDatabase();
-    await redis.quit();
     await closeWorkers();
+    await redis.quit();
   });
 
   describe('PATCH /api/v1/admin/ban-user', () => {

@@ -8,7 +8,7 @@ import routes from '../../src/routes/index.js';
 import { ErrorHandler } from '../../src/middlewares/error.middleware.js';
 import * as EmailUtilsModule from '../../src/utils/email.utils.js';
 import { OtpUtils } from '../../src/utils/otpUtils.js';
-import { emailQueue } from '../../src/jobs/index.js';
+import { closeWorkers, emailQueue } from '../../src/jobs/index.js';
 jest.mock('../../src/jobs/index.js', () => ({
   emailQueue: {
     add: jest.fn().mockResolvedValue(true),
@@ -33,6 +33,7 @@ describe('Auth Integration Tests', () => {
 
   afterAll(async () => {
     await closeDatabase();
+    await closeWorkers();
     await redis.quit();
   });
 

@@ -110,7 +110,7 @@ router.get('/auth/google/callback', authLimiter, (req, res, next) => {
  * @desc Exchange token
  * @access Public
  */
-router.get('/auth/exchange-token', (req, res, next) => {
+router.get('/auth/exchange-token', authLimiter, (req, res, next) => {
   authController.exchangeToken(req, res, next);
 });
 
