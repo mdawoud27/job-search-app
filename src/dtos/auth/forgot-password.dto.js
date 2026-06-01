@@ -8,9 +8,6 @@ export class ForgotPasswordDto {
   static toResponse(result) {
     return {
       message: result.message,
-      data: {
-        email: result.user.email,
-      },
     };
   }
 
