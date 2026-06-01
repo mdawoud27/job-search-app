@@ -106,7 +106,7 @@ router.get('/auth/google/callback', authLimiter, (req, res, next) => {
 });
 
 /**
- * @route GET /api/v1/auth/exchange-token
+ * @route GET /api/auth/exchange-token
  * @desc Exchange token
  * @access Public
  */
