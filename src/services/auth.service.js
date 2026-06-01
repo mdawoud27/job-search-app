@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { OtpUtils } from '../utils/otpUtils.js';
 import { UserResponseDto } from '../dtos/auth/user-response.dto.js';
 import { ConfirmOtpDto } from '../dtos/auth/confirm-opt.dto.js';

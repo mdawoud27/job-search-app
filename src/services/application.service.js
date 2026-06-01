@@ -304,7 +304,7 @@ export class ApplicationService {
           company: app.jobId.companyId,
         },
         status: app.status,
-        cvUrl: app.userCV.secure_url,
+        cvUrl: app.userCV?.secure_url ?? null,
         appliedAt: app.createdAt,
       })),
     };
