@@ -39,7 +39,7 @@ export class Authorization {
       if (!user) {
         return res
           .status(401)
-          .json({ success: false, message: 'User not found' });
+          .json({ success: false, message: MSG.USER.NOT_FOUND });
       }
 
       if (
@@ -48,7 +48,7 @@ export class Authorization {
       ) {
         return res.status(401).json({
           success: false,
-          message: 'Session expired. Please log in again.',
+          message: MSG.AUTH.INVALID_CREDENTIALS,
         });
       }
 

@@ -30,7 +30,7 @@ export const rateLimiterMiddleware = ({
       pipeline.expire(key, windowSeconds);
       const results = await pipeline.exec();
 
-      const requestsCount = results[2];
+      const requestsCount = results[2][1];
 
       const remainingRequests = Math.max(maxRequests - requestsCount, 0);
       res.set({
