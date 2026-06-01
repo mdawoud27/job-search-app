@@ -27,8 +27,12 @@ export class UserDAO {
     throw new Error(MSG.USER.IS_DELETED_OR_BANNED);
   }
 
-  async findAll(filter = {}) {
-    return User.find(filter);
+  async findAll(filter = {}, skip = 0, limit = 20, sort = { createdAt: -1 }) {
+    const [users, totalCount] = await Promise.all([
+      User.find(filter).skip(skip).limit(limit).sort(sort),
+      User.countDocuments(filter),
+    ]);
+    return { users, totalCount };
   }
 
   async create(data) {

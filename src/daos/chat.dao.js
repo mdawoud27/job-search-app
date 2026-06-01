@@ -11,11 +11,9 @@ export class ChatDAO {
       return { messages: [], total: 0 };
     }
 
-    // Get total count
     const total = chat.messages.length;
 
-    // Apply pagination and sorting
-    const messages = chat.messages
+    const messages = [...chat.messages]
       .sort((a, b) =>
         sort === 1 ? a.timestamp - b.timestamp : b.timestamp - a.timestamp,
       )
@@ -26,7 +24,6 @@ export class ChatDAO {
 
   async getOrCreateChat(userId1, userId2) {
     let chat = await Chat.findChat(userId1, userId2);
-
     if (!chat) {
       chat = await Chat.create({
         senderId: userId1,
@@ -34,26 +31,22 @@ export class ChatDAO {
         messages: [],
       });
     }
-
     return chat;
   }
 
   async addMessage(userId1, userId2, message, senderId) {
     const chat = await this.getOrCreateChat(userId1, userId2);
-    await chat.addMessage(message, senderId);
-
-    // Return the newly added message with populated sender
-    // We need to re-fetch or manually populate because addMessage just pushes to array
-    const updatedChat = await Chat.findById(chat._id).populate({
+    const updatedChat = await Chat.findOneAndUpdate(
+      { _id: chat._id },
+      { $push: { messages: { message, senderId, timestamp: new Date() } } },
+      { new: true },
+    ).populate({
       path: 'messages.senderId',
       select: 'firstName lastName email profilePic',
     });
 
     const newMessage = updatedChat.messages[updatedChat.messages.length - 1];
-    return {
-      chatId: chat._id,
-      message: newMessage,
-    };
+    return { chatId: chat._id, message: newMessage };
   }
 
   async getChatById(chatId) {
@@ -63,16 +56,18 @@ export class ChatDAO {
   }
 
   async getUserChats(userId) {
-    const chats = await Chat.find({
+    return Chat.find({
       $or: [{ senderId: userId }, { receiverId: userId }],
-      'messages.0': { $exists: true }, // Only return chats with at least one message
+      'messages.0': { $exists: true },
     })
       .select('senderId receiverId updatedAt messages')
       .slice('messages', -1)
       .populate('senderId', 'firstName lastName email role profilePic')
       .populate('receiverId', 'firstName lastName email role profilePic')
       .sort({ updatedAt: -1 });
+  }
 
-    return chats;
+  async findChatOnly(userId1, userId2) {
+    return Chat.findChat(userId1, userId2);
   }
 }
