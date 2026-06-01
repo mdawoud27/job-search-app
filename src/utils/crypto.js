@@ -7,7 +7,7 @@ import logger from '../config/logger.js';
 dotenv.config();
 
 const getEncryptionKey = () => {
-  const envKey = process.env.envKey;
+  const envKey = process.env.ENCRYPTION_KEY;
 
   if (!envKey) {
     if (process.env.NODE_ENV === 'production') {
@@ -37,11 +37,12 @@ const getEncryptionKey = () => {
 };
 
 // Create a 32-byte key (256 bits)
-const ENCRYPTION_KEY = getEncryptionKey();
 const IV_LENGTH = 16;
 
 // Encrept
 export function encrypt(text) {
+  const ENCRYPTION_KEY = getEncryptionKey();
+
   try {
     if (!text) {
       return text;
@@ -61,6 +62,8 @@ export function encrypt(text) {
 
 // decrept
 export function decrypt(encryptedText) {
+  const ENCRYPTION_KEY = getEncryptionKey();
+
   try {
     if (!encryptedText || !encryptedText.includes(':')) {
       return encryptedText;
