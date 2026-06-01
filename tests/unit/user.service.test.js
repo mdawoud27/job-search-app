@@ -7,6 +7,20 @@ import * as CryptoModule from '../../src/utils/crypto.js';
 import bcrypt from 'bcryptjs';
 import { createMockUser } from './helper.js';
 import { MSG } from '../../src/utils/messages.js';
+import redis from '../../src/config/redis.js';
+
+jest.mock('../../src/config/redis.js', () => ({
+  __esModule: true,
+  default: {
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue('OK'),
+    setex: jest.fn().mockResolvedValue('OK'),
+    del: jest.fn().mockResolvedValue(1),
+    ttl: jest.fn().mockResolvedValue(-2),
+    quit: jest.fn().mockResolvedValue(undefined),
+    on: jest.fn(),
+  },
+}));
 
 let userService;
 let mockUserRepository;
@@ -200,6 +214,7 @@ describe('changePassword', () => {
     bcryptSpies.compare.mockResolvedValue(true);
     bcryptSpies.genSalt.mockResolvedValue('salt');
     bcryptSpies.hash.mockResolvedValue('new_hashed_password');
+    jest.spyOn(redis, 'del').mockResolvedValue(1);
 
     const result = await userService.changePassword(userId, dto);
 

@@ -10,6 +10,19 @@ import { MSG } from '../../src/utils/messages.js';
 import redis from '../../src/config/redis.js';
 import { emailQueue, closeWorkers } from '../../src/jobs/index.js';
 
+jest.mock('../../src/config/redis.js', () => ({
+  __esModule: true,
+  default: {
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue('OK'),
+    setex: jest.fn().mockResolvedValue('OK'),
+    del: jest.fn().mockResolvedValue(1),
+    quit: jest.fn().mockResolvedValue(undefined),
+    on: jest.fn(),
+    ttl: jest.fn().mockResolvedValue(-2),
+  },
+}));
+
 jest.mock('../../src/jobs/index.js', () => ({
   emailQueue: {
     add: jest.fn(),
