@@ -1,5 +1,8 @@
 import crypto from 'crypto';
 import dotenv from 'dotenv';
+import { AppError } from './AppError.js';
+import { MSG } from './messages.js';
+import logger from '../config/logger.js';
 
 dotenv.config();
 
@@ -7,6 +10,14 @@ const getEncryptionKey = () => {
   const envKey = process.env.envKey;
 
   if (!envKey) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new AppError(MSG.AUTH.ENCRYPTION_KEY_REQUIRED, 500);
+    }
+
+    logger.warn(
+      'WARNING: Using insecure fallback encryption key for development',
+    );
+
     return crypto
       .createHash('sha256')
       .update('development-fallback-key')

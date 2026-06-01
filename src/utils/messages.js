@@ -29,6 +29,7 @@ export const MSG = {
     PASSWORD_REQUIRED: 'Password is required.',
     PASSWORD_MIN: 'Password must be at least 8 characters long.',
     PASSWORD_MAX: 'Password must be at most 32 characters long.',
+    ENCRYPTION_KEY_REQUIRED: 'ENCRYPTION_KEY environment variable is required.',
   },
 
   // USER
@@ -60,6 +61,7 @@ export const MSG = {
     SAME_PASSWORD: 'New password cannot be the same as the old password',
     INVALID_EMAIL_TYPE: 'Invalid email type',
     NOT_FOUND_OR_BANNED: 'User not found, deleted, or banned',
+    WRONG_PASSWORD: 'Current password is incorrect, reset it if you forgot it',
   },
 
   // COMPANY
