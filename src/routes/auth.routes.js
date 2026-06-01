@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { authController } from '../container.js';
 import { Authorization } from '../middlewares/auth.middleware.js';
 import { rateLimiterMiddleware } from '../middlewares/rateLimit.middleware.js';
@@ -8,6 +9,12 @@ const router = Router();
 const authLimiter = rateLimiterMiddleware({
   maxRequests: 10,
   windowSeconds: 60,
+  message: 'Too many attempts, please try again later',
+});
+
+const exchangeTokenLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
   message: 'Too many attempts, please try again later',
 });
 
@@ -110,7 +117,7 @@ router.get('/auth/google/callback', authLimiter, (req, res, next) => {
  * @desc Exchange token
  * @access Public
  */
-router.get('/auth/exchange-token', authLimiter, (req, res, next) => {
+router.get('/auth/exchange-token', exchangeTokenLimiter, (req, res, next) => {
   authController.exchangeToken(req, res, next);
 });
 
