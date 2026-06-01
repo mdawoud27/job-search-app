@@ -5,6 +5,7 @@ import { generateApplicationsExcel } from '../utils/excel.utils.js';
 import { MSG } from '../utils/messages.js';
 import { AuditService } from './audit.service.js';
 import { emailQueue } from '../jobs/index.js';
+import { AppError } from '../utils/AppError.js';
 
 /* eslint no-console: off */
 export class ApplicationService {
@@ -26,7 +27,7 @@ export class ApplicationService {
     const job = await this.jobRepository.findById(jobId);
 
     if (!job) {
-      throw new Error(MSG.JOB.NOT_FOUND);
+      throw new AppError(MSG.JOB.NOT_FOUND, 404);
     }
 
     const application = await this.applicationRepository.createApplication(
@@ -83,7 +84,7 @@ export class ApplicationService {
     const job = await this.jobRepository.findById(jobId);
 
     if (!job) {
-      throw new Error(MSG.JOB.NOT_FOUND);
+      throw new AppError(MSG.JOB.NOT_FOUND, 404);
     }
 
     const canManage = await this.companyRepository.canManage(
@@ -92,7 +93,7 @@ export class ApplicationService {
     );
 
     if (!canManage) {
-      throw new Error(MSG.CHAT.ONLY_HR_CAN_VIEW_APPLICANTS);
+      throw new AppError(MSG.CHAT.ONLY_HR_CAN_VIEW_APPLICANTS, 403);
     }
 
     const jobWithApplications =
@@ -142,7 +143,7 @@ export class ApplicationService {
       await this.applicationRepository.findById(applicationId);
 
     if (!application) {
-      throw new Error(MSG.APPLICATION.NOT_FOUND);
+      throw new AppError(MSG.APPLICATION.NOT_FOUND, 404);
     }
 
     const canManage = await this.companyRepository.canManage(
@@ -151,13 +152,13 @@ export class ApplicationService {
     );
 
     if (!canManage) {
-      throw new Error(MSG.APPLICATION.NO_PERMISSION_UPDATE);
+      throw new AppError(MSG.APPLICATION.NO_PERMISSION_UPDATE, 403);
     }
 
     const hrUser = await this.userRepository.findById(hrUserId);
 
     if (!hrUser) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     const company = await this.companyRepository.findById(
@@ -165,7 +166,7 @@ export class ApplicationService {
     );
 
     if (!company) {
-      throw new Error(MSG.COMPANY.NOT_FOUND);
+      throw new AppError(MSG.COMPANY.NOT_FOUND, 404);
     }
 
     const updatedApplication = await this.applicationRepository.updateStatus(
@@ -180,23 +181,24 @@ export class ApplicationService {
         status: updatedApplication.status,
         jobTitle: application.jobId.jobTitle,
         companyName: company.companyName,
-        // include companyLogo if you want a richer notification
       });
     } catch (error) {
       logger.error('Failed to emit status update:', error.message);
     }
 
     try {
-      await emailQueue.add('status-email', {
-        type: status === 'accepted' ? 'acceptance' : 'rejection',
-        payload: {
-          emailFrom: company.companyEmail || hrUser.email,
-          applicantEmail: application.userId.email,
-          applicantName: `${application.userId.firstName} ${application.userId.lastName}`,
-          jobTitle: application.jobId.jobTitle,
-          companyName: company.companyName,
-        },
-      });
+      if (status === 'accepted' || status === 'rejected') {
+        await emailQueue.add('status-email', {
+          type: status === 'accepted' ? 'acceptance' : 'rejection',
+          payload: {
+            emailFrom: company.companyEmail || hrUser.email,
+            applicantEmail: application.userId.email,
+            applicantName: `${application.userId.firstName} ${application.userId.lastName}`,
+            jobTitle: application.jobId.jobTitle,
+            companyName: company.companyName,
+          },
+        });
+      }
     } catch (error) {
       logger.error('Failed to enqueue status-email job:', error.message);
     }
@@ -232,19 +234,20 @@ export class ApplicationService {
       hrUserId,
     );
     if (!canManage) {
-      throw new Error(
+      throw new AppError(
         MSG.MIDDLEWARE.HR_REQUIRED('export applications for this company'),
+        403,
       );
     }
 
     const company = await this.companyRepository.findById(companyId);
     if (!company) {
-      throw new Error(MSG.COMPANY.NOT_FOUND);
+      throw new AppError(MSG.COMPANY.NOT_FOUND, 404);
     }
 
     const targetDate = new Date(date);
     if (isNaN(targetDate.getTime())) {
-      throw new Error(MSG.APPLICATION.INVALID_DATE_FORMAT);
+      throw new AppError(MSG.APPLICATION.INVALID_DATE_FORMAT, 400);
     }
 
     const startDate = new Date(targetDate);
@@ -281,6 +284,29 @@ export class ApplicationService {
       buffer: excelBuffer,
       filename: `${company.companyName.replace(/\s+/g, '_')}_Applications_${date}.xlsx`,
       applications: applications.length,
+    };
+  }
+
+  // get user's applications
+  async getMyApplications(userId) {
+    await this.userRepository.findByIdAndActive(userId);
+
+    const applications = await this.applicationRepository.findByUserId(userId);
+
+    return {
+      message: MSG.APPLICATION.ALL_RETRIEVED,
+      data: applications.map((app) => ({
+        applicationId: app._id,
+        job: {
+          id: app.jobId._id,
+          title: app.jobId.jobTitle,
+          location: app.jobId.jobLocation,
+          company: app.jobId.companyId,
+        },
+        status: app.status,
+        cvUrl: app.userCV.secure_url,
+        appliedAt: app.createdAt,
+      })),
     };
   }
 }

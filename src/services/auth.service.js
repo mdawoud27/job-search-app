@@ -8,6 +8,7 @@ import redis from '../config/redis.js';
 import { AuditService } from './audit.service.js';
 import { ALLOWED_ACTIONS } from '../utils/constants.js';
 import { emailQueue } from '../jobs/index.js';
+import { AppError } from '../utils/AppError.js';
 
 export class AuthService {
   constructor(userRepository) {
@@ -17,13 +18,13 @@ export class AuthService {
   // signup
   async signup(dto, meta = {}) {
     if (dto.role && dto.role === 'Admin') {
-      throw new Error(MSG.AUTH.INVALID_ROLE);
+      throw new AppError(MSG.AUTH.INVALID_ROLE, 400);
     }
 
     //check if user exists or not
     const existingUser = await this.userRepository.findByEmail(dto.email);
     if (existingUser) {
-      throw new Error(MSG.AUTH.EMAIL_EXISTS);
+      throw new AppError(MSG.AUTH.EMAIL_EXISTS, 400);
     }
 
     const otpCode = OtpUtils.generateOTP();
@@ -62,17 +63,17 @@ export class AuthService {
   async confirmEmail(dto, meta = {}) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     const hashedOtp = await redis.get(`otp:confirmEmail:${dto.email}`);
     if (!hashedOtp) {
-      throw new Error(MSG.AUTH.OTP_EXPIRED);
+      throw new AppError(MSG.AUTH.OTP_EXPIRED, 400);
     }
 
-    const isValid = await OtpUtils.validate(dto.OTP, hashedOtp);
+    const isValid = await OtpUtils.compareHash(dto.OTP, hashedOtp);
     if (!isValid) {
-      throw new Error(MSG.AUTH.INVALID_OTP);
+      throw new AppError(MSG.AUTH.INVALID_OTP, 400);
     }
 
     await redis.del(`otp:confirmEmail:${dto.email}`);
@@ -97,19 +98,20 @@ export class AuthService {
   async resendOtpCode(dto, meta = {}) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     if (user.isConfirmed) {
-      throw new Error(MSG.AUTH.EMAIL_ALREADY_CONFIRMED);
+      throw new AppError(MSG.AUTH.EMAIL_ALREADY_CONFIRMED, 400);
     }
 
     const ttl = await redis.ttl(`otp:confirmEmail:${dto.email}`);
     // If ttl > 540 (10 mins - 1 min), the OTP was requested less than a minute ago
     if (ttl > 540) {
       const waitTime = ttl - 540;
-      throw new Error(
+      throw new AppError(
         `Please wait ${waitTime} seconds before requesting a new OTP`,
+        429,
       );
     }
 
@@ -143,20 +145,20 @@ export class AuthService {
   async login(dto, meta = {}) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      throw new Error(MSG.AUTH.INVALID_CREDENTIALS);
+      throw new AppError(MSG.AUTH.INVALID_CREDENTIALS, 401);
     }
 
     if (user.provider === 'google') {
-      throw new Error(MSG.AUTH.USE_GOOGLE_LOGIN);
+      throw new AppError(MSG.AUTH.USE_GOOGLE_LOGIN, 400);
     }
 
-    const match = await OtpUtils.validate(dto.password, user.password);
+    const match = await OtpUtils.compareHash(dto.password, user.password);
     if (!match) {
-      throw new Error(MSG.AUTH.INVALID_CREDENTIALS);
+      throw new AppError(MSG.AUTH.INVALID_CREDENTIALS, 401);
     }
 
     if (!user.isConfirmed) {
-      throw new Error(MSG.AUTH.CONFIRM_EMAIL_FIRST);
+      throw new AppError(MSG.AUTH.CONFIRM_EMAIL_FIRST, 400);
     }
 
     const accessToken = TokenUtils.genAccessToken(user);
@@ -180,14 +182,15 @@ export class AuthService {
   async forgotPassword(dto, meta = {}) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      return { message: MSG.AUTH.OTP_SENT };
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     const ttl = await redis.ttl(`otp:forgetPassword:${dto.email}`);
     if (ttl > 540) {
       const waitTime = ttl - 540;
-      throw new Error(
+      throw new AppError(
         `Please wait ${waitTime} seconds before requesting a new OTP`,
+        429,
       );
     }
 
@@ -218,17 +221,17 @@ export class AuthService {
   async resetPassword(dto, meta = {}) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     const hashedOtp = await redis.get(`otp:forgetPassword:${dto.email}`);
     if (!hashedOtp) {
-      throw new Error(MSG.AUTH.OTP_EXPIRED);
+      throw new AppError(MSG.AUTH.OTP_EXPIRED, 400);
     }
 
-    const isValid = await OtpUtils.validate(dto.OTP, hashedOtp);
+    const isValid = await OtpUtils.compareHash(dto.OTP, hashedOtp);
     if (!isValid) {
-      throw new Error(MSG.AUTH.INVALID_OTP);
+      throw new AppError(MSG.AUTH.INVALID_OTP, 400);
     }
 
     await redis.del(`otp:forgetPassword:${dto.email}`);
@@ -258,12 +261,12 @@ export class AuthService {
     const user = await this.userRepository.findById(payload.id);
 
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     const stored = await redis.get(`refresh:${payload.id}`);
     if (!stored || stored !== refreshToken) {
-      throw new Error(MSG.AUTH.INVALID_REFRESH_TOKEN);
+      throw new AppError(MSG.AUTH.INVALID_REFRESH_TOKEN, 401);
     }
 
     const tokenIssuedAt = new Date(payload.iat * 1000);
@@ -271,7 +274,7 @@ export class AuthService {
 
     if (credentialChangedAt && tokenIssuedAt < credentialChangedAt) {
       await redis.del(`refresh:${payload.id}`);
-      throw new Error(MSG.AUTH.CREDENTIALS_CHANGED);
+      throw new AppError(MSG.AUTH.CREDENTIALS_CHANGED, 401);
     }
 
     await redis.del(`refresh:${payload.id}`);
@@ -301,12 +304,13 @@ export class AuthService {
   // Google OAuth callback handler
   async googleCallback(user) {
     if (!user) {
-      throw new Error(MSG.AUTH.GOOGLE_AUTH_FAILED);
+      throw new AppError(MSG.AUTH.GOOGLE_AUTH_FAILED, 400);
     }
 
     // Generate tokens
     const accessToken = TokenUtils.genAccessToken(user);
     const refreshToken = TokenUtils.genRefreshToken(user);
+    // console.log(accessToken);
 
     // Save refresh token
     await redis.setex(`refresh:${user._id}`, 60 * 60 * 24 * 7, refreshToken);
@@ -333,7 +337,7 @@ export class AuthService {
   async logout(userId, meta = {}) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     await redis.del(`refresh:${user._id}`);
@@ -352,5 +356,15 @@ export class AuthService {
     });
 
     return { message: MSG.AUTH.LOGOUT_SUCCESS };
+  }
+
+  async createTokenExchangeCode(accessToken, refreshToken) {
+    const code = crypto.randomBytes(32).toString('hex');
+    await redis.setex(
+      `oauth_code:${code}`,
+      30,
+      JSON.stringify({ accessToken, refreshToken }),
+    );
+    return code;
   }
 }

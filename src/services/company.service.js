@@ -1,4 +1,5 @@
 import { CompanyResponseDto } from '../dtos/company/company-response.dto.js';
+import { AppError } from '../utils/AppError.js';
 import { CloudinaryUtils } from '../utils/cloudinary.util.js';
 import { ALLOWED_ACTIONS } from '../utils/constants.js';
 import { MSG } from '../utils/messages.js';
@@ -37,7 +38,7 @@ export class CompanyService {
       if (error.code === 11000) {
         // duplicate key error
         const field = Object.keys(error.keyPattern)[0];
-        throw new Error(`${field} already exists`);
+        throw new AppError(`${field} already exists`, 400);
       }
       throw error;
     }
@@ -47,17 +48,17 @@ export class CompanyService {
   async updateCompany(companyId, dto, userId, meta = {}) {
     try {
       if (dto.legalAttachment) {
-        throw new Error(MSG.COMPANY.LEGAL_ATTACHMENT_NOT_ALLOWED);
+        throw new AppError(MSG.COMPANY.LEGAL_ATTACHMENT_NOT_ALLOWED, 400);
       }
 
       const user = await this.userDao.findByIdAndActive(userId);
       const company = await this.companyDao.update(companyId, dto, userId);
 
       if (!company) {
-        throw new Error(MSG.COMPANY.NOT_FOUND);
+        throw new AppError(MSG.COMPANY.NOT_FOUND, 404);
       }
       if (company.deletedAt || company.bannedAt) {
-        throw new Error(MSG.COMPANY.DELETED_OR_BANNED);
+        throw new AppError(MSG.COMPANY.DELETED_OR_BANNED, 404);
       }
 
       await AuditService.log({
@@ -78,7 +79,7 @@ export class CompanyService {
       if (error.code === 11000) {
         // duplicate key error
         const field = Object.keys(error.keyPattern)[0];
-        throw new Error(`${field} already exists`);
+        throw new AppError(`${field} already exists`, 400);
       }
       throw error;
     }
@@ -110,7 +111,7 @@ export class CompanyService {
     const { actor, ...auditMeta } = meta;
     const company = await this.companyDao.findByIdWithJobs(companyId);
     if (!company) {
-      throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
+      throw new AppError(MSG.COMPANY.NOT_FOUND_OR_BANNED, 404);
     }
 
     await AuditService.log({
@@ -138,9 +139,11 @@ export class CompanyService {
     const companies = await this.companyDao.findByCompanyName(companyName);
 
     if (!companies || companies.length === 0) {
-      const error = new Error(MSG.COMPANY.NO_COMPANIES_FOUND);
-      error.statusCode = 404;
-      throw error;
+      return {
+        message: MSG.COMPANY.ALL_FOUND,
+        count: 0,
+        data: [],
+      };
     }
     await AuditService.log({
       actor,
@@ -169,13 +172,11 @@ export class CompanyService {
   async uploadCompanyLogo(companyId, logo, user, meta = {}) {
     const isOwner = await this.companyDao.isOwner(companyId, user.id);
     if (!isOwner && user.role !== 'Admin') {
-      throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
+      throw new AppError(MSG.COMPANY.NO_PERMISSION_UPDATE, 403);
     }
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
-      const error = new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
-      error.statusCode = 404;
-      throw error;
+      throw new AppError(MSG.COMPANY.NOT_FOUND_OR_BANNED, 404);
     }
 
     // Delete old image
@@ -207,11 +208,11 @@ export class CompanyService {
   async deleteCompanyLogo(companyId, user, meta = {}) {
     const isOwner = await this.companyDao.isOwner(companyId, user.id);
     if (!isOwner && user.role !== 'Admin') {
-      throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
+      throw new AppError(MSG.COMPANY.NO_PERMISSION_UPDATE, 403);
     }
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
-      throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
+      throw new AppError(MSG.COMPANY.NOT_FOUND_OR_BANNED, 404);
     }
 
     if (company.logo?.public_id) {
@@ -246,11 +247,11 @@ export class CompanyService {
   async uploadCompanyCover(companyId, cover, user, meta = {}) {
     const isOwner = await this.companyDao.isOwner(companyId, user.id);
     if (!isOwner && user.role !== 'Admin') {
-      throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
+      throw new AppError(MSG.COMPANY.NO_PERMISSION_UPDATE, 403);
     }
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
-      throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
+      throw new AppError(MSG.COMPANY.NOT_FOUND_OR_BANNED, 404);
     }
 
     // Delete old image
@@ -282,11 +283,11 @@ export class CompanyService {
   async deleteCompanyCover(companyId, user, meta = {}) {
     const isOwner = await this.companyDao.isOwner(companyId, user.id);
     if (!isOwner && user.role !== 'Admin') {
-      throw new Error(MSG.COMPANY.NO_PERMISSION_UPDATE);
+      throw new AppError(MSG.COMPANY.NO_PERMISSION_UPDATE, 403);
     }
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
-      throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
+      throw new AppError(MSG.COMPANY.NOT_FOUND_OR_BANNED, 404);
     }
 
     if (company.coverPic?.public_id) {
@@ -321,11 +322,11 @@ export class CompanyService {
   async addHR(companyId, userId, actor, meta = {}) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
-      throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
+      throw new AppError(MSG.COMPANY.NOT_FOUND_OR_BANNED, 404);
     }
     const user = await this.userDao.findByIdAndActive(userId);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND_OR_BANNED);
+      throw new AppError(MSG.USER.NOT_FOUND_OR_BANNED, 404);
     }
     const updatedCompany = await this.companyDao.addHR(companyId, userId);
     user.role = 'HR';
@@ -355,11 +356,11 @@ export class CompanyService {
   async removeHR(companyId, userId, actor, meta = {}) {
     const company = await this.companyDao.isActive(companyId);
     if (!company) {
-      throw new Error(MSG.COMPANY.NOT_FOUND_OR_BANNED);
+      throw new AppError(MSG.COMPANY.NOT_FOUND_OR_BANNED, 404);
     }
     const user = await this.userDao.findByIdAndActive(userId);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND_OR_BANNED);
+      throw new AppError(MSG.USER.NOT_FOUND_OR_BANNED, 404);
     }
     const updatedCompany = await this.companyDao.removeHR(companyId, userId);
 

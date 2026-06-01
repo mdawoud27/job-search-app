@@ -6,6 +6,7 @@ import { MSG } from '../utils/messages.js';
 import { AuditService } from './audit.service.js';
 import { ALLOWED_ACTIONS } from '../utils/constants.js';
 import redis from '../config/redis.js';
+import { AppError } from '../utils/AppError.js';
 
 export class UserService {
   constructor(userRepository) {
@@ -17,7 +18,7 @@ export class UserService {
     const updated = await this.userRepository.updateById(userId, updateDto);
 
     if (!updated) {
-      throw new Error(MSG.USER.NOT_FOUND_OR_UPDATE_FAILED);
+      throw new AppError(MSG.USER.NOT_FOUND_OR_UPDATE_FAILED, 404);
     }
 
     await AuditService.log({
@@ -44,7 +45,7 @@ export class UserService {
   async getLoggedUser(userId, meta = {}) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     await AuditService.log({
@@ -72,7 +73,7 @@ export class UserService {
     const { actor, ...auditMeta } = meta;
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     await AuditService.log({
@@ -96,18 +97,10 @@ export class UserService {
 
   // Update password
   async changePassword(userId, dto, meta = {}) {
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
-    }
-
-    const isActive = await this.userRepository.isActive(userId);
-    if (!isActive) {
-      throw new Error(MSG.USER.DELETED_OR_BANNED);
-    }
+    const user = await this.userRepository.findByIdAndActive(userId);
 
     if (user.provider === 'google') {
-      throw new Error(MSG.USER.CANNOT_CHANGE_GOOGLE_PASSWORD);
+      throw new AppError(MSG.USER.CANNOT_CHANGE_GOOGLE_PASSWORD, 400);
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -115,13 +108,11 @@ export class UserService {
       user.password,
     );
     if (!isPasswordValid) {
-      throw new Error(
-        'Current password is incorrect, reset it if you forgot it',
-      );
+      throw new AppError(MSG.USER.WRONG_PASSWORD, 401);
     }
 
     if (dto.newPassword === dto.oldPassword) {
-      throw new Error(MSG.USER.SAME_PASSWORD);
+      throw new AppError(MSG.USER.SAME_PASSWORD, 400);
     }
 
     // Hash new password
@@ -156,7 +147,7 @@ export class UserService {
   async uploadProfilePic(userId, imageData, meta = {}) {
     const user = await this.userRepository.findByIdAndActive(userId);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     // Delete old image
@@ -195,7 +186,7 @@ export class UserService {
   async uploadCoverPic(userId, imageData, meta = {}) {
     const user = await this.userRepository.findByIdAndActive(userId);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     if (user.coverPic?.public_id) {
@@ -233,7 +224,7 @@ export class UserService {
   async deleteProfilePic(userId, meta = {}) {
     const user = await this.userRepository.findByIdAndActive(userId);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     if (user.profilePic?.public_id) {
@@ -268,7 +259,7 @@ export class UserService {
   async deleteCoverPic(userId, meta = {}) {
     const user = await this.userRepository.findByIdAndActive(userId);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     if (user.coverPic?.public_id) {
@@ -314,11 +305,11 @@ export class UserService {
   async softDelete(userId, meta = {}) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     if (user.deletedAt) {
-      throw new Error(MSG.USER.ALREADY_DELETED);
+      throw new AppError(MSG.USER.ALREADY_DELETED, 400);
     }
 
     user.deletedAt = new Date();
@@ -347,11 +338,11 @@ export class UserService {
   async restoreAccount(userId, admin, meta = {}) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     if (!user.deletedAt) {
-      throw new Error(MSG.USER.ALREADY_ACTIVE);
+      throw new AppError(MSG.USER.ALREADY_ACTIVE, 400);
     }
 
     user.deletedAt = null;

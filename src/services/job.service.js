@@ -8,6 +8,7 @@ import {
   ALLOWED_ACTIONS,
   ALLOWED_JOB_SORT_FIELDS,
 } from '../utils/constants.js';
+import { AppError } from '../utils/AppError.js';
 
 export class JobService {
   constructor(userDao, companyDao, jobDao) {
@@ -21,14 +22,14 @@ export class JobService {
     const user = await this.userDao.findByIdAndActive(userId);
 
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     const company = await this.companyDao.isActive(companyId);
     const canManage = await this.companyDao.canManage(companyId, userId);
 
     if (!canManage) {
-      throw new Error(MSG.JOB.NOT_AUTHORIZED('create'));
+      throw new AppError(MSG.JOB.NOT_AUTHORIZED('create'), 403);
     }
 
     const job = await this.jobDao.createJob(dto, user.id, company.id);
@@ -68,19 +69,19 @@ export class JobService {
     const user = await this.userDao.findByIdAndActive(userId);
 
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     const company = await this.companyDao.isActive(companyId);
     const canManage = await this.companyDao.canManage(companyId, userId);
 
     if (!canManage) {
-      throw new Error(MSG.JOB.NOT_AUTHORIZED('update'));
+      throw new AppError(MSG.JOB.NOT_AUTHORIZED('update'), 403);
     }
 
     const job = await this.jobDao.updateJob(dto, user.id, company.id, jobId);
     if (!job) {
-      throw new Error(MSG.JOB.NOT_FOUND_OR_CLOSED);
+      throw new AppError(MSG.JOB.NOT_FOUND_OR_CLOSED, 404);
     }
 
     // Invalidate the specific job AND all lists (it could appear in any search result)
@@ -115,20 +116,20 @@ export class JobService {
     const user = await this.userDao.findByIdAndActive(userId);
 
     if (!user) {
-      throw new Error(MSG.USER.NOT_FOUND);
+      throw new AppError(MSG.USER.NOT_FOUND, 404);
     }
 
     const company = await this.companyDao.isActive(companyId);
     const canManage = await this.companyDao.canManage(companyId, userId);
 
     if (!canManage) {
-      throw new Error(MSG.JOB.NOT_AUTHORIZED('delete'));
+      throw new AppError(MSG.JOB.NOT_AUTHORIZED('delete'), 403);
     }
 
     const job = await this.jobDao.deleteJob(user.id, company.id, jobId);
 
     if (!job) {
-      throw new Error(MSG.JOB.NOT_FOUND_OR_DELETED);
+      throw new AppError(MSG.JOB.NOT_FOUND_OR_DELETED, 404);
     }
 
     try {
@@ -268,7 +269,7 @@ export class JobService {
       async () => {
         const job = await this.jobDao.findById(jobId);
         if (!job) {
-          throw new Error(MSG.JOB.NOT_FOUND);
+          throw new AppError(MSG.JOB.NOT_FOUND, 404);
         }
 
         return JobResponseDto.toResponse(job);
