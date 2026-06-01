@@ -83,6 +83,11 @@ jobs:
       - name: Run tests
         run: npm run test:unit
         env:
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-ci
+          JWT_ACCESS_EXPIRATION: 15m
+          JWT_REFRESH_EXPIRATION: 7d
+          ENCRYPTION_KEY: test-encryption-key-32byteslong!
           REDIS_URL: redis://localhost:6379
 
   integration-test:
@@ -115,4 +120,9 @@ jobs:
       - name: Run tests
         run: npm run test:integration -- --runInBand
         env:
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-ci
+          JWT_ACCESS_EXPIRATION: 15m
+          JWT_REFRESH_EXPIRATION: 7d
+          ENCRYPTION_KEY: test-encryption-key-32byteslong!
           REDIS_URL: redis://localhost:6379
