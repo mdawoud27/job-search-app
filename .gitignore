@@ -143,3 +143,4 @@ text.txt
 redis_flow_analysis.md
 .codex/
 .agents/
+.vscode/
