@@ -1,6 +1,8 @@
 import request from 'supertest';
 import express from 'express';
 import { connect, closeDatabase, clearDatabase } from './setup.js';
+import redis from '../../src/config/redis.js';
+import { closeWorkers } from '../../src/jobs/index.js';
 import { createAuthUser } from './helpers.js';
 import routes from '../../src/routes/index.js';
 import { ErrorHandler } from '../../src/middlewares/error.middleware.js';
@@ -26,6 +28,8 @@ describe('User Integration Tests', () => {
 
   afterAll(async () => {
     await closeDatabase();
+    await redis.quit();
+    await closeWorkers();
   });
 
   describe('GET /api/v1/user/profile', () => {

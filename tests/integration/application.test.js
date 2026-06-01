@@ -6,6 +6,8 @@ import { createAuthUser, createTestCompany, createTestJob } from './helpers.js';
 import routes from '../../src/routes/index.js';
 import { ErrorHandler } from '../../src/middlewares/error.middleware.js';
 import { Application } from '../../src/models/Application.js';
+import { closeWorkers } from '../../src/jobs/index.js';
+import redis from '../../src/config/redis.js';
 
 // Create Express app for testing
 const app = express();
@@ -27,6 +29,8 @@ describe('Application Integration Tests', () => {
 
   afterAll(async () => {
     await closeDatabase();
+    await redis.quit();
+    await closeWorkers();
   });
 
   describe('POST /api/v1/application/:jobId/apply', () => {

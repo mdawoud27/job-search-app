@@ -6,6 +6,8 @@ import { createAuthUser, createTestCompany } from './helpers.js';
 import routes from '../../src/routes/index.js';
 import { ErrorHandler } from '../../src/middlewares/error.middleware.js';
 import * as CloudinaryUtilsModule from '../../src/utils/cloudinary.util.js';
+import redis from '../../src/config/redis.js';
+import { closeWorkers } from '../../src/jobs/index.js';
 
 const app = express();
 app.use(express.json());
@@ -26,6 +28,8 @@ describe('Company Integration Tests', () => {
 
   afterAll(async () => {
     await closeDatabase();
+    await redis.quit();
+    await closeWorkers();
   });
 
   describe('POST /api/v1/company/create', () => {
@@ -219,12 +223,8 @@ describe('Company Integration Tests', () => {
         .get('/api/v1/company/search/NonExistent')
         .set('Authorization', `Bearer ${accessToken}`);
 
-      // Accept both success or error (might return 500 for no results)
-      expect([200, 500]).toContain(response.status);
-      if (response.status === 200) {
-        expect(response.body).toHaveProperty('data');
-        expect(Array.isArray(response.body.data)).toBe(true);
-      }
+      expect(response.status).toBe(200);
+      expect(response.body.data).toEqual([]);
     });
   });
 
