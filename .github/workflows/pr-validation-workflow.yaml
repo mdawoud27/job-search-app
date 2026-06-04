@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   branch-name-validation:
-    if: github.event.pull_request.base.ref == 'dev'
+    if: github.event.pull_request.base.ref == 'main'
     name: Validate branch naming convention
     runs-on: ubuntu-latest
 

@@ -1,6 +1,6 @@
 {
   "name": "job-search-app",
-  "version": "2.4.13",
+  "version": "2.5.0",
   "description": "This is a job search app",
   "type": "module",
   "main": "src/index.js",
@@ -71,7 +71,6 @@
     "lodash.merge": "^4.6.2",
     "mongodb": "^7.0.0",
     "mongoose": "^8.11.0",
-    "morgan": "^1.10.1",
     "multer": "^2.0.2",
     "nodemailer": "^8.0.7",
     "passport": "^0.7.0",
