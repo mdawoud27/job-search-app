@@ -2,6 +2,8 @@
 
 A production-grade RESTful API for a job search platform built with **Node.js**, **Express**, and **MongoDB**. The platform connects job seekers with companies, offering real-time communication, async email processing, GraphQL support, and a full multi-role permission system.
 
+**Tech Stack**: Express.js, Mongoose, Passportjs, Joi, GraphQL, Socket.IO, Redis, Cloudinary, Winston, Jest, Supertest, Docker, Docker Compose, GitHub Actions CI.
+
 ## Features
 
 ### User Features
@@ -32,32 +34,6 @@ A production-grade RESTful API for a job search platform built with **Node.js**,
 - Ban and unban user accounts
 - Soft-delete users, companies, and related data
 - Full platform user management
-
-## Tech Stack
-
-**Runtime & Framework**: Node.js (ESM), Express.js
-
-**Database**: MongoDB + Mongoose
-
-**Auth & Security**: JWT (access + refresh tokens), Google OAuth 2.0, bcryptjs, Helmet, Joi, AES field-level encryption, rate limiting
-
-**Real-time**: Socket.IO + Redis adapter (horizontally scalable)
-
-**Queue & Background Jobs**: BullMQ + Redis (async email delivery)
-
-**API**: REST, GraphQL, Swagger UI (OpenAPI 3.0)
-
-**File Storage**: Cloudinary + Multer (photos, PDFs)
-
-**Email**: Nodemailer via BullMQ queue
-
-**Logging**: Winston
-
-**Testing**: Jest + Supertest + mongodb-memory-server
-
-**DevOps**: Docker + Docker Compose (multi-stage), GitHub Actions CI, Railway (deployment)
-
-**Code Quality**: ESLint, Prettier, Husky
 
 ## Architecture
 
