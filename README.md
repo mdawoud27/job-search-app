@@ -69,16 +69,16 @@ Request → Router → Controller → Service → DAO → MongoDB
 
 ### Key Design Patterns
 
-- **DAO (Data Access Object)** — abstracts all database operations from business logic
-- **Dependency Injection** — `src/container.js` wires DAOs → Services → Controllers
-- **Strategy Pattern** — multiple auth strategies (JWT, Google OAuth) via Passport
-- **Middleware Pipeline** — request validation, auth, rate limiting, error handling
+- **DAO (Data Access Object)**: abstracts all database operations from business logic
+- **Dependency Injection**: `src/container.js` wires DAOs → Services → Controllers
+- **Strategy Pattern**: multiple auth strategies (JWT, Google OAuth) via Passport
+- **Middleware Pipeline**: request validation, auth, rate limiting, error handling
 
 ### Three API Interfaces
 
-1. **REST** — `/api/v1/` and `/api/auth/`, documented via OpenAPI 3.0
-2. **GraphQL** — `/graphql`, type-safe queries and mutations
-3. **WebSocket** — Socket.IO with JWT handshake authentication, Redis adapter for horizontal scaling
+1. **REST**: `/api/v1/` and `/api/auth/`, documented via OpenAPI 3.0
+2. **GraphQL**: `/graphql`, type-safe queries and mutations
+3. **WebSocket**: Socket.IO with JWT handshake authentication, Redis adapter for horizontal scaling
 
 ### Database Design
 
