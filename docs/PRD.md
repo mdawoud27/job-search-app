@@ -234,7 +234,7 @@ Job search platforms often present fragmented experiences: seekers lack real-tim
 ### 6.1 Authentication Module
 
 - Email/password registration with bcryptjs (10 rounds) hashing.
-- Email verification via time-limited OTP (stored in `User.OTP` array); expired OTPs purged by scheduled cleanup job.
+- Email verification via time-limited OTP stored in Redis with hashed keys (`otp:<type>:<email>`); 600-second TTL with automatic expiry.
 - Google OAuth 2.0 login via Passport.js (`passport-google-oauth20`).
 - JWT-based session management: short-lived access token + long-lived refresh token.
 - Refresh token rotation on each use.
@@ -445,7 +445,7 @@ User {
   profilePhoto  : { secure_url, public_id }   // Cloudinary
   resume        : { secure_url, public_id }    // Cloudinary
   skills        : [String]
-  OTP           : [{ code, type, expiresAt }]  // confirmEmail | forgetPassword
+  isConfirmed   : Boolean                       // Email verification status
   bannedAt      : Date
   deletedAt     : Date                          // soft delete
   provider      : Enum [local, google]
@@ -648,13 +648,13 @@ Company ──(context)──► Chat          (companyId, optional)
 
 ### 10.3 WebSocket Events (Socket.IO)
 
-| Event                             | Direction | Payload                               | Description                      |
-| --------------------------------- | --------- | ------------------------------------- | -------------------------------- |
-| `connection`                      | C→S       | JWT token                             | Authenticate socket              |
-| `message:send`                    | C→S       | `{ receiverId, content, companyId? }` | Send chat message                |
-| `message:receive`                 | S→C       | `{ senderId, content, sentAt }`       | Receive chat message             |
-| `notification:application_status` | S→C       | `{ applicationId, status }`           | Application status change        |
-| `notification:new_application`    | S→C       | `{ applicationId, jobId }`            | New application received (to HR) |
+| Event                      | Direction | Payload                               | Description                      |
+| -------------------------- | --------- | ------------------------------------- | -------------------------------- |
+| `connection`               | C→S       | JWT token                             | Authenticate socket              |
+| `message:send`             | C→S       | `{ receiverId, content, companyId? }` | Send chat message                |
+| `message:receive`          | S→C       | `{ senderId, content, sentAt }`       | Receive chat message             |
+| `applicationStatusUpdated` | S→C       | `{ applicationId, status }`           | Application status change        |
+| `newApplication`           | S→C       | `{ applicationId, jobId }`            | New application received (to HR) |
 
 ### 10.4 Response Envelope
 
