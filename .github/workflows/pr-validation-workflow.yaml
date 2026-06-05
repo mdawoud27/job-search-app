@@ -19,7 +19,7 @@ jobs:
       - name: Enforce kebab-case branch name
         env:
           BRANCH_NAME: ${{ github.head_ref }}
-          BRANCH_PATTERN: '^(feat|fix|build|chore|refactor|docs|perf|test|ci)(/[0-9]+)?/[a-z0-9]+(_[a-z0-9]+)*$'
+          BRANCH_PATTERN: '^(feat|fix|build|chore|refactor|docs|perf|test|ci|style|revert)(/[0-9]+)?/[a-z0-9]+(_[a-z0-9]+)*$'
         run: |
           echo "Checking branch: $BRANCH_NAME"
           if ! echo "$BRANCH_NAME" | grep -Eq "$BRANCH_PATTERN"; then

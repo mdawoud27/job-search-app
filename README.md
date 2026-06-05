@@ -2,6 +2,8 @@
 
 A production-grade RESTful API for a job search platform built with **Node.js**, **Express**, and **MongoDB**. The platform connects job seekers with companies, offering real-time communication, async email processing, GraphQL support, and a full multi-role permission system.
 
+**Tech Stack**: Express.js, Mongoose, Passportjs, Joi, GraphQL, Socket.IO, Redis, BullMQ, Cloudinary, Winston, Jest, Supertest, Docker, Docker Compose, GitHub Actions CI.
+
 ## Features
 
 ### User Features
@@ -10,10 +12,9 @@ A production-grade RESTful API for a job search platform built with **Node.js**,
 - **Google OAuth 2.0** sign-in
 - OTP-based email verification and password reset
 - Profile management with photo upload via **Cloudinary**
-- **Resume upload** (PDF) stored on Cloudinary
 - **Full-text job search** with weighted relevance scoring.
 - Browse job listings and view company details
-- Apply for jobs and track application history and status
+- Apply for jobs and track application history and status and can upload **PDF file as a resume**
 - **Real-time chat with HR** via Socket.IO
 - Soft account deletion
 
@@ -33,32 +34,6 @@ A production-grade RESTful API for a job search platform built with **Node.js**,
 - Soft-delete users, companies, and related data
 - Full platform user management
 
-## Tech Stack
-
-**Runtime & Framework**: Node.js (ESM), Express.js
-
-**Database**: MongoDB + Mongoose
-
-**Auth & Security**: JWT (access + refresh tokens), Google OAuth 2.0, bcryptjs, Helmet, Joi, AES field-level encryption, rate limiting
-
-**Real-time**: Socket.IO + Redis adapter (horizontally scalable)
-
-**Queue & Background Jobs**: BullMQ + Redis (async email delivery)
-
-**API**: REST, GraphQL, Swagger UI (OpenAPI 3.0)
-
-**File Storage**: Cloudinary + Multer (photos, PDFs)
-
-**Email**: Nodemailer via BullMQ queue
-
-**Logging**: Winston
-
-**Testing**: Jest + Supertest + mongodb-memory-server
-
-**DevOps**: Docker + Docker Compose (multi-stage), GitHub Actions CI, Railway (deployment)
-
-**Code Quality**: ESLint, Prettier, Husky
-
 ## Architecture
 
 The project follows a layered **MVC + DAO/Repository** pattern with a manual **dependency injection container**.
@@ -69,16 +44,16 @@ Request → Router → Controller → Service → DAO → MongoDB
 
 ### Key Design Patterns
 
-- **DAO (Data Access Object)** — abstracts all database operations from business logic
-- **Dependency Injection** — `src/container.js` wires DAOs → Services → Controllers
-- **Strategy Pattern** — multiple auth strategies (JWT, Google OAuth) via Passport
-- **Middleware Pipeline** — request validation, auth, rate limiting, error handling
+- **DAO (Data Access Object)**: abstracts all database operations from business logic
+- **Dependency Injection**: `src/container.js` wires DAOs → Services → Controllers
+- **Strategy Pattern**: multiple auth strategies (JWT, Google OAuth) via Passport
+- **Middleware Pipeline**: request validation, auth, rate limiting, error handling
 
 ### Three API Interfaces
 
-1. **REST** — `/api/v1/` and `/api/auth/`, documented via OpenAPI 3.0
-2. **GraphQL** — `/graphql`, type-safe queries and mutations
-3. **WebSocket** — Socket.IO with JWT handshake authentication, Redis adapter for horizontal scaling
+1. **REST**: `/api/v1/` and `/api/auth/`, documented via OpenAPI 3.0
+2. **GraphQL**: `/graphql`, type-safe queries
+3. **WebSocket**: Socket.IO with JWT handshake authentication, Redis adapter for horizontal scaling
 
 ### Database Design
 
@@ -144,22 +119,18 @@ npm run test:coverage
 
 Two GitHub Actions pipelines keep the codebase stable.
 
-### Test Pipeline (on push / PR)
+### CI Pipeline
 
-Runs integration tests in a real environment — spins up a Redis service and executes tests serially (`--runInBand`) to avoid race conditions between test suites.
-
-```bash
-npm run test:integration -- --runInBand
-```
+Runs five jobs `setup`, `eslint`, `prettier`, `unit-test`, `integration-test`.
 
 ### PR Validation Pipeline (on PR → `main`)
 
 Two parallel jobs enforce standards before any code is merged:
 
-| Job             | What it checks                                                                                    |
-| --------------- | ------------------------------------------------------------------------------------------------- |
-| **Branch name** | Must match `<type>(/issue-number)/description` — e.g. `feat/add_cv_upload` or `fix/123/login_bug` |
-| **PR title**    | Must follow Conventional Commits — e.g. `feat: add CV upload endpoint`                            |
+| Job             | What it checks                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| **Branch name** | Must match `<type>(/issue-number)/description`, e.g. `feat/add_cv_upload` or `fix/123/login_bug` |
+| **PR title**    | Must follow Conventional Commits, e.g. `feat: add CV upload endpoint`                            |
 
 Valid branch prefixes: `feat`, `fix`, `build`, `chore`, `refactor`, `docs`, `perf`, `test`, `ci`
 
@@ -183,6 +154,7 @@ refactor: extract auth logic into service layer
 
 For more technical details, please refer to the following documentation:
 
+- [Product Requirements Document](docs/PRD.md)
 - [Entity Relationship Diagram (ERD)](docs/ERD.md)
 - [Project Architecture](docs/PROJECT_ARCH.md)
 - [GitHub Flow](docs/GITHUB_FLOW.md)
