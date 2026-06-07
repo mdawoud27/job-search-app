@@ -154,7 +154,7 @@ refactor: extract auth logic into service layer
 
 For more technical details, please refer to the following documentation:
 
-- [Product Requirements Document](docs/PRD.md)
+- [Product Requirements Document (PRD)](docs/PRD.md)
 - [Entity Relationship Diagram (ERD)](docs/ERD.md)
 - [Project Architecture](docs/PROJECT_ARCH.md)
 - [GitHub Flow](docs/GITHUB_FLOW.md)
